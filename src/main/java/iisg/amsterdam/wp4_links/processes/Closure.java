@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
@@ -20,12 +19,11 @@ import org.rdfhdt.hdt.triples.TripleString;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
-import iisg.amsterdam.wp4_links.CandidateList;
 import iisg.amsterdam.wp4_links.Index;
 import iisg.amsterdam.wp4_links.LinksCSV;
 
 import iisg.amsterdam.wp4_links.MyHDT;
-import iisg.amsterdam.wp4_links.Person;
+import iisg.amsterdam.wp4_links.Properties;
 import iisg.amsterdam.wp4_links.utilities.*;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -107,11 +105,20 @@ public class Closure {
 					TripleString ts = it.next();	
 					cntAll++;
 					// skip blank nodes
-					if(!ts.getSubject().toString().startsWith("_")) {
+					if(!ts.getSubject().toString().startsWith("_")) {		
 						String sbjPersonID = getEqClassOfPerson(ts.getSubject().toString());
 						String predicate = "<" + ts.getPredicate().toString() + ">"; 
 						String objPersonID = getEqClassOfPerson(ts.getObject().toString());
-						datasetAfterClosure.addToStream(sbjPersonID + " " + predicate + " " + objPersonID + ".");
+						if(predicate.contains("age")) {
+							String ageInString = myHDT.getStringValueFromLiteral(objPersonID);
+							int age = Integer.valueOf(ageInString);
+							String birthYear = myHDT.getBirthYearFromAge(ts.getSubject().toString(), age);
+							if(birthYear != null) {
+								datasetAfterClosure.addToStream(sbjPersonID + " <" + Properties.BIRTH_YEAR + "> " + birthYear + ".");
+							}
+						} else {
+							datasetAfterClosure.addToStream(sbjPersonID + " " + predicate + " " + objPersonID + ".");
+						}
 					}
 					if(cntAll % 10000 == 0) {
 						pb.stepBy(10000);
@@ -127,10 +134,8 @@ public class Closure {
 		} finally {
 			LINKS.closeStream();
 		}
-
-
-
 	}
+
 
 
 	public String getEqClassOfPerson(String someURI) {
@@ -142,17 +147,15 @@ public class Closure {
 				// linked person
 				return eqClass;
 			}
-			// person but not linked
-			return "<" + someURI + ">";		
-		} else {
-			if(someURI.startsWith("http")) {
-				// URI but not person
-				return "<" + someURI + ">";	
-			} else {
-				// literal
-				return someURI;
-			}
 		}
+		// not linked
+		if(someURI.startsWith("http")) {
+			// URI but not person
+			return "<" + someURI + ">";	
+		} else {
+			// literal
+			return someURI;
+		}	
 	}
 
 

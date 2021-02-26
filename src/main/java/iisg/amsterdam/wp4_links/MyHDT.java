@@ -351,10 +351,14 @@ public class MyHDT implements ProgressListener {
 			if(it.hasNext()){
 				TripleString ts = it.next();
 				gender = ts.getObject().toString();
-				if(gender.equals(GENDER_FEMALE_URI) || gender.equals(GENDER_FEMALE_LITERAL)) {
+				if(gender.equals(GENDER_FEMALE_URI) || gender.equals("f") || gender.equals("\"f\"")) {
 					return "f";
 				} else {
-					return "m";
+					if(gender.equals(GENDER_MALE_URI) || gender.equals("m") || gender.equals("\"m\"")) {
+						return "m";
+					} else {
+						return "u";
+					}
 				}
 				//gender = getStringValueFromLiteral(gender);
 			}
@@ -503,6 +507,43 @@ public class MyHDT implements ProgressListener {
 		}
 		return role;
 	}
+
+
+	public String removeBrackets(String someURI) {
+		if(someURI.startsWith("<")) {
+			return someURI.substring(1, someURI.length()-1);
+		} else {
+			return someURI;
+		}
+	}
+	
+	public String convertToYearType(int age) {
+		return "\"" + Integer.toString(age) + "\"^^<http://www.w3.org/2001/XMLSchema#gYear>";
+	}
+
+
+	public String getBirthYearFromAge(String personURI, int age) {
+		String sbj = null; 
+		String person = removeBrackets(personURI);
+		try {
+			IteratorTripleString it = dataset.search("", "", person);
+			if(it.hasNext()){
+				TripleString ts = it.next();
+				sbj = ts.getSubject().toString();
+				int eventYear = getEventDate(sbj) ;
+				if(eventYear != 0) {
+					int birthYear = eventYear - age ;
+					return convertToYearType(birthYear);	
+				}
+			}
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+
 
 
 	@Override

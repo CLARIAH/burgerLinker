@@ -96,13 +96,30 @@ public class LinksCSV {
 		}
 	}
 
+
+	public Boolean checkMinimumMatchedNames(HashMap<String, Candidate> personPairedNames, CandidateList personList, String targetCertificateID) {
+		int matchedNames = personPairedNames.size();
+		int numberNamesPerson1 = personList.sourcePerson.getNumberOfFirstNames();
+		int numberNamesPerson2 = personList.candidates.get(targetCertificateID).numberNames;
+		if(numberNamesPerson1 > 1 && numberNamesPerson2 > 1 && matchedNames < 2) {
+			return false;
+		}
+		return true;
+
+	}
+
+
+
 	public void saveLinks_Between_B_M(CandidateList motherList, CandidateList fatherList, String targetCertificateID, Person bride, Person groom, int yearDifference) {		
 
 		HashMap<String, Candidate> motherPairedNames = motherList.candidates.get(targetCertificateID).organiseMetadata();
 		HashMap<String, Candidate> fatherPairedNames = fatherList.candidates.get(targetCertificateID).organiseMetadata();
 
-		String link =  motherList.sourceCertificateID + "," + // source certificateID
-				targetCertificateID + "," + // target CertificateID
+		if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
+			if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
+
+				String link =  motherList.sourceCertificateID + "," + // source certificateID
+						targetCertificateID + "," + // target CertificateID
 
 				motherList.candidates.get(targetCertificateID).levenshteinTotal + "," + // levenshtein total bride
 				motherList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + "," + // max levenshtein bride
@@ -119,8 +136,11 @@ public class LinksCSV {
 				fatherList.candidates.get(targetCertificateID).numberNames + "," + // number of total names for the groom
 
 				yearDifference ;
-		addToStream(link);
+				addToStream(link);
+			}
+		}
 	}
+
 
 
 	public void saveLinks_Between_M_M(CandidateList motherList, CandidateList fatherList, String targetCertificateID, Person bride, Person groom, String familyLine, int yearDifference) {		
@@ -128,8 +148,8 @@ public class LinksCSV {
 		HashMap<String, Candidate> motherPairedNames = motherList.candidates.get(targetCertificateID).organiseMetadata();
 		HashMap<String, Candidate> fatherPairedNames = fatherList.candidates.get(targetCertificateID).organiseMetadata();
 
-		if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID) == true) {
-			if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID) == true) {
+		if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
+			if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
 
 				String link =  motherList.sourceCertificateID + "," + // source certificateID
 						targetCertificateID + "," + // target CertificateID
@@ -157,26 +177,19 @@ public class LinksCSV {
 	}
 
 
-	public Boolean checkMinimumMatchedNames(HashMap<String, Candidate> personPairedNames, CandidateList personList, String targetCertificateID) {
-		int matchedNames = personPairedNames.size();
-		int numberNamesPerson1 = personList.sourcePerson.getNumberOfFirstNames();
-		int numberNamesPerson2 = personList.candidates.get(targetCertificateID).numberNames;
-		if(numberNamesPerson1 > 1 && numberNamesPerson2 > 1 && matchedNames < 2) {
-			return false;
-		}
-		return true;
-
-	}
-
-
 	public void saveLinks_Within_B_M(CandidateList partnerList, CandidateList motherList, CandidateList fatherList, String targetCertificateID, Person partner, Person mother, Person father, String familyLine, int yearDifference) {		
 		HashMap<String, Candidate> partnerPairedNames = partnerList.candidates.get(targetCertificateID).organiseMetadata();
 		HashMap<String, Candidate> motherPairedNames = motherList.candidates.get(targetCertificateID).organiseMetadata();
 		HashMap<String, Candidate> fatherPairedNames = fatherList.candidates.get(targetCertificateID).organiseMetadata();
 
-		String link =  partnerList.sourceCertificateID + "," + // source certificateID
-				targetCertificateID + "," + // target CertificateID
-				familyLine + "," + // family line (21:bride, 22:groom)
+
+		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
+			if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
+				if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
+
+					String link =  partnerList.sourceCertificateID + "," + // source certificateID
+							targetCertificateID + "," + // target CertificateID
+							familyLine + "," + // family line (21:bride, 22:groom)
 
 				partnerList.candidates.get(targetCertificateID).levenshteinTotal + "," + // levenshtein total newborn
 				partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + "," + // max levenshtein newborn
@@ -200,7 +213,10 @@ public class LinksCSV {
 				fatherList.candidates.get(targetCertificateID).numberNames + "," + // number of total names for the partner_father
 
 				yearDifference ;
-		addToStream(link);
+					addToStream(link);
+				}
+			}
+		}
 	}
 
 	public void saveLinks_Within_B_M_mother(CandidateList partnerList, CandidateList motherList, String targetCertificateID, Person partner, Person mother, String familyLine, int yearDifference) {		
@@ -208,9 +224,12 @@ public class LinksCSV {
 		HashMap<String, Candidate> motherPairedNames = motherList.candidates.get(targetCertificateID).organiseMetadata();
 
 
-		String link =  partnerList.sourceCertificateID + "," + // source certificateID
-				targetCertificateID + "," + // target CertificateID
-				familyLine + "," + // family line (21:bride, 22:groom)
+		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
+			if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
+
+				String link =  partnerList.sourceCertificateID + "," + // source certificateID
+						targetCertificateID + "," + // target CertificateID
+						familyLine + "," + // family line (21:bride, 22:groom)
 
 				partnerList.candidates.get(targetCertificateID).levenshteinTotal + "," + // levenshtein total newborn
 				partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + "," + // max levenshtein newborn
@@ -231,17 +250,21 @@ public class LinksCSV {
 				"N.A,N.A,N.A," + // number of matched names for the newborn_father
 
 				yearDifference ;
-		addToStream(link);
+				addToStream(link);
+			}
+		}
 	}
 
 	public void saveLinks_Within_B_M_father(CandidateList partnerList, CandidateList fatherList, String targetCertificateID, Person partner, Person father, String familyLine, int yearDifference) {		
 		HashMap<String, Candidate> partnerPairedNames = partnerList.candidates.get(targetCertificateID).organiseMetadata();
 		HashMap<String, Candidate> fatherPairedNames = fatherList.candidates.get(targetCertificateID).organiseMetadata();
 
+		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
+			if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
 
-		String link =  partnerList.sourceCertificateID + "," + // source certificateID
-				targetCertificateID + "," + // target CertificateID
-				familyLine + "," + // family line (21:bride, 22:groom)
+				String link =  partnerList.sourceCertificateID + "," + // source certificateID
+						targetCertificateID + "," + // target CertificateID
+						familyLine + "," + // family line (21:bride, 22:groom)
 
 				partnerList.candidates.get(targetCertificateID).levenshteinTotal + "," + // levenshtein total newborn
 				partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + "," + // max levenshtein newborn
@@ -265,7 +288,9 @@ public class LinksCSV {
 				fatherList.candidates.get(targetCertificateID).numberNames + "," + // number of total names for the partner_mother
 
 				yearDifference ;
-		addToStream(link);
+				addToStream(link);
+			}
+		}
 	}
 
 

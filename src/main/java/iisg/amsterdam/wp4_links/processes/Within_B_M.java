@@ -25,7 +25,7 @@ public class Within_B_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = 13, MAX_YEAR_DIFF = 80, indexingUpdateInterval = 2000, linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, bestLink;
+	private Boolean fixedLev;
 	Index indexPartner, indexMother, indexFather;
 
 	public static final Logger lg = LogManager.getLogger(Within_B_M.class);
@@ -36,7 +36,6 @@ public class Within_B_M {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
-		this.bestLink = bestLink;
 		this.myHDT = hdt;
 		String fixed = "", best = "";
 		if(fixedLev == true) {

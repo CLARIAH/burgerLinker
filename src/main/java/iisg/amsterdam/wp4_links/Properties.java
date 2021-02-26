@@ -34,6 +34,7 @@ public final class Properties {
 	public final static String PREFIX_SCHEMA = "http://schema.org/";
 	public final static String PREFIX_BIO = "http://purl.org/vocab/bio/0.1/";
 	public final static String PREFIX_DC = "http://purl.org/dc/terms/";
+	public final static String PREFIX_DBO = "http://dbpedia.org/ontology/";
 
 	// Types
 	public final static String TYPE_BIRTH_REGISTRATION = PREFIX_IISG_VOCAB + "BirthRegistration";
@@ -66,6 +67,7 @@ public final class Properties {
 	public final static String PERSON_ID = PREFIX_IISG_VOCAB + "personID";
 	public final static String GIVEN_NAME = PREFIX_SCHEMA + "givenName";
 	public final static String FAMILY_NAME = PREFIX_SCHEMA + "familyName";
+	public final static String BIRTH_YEAR = PREFIX_DBO + "birthYear"; 
 	
 	// Gender
 	public final static String GENDER = PREFIX_SCHEMA + "gender";

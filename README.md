@@ -13,7 +13,7 @@ This tool is being developed to improve and replace the current [LINKS](https://
 Historians use archival records to describe persons' lives. Each record (e.g. a marriage record) just describes a point in time. Hence historians try to link multiple records on the same person to describe a life course. This tool focuses on "just" the linkage of civil records. By doing so, pedigrees of humans can be created over multiple generations for research on social inequality, especially in the part of health sciences where the focus is on gene-social contact interactions.
 
 ### User profile
-The software is designed for the so called "digital historians" (e.g. someone with basic command line skills) who are interested in using the Dutch civil registries for their studies or linking their data to it.
+The software is designed for the so called "digital historians" (e.g. someone with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
 
 ### Data
 In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/civil-registries-schema.ttl). An overview of the Civil Registries schema is available as a [PNG file](assets/civil-registries-schema.png).
@@ -27,15 +27,20 @@ The only other set of initiatives that we are aware of are bespoke programming i
 
 ---
 
+### Operating Systems
+- This tool is tested on Linux and Mac OS.
+- Windows users are advised to use the Docker image.
+
+
 ### Installation requirements
 - Only the [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), which is free and installed on almost every computer these days.
 
 ### Input requirements
 - Only one RDF dataset, describing the civil registries that are modelled according to our simple [Civil Registries schema](assets/LINKS-schema.png), based on Schema.org and BIO vocabularies. You can browse the [RDF file](assets/civil-registries-schema.ttl) in any triple store (e.g. [Druid](https://druid.datalegend.net/)) or ontology editor (e.g. [Protégé](https://protege.stanford.edu/)).
 
-For efficient querying (i.e. lower memory usage with fast search), the matching tool requires the dataset to be compressed and given as an HDT file with its index ([What is HDT?](http://www.rdfhdt.org/what-is-hdt/)).
+For efficient querying (i.e. lower memory usage with fast search), the matching tool requires the dataset to be compressed and given as an HDT file with its index. [What is HDT?](http://www.rdfhdt.org/what-is-hdt/)
 
-The tool allows the conversion of an RDF file (any serialisation) to HDT using the `--function convertToHDT`.
+The tool allows the conversion of any valid RDF file to HDT using the `--function convertToHDT` (see Example 2 below).
 
 ### Output format
 Two possible output formats to represent the detected links:
@@ -43,7 +48,7 @@ Two possible output formats to represent the detected links:
 - N-QUADS file (it can be specified in the parameters of the tool using `--format RDF`)
 
 ### Main dependencies
-The code of this tool make use of two main libraries:
+This tool mainly rely on two open-source libraries:
 - [Levenshtein automata](https://github.com/universal-automata/liblevenshtein-java) (MIT License)
 - [RDF-HDT](https://github.com/rdfhdt/hdt-java) (LGPL License)
 
@@ -77,7 +82,7 @@ Parameters that can be provided as input to the linking tool:
 
 ---
 
-## Examples
+### Examples
 
 - Example 1. Run the help command of the software:
 
@@ -85,7 +90,36 @@ Parameters that can be provided as input to the linking tool:
 
 ---
 
-- Example 2. Link *parents of newborns* to *brides & grooms*:
+- Example 2. Generate an HDT file and its index from an RDF dataset:
+
+`java -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
+
+This will generate the HDT file 'myCivilRegistries.hdt' and its index 'myCivilRegistries.hdt.index' in the same directory.
+The index should be kept in the same directory of the HDT file to speed up all queries.
+
+:warning:
+
+This is the most memory-intensive step of the tool. Therefore, for avoiding running out of memory for larger datasets, we recommend (i) running this step on a machine with enough memory, and (ii) changing the initial lower bound and upper bound of the JAVA heap memory size, by adding the `-Xms` and `-Xmx` flags.
+
+As an example, here are the flags used for generating the HDT file of all Dutch birth and marriage certificates:
+
+`java -Xms32g -Xmx48g -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
+
+---
+
+- Example 3. Merge two HDT files into one:
+
+`java -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . `
+
+This will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory.
+
+:warning:
+
+The two HDT files given as input are only separated by `,` (without empty space)
+
+---
+
+- Example 4. Link *parents of newborns* to *brides & grooms*:
 
 `java -jar burgerLinker.jar --function Between_B_M --inputData dataDirectory/myCivilRegistries.hdt --outputDir . --format CSV  --maxLev 3 --fixedLev`
 
@@ -100,21 +134,26 @@ These arguments indicate that the user wants to:
 
 ---
 
-- Example 3. Generate an HDT file and its index from an RDF dataset:
+- Example 5. Family Reconstruction
 
-`java -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
+`java -jar burgerLinker.jar --function closure --inputData dataDirectory/myCivilRegistries.hdt --outputDir myResultsDirectory `
 
-This will generate the HDT file 'myCivilRegistries.hdt' and its index 'myCivilRegistries.hdt.index' in the same directory.
-The index should be kept in the same directory of the HDT file to speed up all queries.
+This command computes the transitive closure of all links existing in the directory `myResultsDirectory`, and generates a new `finalDataset.nt.gz` dataset in this directory by replacing all matched individuals' identifiers from the `myCivilRegistries.hdt` input dataset with the same unique identifier.
 
----
+**How?**
 
-- Example 4. Merge two HDT files into one:
+The directory `myResultsDirectory` must contain the CSV files that resulted from the linking functions described above, without changing the file names (the tool finds these files using a regular expression search in this directory). It can contain one or all the following CSV files, with X being any integer from 0 to 4:
+- within-B-M-maxLev-X.csv
+- between-B-M-maxLev-X.csv
+- between-M-M-maxLev-X.csv
 
-`java -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . `
+The function will first transform the links in these CSV files, that are asserted between identifiers of certificates, into links between individuals. Since identity links are transitive and symmetric, this function computes the transitive closure of all these transformed individual links, and generates new identifiers for each resulted equivalence class.
 
-This will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory.
-The two input HDT files are separated by a comma ',' without a space)
+Example:
+- :newborn1 owl:sameAs :bride1
+- :bride1 owl:sameAs :mother1
+
+This means that all these identifiers (:newborn1, :bride1, and :mother1) refer to the same individual, appearing in different roles in different civil certificates. This function generates a new dataset, replacing all occurrences of these three identifiers with a single unique identifier (e.g. :i-1). This process allows the reconstruction of historical families, without the need of writing complex queries or following a large number of identity links across the dataset.
 
 ---
 

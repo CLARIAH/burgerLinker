@@ -31,7 +31,7 @@ public class Between_M_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = 14, MAX_YEAR_DIFF = 100, indexingUpdateInterval = 2000, linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, bestLink;
+	private Boolean fixedLev;
 	Index indexBride, indexGroom;
 
 	public static final Logger lg = LogManager.getLogger(Between_M_M.class);
@@ -42,7 +42,6 @@ public class Between_M_M {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
-		this.bestLink = bestLink;
 		this.myHDT = hdt;
 		String fixed = "", best = "";
 		if(fixedLev == true) {
