@@ -16,7 +16,7 @@ Historians use archival records to describe persons' lives. Each record (e.g. a 
 The software is designed for the so called "digital historians" (e.g. someone with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
 
 ### Data
-In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/civil-registries-schema.ttl). An overview of the Civil Registries schema is available as a [PNG file](assets/civil-registries-schema.png).
+In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/LINKS-schema.ttl). An overview of the Civil Registries schema is available as a [PNG file](assets/LINKS-schema.png).
 
 ### Previous work
 So far, (Dutch) civil records have been linked by bespoke programming by researchers, sometimes supported by engineers. Specifically the IISG-LINKS program has a pipeline to link these records and provide them to the Central Bureau of Genealogy (CBG). Because the number of records has grown over time and the IISG-LINKS takes an enormous amount of time (weeks) to LINK all records currently present, *burgerLinker* is designed to do this much faster (full sample takes less than 48 hours).
@@ -36,7 +36,7 @@ The only other set of initiatives that we are aware of are bespoke programming i
 - Only the [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), which is free and installed on almost every computer these days.
 
 ### Input requirements
-- Only one RDF dataset, describing the civil registries that are modelled according to our simple [Civil Registries schema](assets/LINKS-schema.png), based on Schema.org and BIO vocabularies. You can browse the [RDF file](assets/civil-registries-schema.ttl) in any triple store (e.g. [Druid](https://druid.datalegend.net/)) or ontology editor (e.g. [Protégé](https://protege.stanford.edu/)).
+- Only one RDF dataset, describing the civil registries that are modelled according to our simple [Civil Registries schema](assets/LINKS-schema.png), based on Schema.org and BIO vocabularies. You can browse the [RDF file](assets/LINKS-schema.ttl) in any triple store (e.g. [Druid](https://druid.datalegend.net/)) or ontology editor (e.g. [Protégé](https://protege.stanford.edu/)).
 
 For efficient querying (i.e. lower memory usage with fast search), the matching tool requires the dataset to be compressed and given as an HDT file with its index. [What is HDT?](http://www.rdfhdt.org/what-is-hdt/)
 
