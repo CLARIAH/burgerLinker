@@ -1,0 +1,382 @@
+{
+ "@id": "https://iisg.amsterdam/Geboorteakten_1856_CoD_clean.csv",
+ "@context": [
+  "https://raw.githubusercontent.com/CLARIAH/COW/master/csvw.json",
+  {
+   "@language": "en",
+   "@base": "https://iisg.amsterdam/links/"
+  },
+  {
+   "bibo": "http://purl.org/ontology/bibo/",
+   "bio": "http://purl.org/vocab/bio/0.1/",
+   "canfam": "https://iisg.amsterdam/canfam/dataset/canada1901/",
+   "canfam-auke": "https://iisg.amsterdam/canfam/auke/",
+   "canfam-dimension": "http://data.socialhistory.org/vocab/canfam/dimension/",
+   "clio": "https://iisg.amsterdam/clio/",
+   "clioctr": "https://iisg.amsterdam/clio/country/",
+   "clioind": "https://iisg.amsterdam/clio/indicator/",
+   "clioprop": "https://iisg.amsterdam/clio/property/",
+   "csvw": "http://www.w3.org/ns/csvw#",
+   "dbo": "http://dbpedia.org/ontology/",
+   "dbp": "http://dbpedia.org/property/",
+   "dbpedia": "http://dbpedia.org/resource/",
+   "dbr": "http://dbpedia.org/resource/",
+   "dc": "http://purl.org/dc/terms/",
+   "dc11": "http://purl.org/dc/elements/1.1/",
+   "dcterms": "http://purl.org/dc/terms/",
+   "foaf": "http://xmlns.com/foaf/0.1/",
+   "hiscam": "https://iisg.amsterdam/hiscam/",
+   "hisclass": "https://iisg.amsterdam/hisclass/",
+   "hisclass5": "https://iisg.amsterdam/hisclass5/",
+   "hisco": "https://iisg.amsterdam/hisco/",
+   "hisco-product": "https://iisg.amsterdam/hisco/product/",
+   "hisco-relation": "https://iisg.amsterdam/hisco/relation/",
+   "hisco-status": "https://iisg.amsterdam/hisco/status/",
+   "hsn": "https://iisg.amsterdam/hsn2013a/",
+   "ldp": "http://www.w3.org/ns/ldp#",
+   "microheights": "https://iisg.amsterdam/microheights/",
+   "napp": "https://iisg.amsterdam/napp/",
+   "napp-can91": "https://iisg.amsterdam/napp/dataset/canada1891/",
+   "napp-dimension": "http://data.socialhistory.org/vocab/napp/dimension/",
+   "napp-eng81": "https://iisg.amsterdam/napp/dataset/englandwales1881/",
+   "napp-sct81": "https://iisg.amsterdam/napp/dataset/scotland1881/",
+   "np": "http://www.nanopub.org/nschema#",
+   "occhisco": "https://iisg.amsterdam/napp/OCCHISCO/",
+   "owl": "http://www.w3.org/2002/07/owl#",
+   "prov": "http://www.w3.org/ns/prov#",
+   "qb": "http://purl.org/linked-data/cube#",
+   "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+   "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+   "schema": "http://schema.org/",
+   "sdmx-code": "http://purl.org/linked-data/sdmx/2009/code#",
+   "sdmx-concept": "http://purl.org/linked-data/sdmx/2009/concept#",
+   "sdmx-dimension": "http://purl.org/linked-data/sdmx/2009/dimension#",
+   "sdmx-measure": "http://purl.org/linked-data/sdmx/2009/measure#",
+   "sdr": "https://iisg.amsterdam/",
+   "sdv": "https://iisg.amsterdam/vocab/",
+   "skos": "http://www.w3.org/2004/02/skos/core#",
+   "time": "http://www.w3.org/2006/time#",
+   "xml": "http://www.w3.org/XML/1998/namespace/",
+   "xsd": "http://www.w3.org/2001/XMLSchema#"
+  }
+ ],
+ "url": "Geboorteakten_1856_CoD_clean.csv",
+ "dialect": {
+  "delimiter": ";",
+  "encoding": "utf-8",
+  "quoteChar": "\""
+ },
+ "dc:title": "Geboorteakten_1856_CoD_clean.csv",
+ "dcat:keyword": [],
+ "dc:publisher": {
+  "schema:name": "CLARIAH Structured Data Hub - Datalegend",
+  "schema:url": {
+   "@id": "http://datalegend.net"
+  }
+ },
+ "dc:license": {
+  "@id": "http://opendefinition.org/licenses/cc-by/"
+ },
+ "dc:modified": {
+  "@value": "2020-10-22",
+  "@type": "xsd:date"
+ },
+ "tableSchema": {
+  "columns": [
+   {
+    "virtual": "true",
+    "@id": "https://iisg.amsterdam/Geboorteakten_1856_CoD_clean.csv/column/id",
+    "name": "id",
+    "titles": ["id"],
+    "propertyUrl": "https://iisg.amsterdam/links/vocab/originalID",
+    "dc:description": "original id number",
+    "datatype": "int"
+   },
+   {
+   "virtual": "true",
+   "aboutUrl": "person/b-{{(id|int * 3) + 1}}",
+   "datatype": "int",
+   "propertyUrl": "https://iisg.amsterdam/links/vocab/personID",
+   "csvw:value":"{{(id|int * 3) + 1 }}"
+ },
+ {
+ "virtual": "true",
+ "datatype": "int",
+ "aboutUrl":"person/b-{{(id|int * 3) + 2}}",
+ "propertyUrl": "https://iisg.amsterdam/links/vocab/personID",
+ "csvw:value":"{{(id|int * 3) + 2 }}"
+},
+{
+"virtual": "true",
+"datatype": "int",
+"aboutUrl":"person/b-{{(id|int * 3) + 3}}",
+"propertyUrl": "https://iisg.amsterdam/links/vocab/personID",
+"csvw:value":"{{(id|int * 3) + 3 }}"
+},
+ {
+ "virtual": "true",
+ "aboutUrl": "person/b-{{(id|int * 3) + 1}}",
+ "propertyUrl": "rdf:type",
+ "valueUrl": "schema:Person"
+ },
+ {
+ "virtual": "true",
+ "propertyUrl": "rdf:type",
+ "aboutUrl":"person/b-{{(id|int * 3) + 2}}",
+ "valueUrl": "schema:Person"
+ },
+ {
+ "virtual": "true",
+ "propertyUrl": "rdf:type",
+ "aboutUrl":"person/b-{{(id|int * 3) + 3}}",
+ "valueUrl": "schema:Person"
+ },
+ {
+ "virtual": "true",
+ "aboutUrl":"event/b-{id}",
+ "propertyUrl": "https://iisg.amsterdam/links/vocab/newborn",
+ "valueUrl": "person/b-{{(id|int * 3) + 1}}"
+ },
+ {
+ "virtual": "true",
+ "aboutUrl":"event/b-{id}",
+ "propertyUrl": "https://iisg.amsterdam/links/vocab/father",
+ "valueUrl":"person/b-{{(id|int * 3) + 2}}"
+ },
+ {
+ "virtual": "true",
+ "aboutUrl":"event/b-{id}",
+ "propertyUrl": "https://iisg.amsterdam/links/vocab/mother",
+ "valueUrl":"person/b-{{(id|int * 3) + 3}}"
+ },
+  {
+  "@id": "https://iisg.amsterdam/Geboorteakten_1856_CoD_clean.csv/column/bladnummer",
+  "name": "bladnummer",
+  "titles": [ "bladnummer"],
+  "propertyUrl": "vocab/page_source",
+  "dc:description": "page number of source",
+  "datatype": "string"
+ },
+ {
+  "virtual": "true",
+  "name": "voornamen_vader",
+  "titles": ["voornamen_vader"],
+  "aboutUrl": "person/b-{{(id|int * 3) + 2}}",
+  "propertyUrl": "schema:givenName",
+  "dc:description": "given name",
+  "csvw:value": "{{voornamen_vader|lower()}}",
+  "datatype": "string"
+ },
+   {
+  "virtual": "true",
+  "name": "beroep_vader",
+  "titles": [ "beroep_vader" ],
+  "aboutUrl": "person/b-{{(id|int * 3) + 2}}",
+  "propertyUrl": "schema:hasOccupation",
+  "valueUrl": "occupation/{{beroep_vader}}",
+  "dc:description": "occupation",
+  "datatype": "string",
+  "null": [""]
+ },
+ {
+  "virtual": "true",
+  "name": "leeftijd_vader",
+  "titles": ["leeftijd_vader"],
+  "aboutUrl": "person/b-{{(id|int * 3) + 2}}",
+  "dc:description": "age in years",
+  "datatype": "int",
+  "propertyUrl": "https://iisg.amsterdam/links/vocab/ageYears",
+  "csvw:value":"{leeftijd_vader}",
+  "null": [""]
+ },
+ {
+ "virtual": "true",
+ "aboutUrl":"event/b-{id}",
+ "propertyUrl": "rdf:type",
+ "valueUrl": "bio:Birth"
+ },
+ {
+ "virtual": "true",
+ "datatype": "date",
+ "name": "datum_geboorte",
+ "aboutUrl":"event/b-{id}",
+ "propertyUrl": "bio:date",
+ "csvw:value": "{datum_geboorte}",
+ "null": [""]
+ },
+ {
+  "virtual": "true",
+  "name": "straatnaam",
+  "titles": [ "straatnaam"],
+  "propertyUrl": "vocab/event_streetName",
+  "aboutUrl":"event/b-{id}",
+  "dc:description": "street name",
+  "valueUrl": "event_streetName/{straatnaam}",
+  "datatype": "string"
+ },
+ {
+  "virtual": "true",
+  "name": "straatnaam",
+  "titles": [ "straatnaam"],
+  "propertyUrl": "rdfs:label",
+  "aboutUrl":"event_streetName/{straatnaam}",
+  "dc:description": "street name label",
+  "datatype": "string"
+ },
+ {
+  "virtual": "true",
+  "name": "buurt",
+  "titles": [ "buurt"],
+  "propertyUrl": "vocab/event_districtName",
+  "aboutUrl":"event/b-{id}",
+  "dc:description": "district name",
+  "valueUrl": "event_districtName/{buurt}",
+  "datatype": "string"
+ },
+ {
+  "virtual": "true",
+  "name": "buurt",
+  "aboutUrl":"event_districtName/{buurt}",
+  "propertyUrl": "rdfs:label",
+  "dc:description": "district name label",
+  "datatype": "string",
+  "csvw:value": "{% if buurt == 'IJIJ' %}Buurt YY{% else %}Buurt {{buurt|upper()}}{% endif %}"
+ },
+ {
+  "virtual": "true",
+  "name": "huisnummerummer",
+  "titles": [  "huisnummerummer"],
+  "propertyUrl": "vocab/houseNumber",
+  "aboutUrl":"event/b-{id}",
+  "dc:description": "house number",
+  "datatype": "int"
+ },
+ {
+  "virtual": "true",
+  "aboutUrl":"event/{id}",
+  "name": "huisnummertoevoeging",
+  "propertyUrl": "vocab/houseNumberAdditional",
+  "titles": [  "huisnummertoevoeging"],
+  "dc:description": "huisnummertoevoeging",
+  "datatype": "string"
+ },
+  {
+  "virtual": "true",
+  "aboutUrl":"event/b-{id}",
+  "name": "jaar_geboorte",
+  "titles": [  "jaar_geboorte"],
+  "propertyUrl": "vocab/year",
+  "dc:description": "event year",
+  "datatype": "string"
+ },
+ {
+  "name": "geslacht_kind",
+  "titles": [ "geslacht_kind"],
+  "dc:description": "sex",
+  "propertyUrl": "schema:gender",
+  "dc:description": "sex",
+  "csvw:value": "{% if geslacht_kind =='man' %}m{% elif geslacht_kind =='vrouw' %}f{% endif %}",
+  "datatype": "string"
+   },
+ {
+  "virtual": "true",
+  "aboutUrl":"person/b-{{(id|int * 3) + 3}}",
+  "name": "voornamen_moeder",
+  "titles": [ "voornamen_moeder"],
+  "dc:description": "given name",
+  "propertyUrl": "schema:givenName",
+  "csvw:value": "{{voornamen_moeder|lower()}}",
+  "null": [""],
+  "datatype": "string"
+ },
+ {
+  "virtual": "true",
+  "aboutUrl":"person/b-{{(id|int * 3) + 3}}",
+  "name": "achternaam_moeder",
+  "titles": [ "achternaam_moeder"  ],
+  "dc:description": "family name",
+  "propertyUrl": "schema:familyName",
+  "csvw:value": "{{achternaam_moeder|lower()}}",
+  "null": [""],
+  "datatype": "string"
+ },
+  {
+  "virtual": "true",
+  "aboutUrl":"person/b-{{(id|int * 3) + 3}}",
+  "name": "huwelijkse_staat_moeder",
+  "titles": [   "huwelijkse_staat_moeder"],
+  "propertyUrl": "vocab/maritalStatus",
+  "dc:description": "huwelijkse_staat_moeder",
+  "valueUrl": "maritalStatus/{% if huwelijkse_staat_moeder =='ongehuwd'%}unmarried{% elif huwelijkse_staat_moeder =='gehuwd'%}married{% elif huwelijkse_staat_moeder =='weduwe'%}widow{% endif %}",
+  "datatype": "string"
+ },
+ {
+  "name": "voornamen_kind",
+  "titles": ["voornamen_kind"],
+  "dc:description": "given name",
+  "propertyUrl": "schema:givenName",
+  "csvw:value": "{{voornamen_kind|lower()}}",
+  "datatype": "string"
+ },
+ {
+ "virtual": "true",
+ "name": "achternaam_vader_clean",
+ "titles": [ "achternaam_vader_clean"],
+ "dc:description": "family name",
+ "aboutUrl": "person/b-{{(id|int * 3) + 2}}",
+ "propertyUrl": "schema:familyName",
+ "csvw:value": "{{achternaam_vader_clean|lower()}}",
+ "datatype": "string"
+  },
+  {
+  "name": "achternaam_kind_clean",
+  "titles": [ "achternaam_kind_clean"],
+  "dc:description": "family name",
+  "propertyUrl": "schema:familyName",
+  "csvw:value": "{{achternaam_vader_clean|lower()}}",
+  "datatype": "string"
+   },
+   {
+    "virtual": "true",
+    "datatype": "string",
+    "propertyUrl": "https://iisg.amsterdam/links/vocab/prefixFamilyName",
+    "name": "voorvoegsel_achternaam_kind"
+   },
+   {
+    "virtual": "true",
+    "titles": [ "voorvoegsel_achternaam_vader"],
+    "datatype": "string",
+    "aboutUrl": "person/b-{{(id|int * 3) + 2}}",
+    "propertyUrl": "https://iisg.amsterdam/links/vocab/prefixFamilyName",
+    "name": "voorvoegsel_achternaam_vader"
+   },
+ {
+  "virtual": "true",
+  "aboutUrl":"event/b-{id}",
+  "name": "datum_erkenning",
+  "propertyUrl": "vocab/recognitionDate",
+  "titles": ["datum_erkenning"],
+  "dc:description": "date of recognition by father (not standardized)",
+  "datatype": "string",
+  "null": [""]
+ },
+ {
+  "virtual": "true",
+  "aboutUrl":"event/b-{id}",
+  "name": "opmerkingen",
+  "propertyUrl": "vocab/remark",
+  "titles": ["opmerkingen"],
+  "dc:description": "remark",
+  "datatype": "string"
+ },
+ {
+"virtual": "true",
+"aboutUrl":"event/b-{id}",
+"propertyUrl": "rdf:type",
+"valueUrl": "bio:Birth"
+}
+  ],
+  "primaryKey": "id",
+  "aboutUrl": "person/b-{{(id|int * 3) + 1}}"
+ }
+}
