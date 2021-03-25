@@ -16,7 +16,7 @@ Historians use archival records to describe persons' lives. Each record (e.g. a 
 The software is designed for the so called "digital historians" (e.g. someone with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
 
 ### Data
-In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/civil-registries-schema.ttl). An overview of the Civil Registries schema is available as a [PNG file](assets/civil-registries-schema.png).
+In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/LINKS-schema.ttl). An overview of the Civil Registries schema is available as a [PNG file](/assets/LINKS-schema.png).
 
 ### Previous work
 So far, (Dutch) civil records have been linked by bespoke programming by researchers, sometimes supported by engineers. Specifically the IISG-LINKS program has a pipeline to link these records and provide them to the Central Bureau of Genealogy (CBG). Because the number of records has grown over time and the IISG-LINKS takes an enormous amount of time (weeks) to LINK all records currently present, *burgerLinker* is designed to do this much faster (full sample takes less than 48 hours).
