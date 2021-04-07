@@ -1,0 +1,13 @@
+"id_person";"id_registration";"registration_maintype";"firstname";"prefix";"familyname";"sex";"civil_status";"role";"occupation";"age_day";"age_week";"age_month";"age_year";"birth_date";"birth_date_flag";"birth_day";"birth_month";"birth_year";"birth_location";"death";"stillbirth";"death_date_flag";"death_day";"death_month";"death_year";"death_location";"mar_date";"mar_date_flag";"mar_day";"mar_month";"mar_year";"mar_location"
+1;1;1;"johannes franciescus";;"stevens";"m";;1;;;;;;"23-12-1833";1;23;12;1833;527;"a";"";0;0;0;0;;;0;0;0;0;
+2;1;1;"joos";;"stevens";"m";;3;;;;;;;0;0;0;0;;"n";"";0;0;0;0;;;0;0;0;0;
+3;1;1;"franciesca";"de";"laat";"f";;2;;;;;;;0;0;0;0;;"n";"";0;0;0;0;;;0;0;0;0;
+2104200;700000;2;"jan karel";;"meeuwse";"m";;7;"timmerman";;;;27;;0;0;0;0;166;"a";"";0;0;0;0;;"07-09-1928";1;7;9;1928;2482
+2104201;700000;2;"cornelis";;"meeuwse";"m";;9;"veldarbeider";;;;;;0;0;0;0;;"a";"";0;0;0;0;;;0;0;0;0;
+2104202;700000;2;"tannetje";;"crucq";"f";;8;"zonder beroep";;;;;;0;0;0;0;;"a";"";0;0;0;0;;;0;0;0;0;
+2104203;700000;2;"neeltje";"van";"eennennaam";"f";;4;"zonder beroep";;;;22;;0;0;0;0;2482;"a";"";0;0;0;0;;"07-09-1928";1;7;9;1928;2482
+2104204;700000;2;"pieter";"van";"eennennaam";"m";;6;"veldarbeider";;;;;;0;0;0;0;;"a";"";0;0;0;0;;;0;0;0;0;
+2104205;700000;2;"neeltje";;"kaat";"f";;5;"zonder beroep";;;;;;0;0;0;0;;"a";"";0;0;0;0;;;0;0;0;0;
+4306070;1200000;3;"dignus";;"kik";"m";;10;;0;0;9;0;;0;0;0;0;2507;"a";"";1;25;4;1890;2507;;0;0;0;0;
+4306071;1200000;3;"cornelis";;"kik";"m";;3;"hoefsmid";;;;48;;0;0;0;0;;"a";"";0;0;0;0;;;0;0;0;0;
+4306072;1200000;3;"neeltje";"van";"nieuwenhuijzen";"f";;2;"zonder beroep";;;;;;0;0;0;0;;"a";"";0;0;0;0;;;0;0;0;0;

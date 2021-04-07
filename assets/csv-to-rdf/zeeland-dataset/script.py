@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import pandas as pd
 import math
 import numpy as np
@@ -6,59 +9,65 @@ import collections
 import re
 from datetime import datetime
 
-NAMESPACE = "https://iisg.amsterdam/"
-DATASET_NAME = "links/"
 
-PREFIX_IISG = NAMESPACE + DATASET_NAME
-PREFIX_IISG_VOCAB = PREFIX_IISG + "vocab/"
+# change the value of the variable below to create IRIs with different dataset name
+# Example:  https://iisg.amsterdam/id/<DATASET_NAME>/event/1
+
+DATASET_NAME = "zeeland"
+
+PREFIX_CIV_VOCAB = "https://iisg.amsterdam/id/civ/"
+PREFIX_DATASET = "https://iisg.amsterdam/id/" + DATASET_NAME + "/"
 PREFIX_SCHEMA = "http://schema.org/"
 PREFIX_BIO = "http://purl.org/vocab/bio/0.1/"
-PREFIX_DC = "http://purl.org/dc/terms/"
-PREFIX_FOAF = "http://xmlns.com/foaf/0.1/"
+PREFIX_DCT = "http://purl.org/dc/terms/"
 
-TYPE_BIRTH_REGISTRATION = PREFIX_IISG_VOCAB + "BirthRegistration"
-TYPE_BIRTH_EVENT = PREFIX_BIO + "Birth"
-MARRIAGE_REGISTRATION = PREFIX_IISG_VOCAB + "MarriageRegistration"
-TYPE_MARRIAGE_EVENT = PREFIX_BIO + "Marriage"
-TYPE_DEATH_REGISTRATION = PREFIX_IISG_VOCAB + "DeathRegistration"
-TYPE_DEATH_EVENT = PREFIX_BIO + "Death"
-TYPE_DIVORCE_REGISTRATION = PREFIX_IISG_VOCAB + "DivorceRegistration"
+TYPE_BIRTH = PREFIX_CIV_VOCAB + "Birth"
+TYPE_MARRIAGE = PREFIX_CIV_VOCAB + "Marriage"
+TYPE_DEATH = PREFIX_CIV_VOCAB + "Death"
+TYPE_DIVORCE = PREFIX_CIV_VOCAB + "Divorce"
+TYPE_UKNOWN = PREFIX_CIV_VOCAB + "Uknown"
 TYPE_PERSON = PREFIX_SCHEMA + "Person"
 TYPE_PLACE = PREFIX_SCHEMA + "Place"
-TYPE_COUNTRY = PREFIX_IISG + "Country"
-TYPE_REGION = PREFIX_IISG + "Region"
-TYPE_PROVINCE = PREFIX_IISG + "Province"
-TYPE_MUNICIPALITY = PREFIX_IISG + "Municipality"
+TYPE_COUNTRY = PREFIX_CIV_VOCAB + "Country"
+TYPE_REGION = PREFIX_CIV_VOCAB + "Region"
+TYPE_PROVINCE = PREFIX_CIV_VOCAB + "Province"
+TYPE_MUNICIPALITY = PREFIX_CIV_VOCAB + "Municipality"
 
 RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 OWL_SAMEAS = "http://www.w3.org/2002/07/owl#sameAs"
-REGISTER_EVENT = PREFIX_IISG_VOCAB + "registerEvent"
-LOCATION = PREFIX_SCHEMA + "location"
-DATE = PREFIX_BIO + "date"
-REGISTRATION_ID = PREFIX_IISG_VOCAB + "registrationID"
-REGISTRATION_SEQUENCE = PREFIX_IISG_VOCAB + "registrationSeqID"
-BIRTH_DATE_FLAG = PREFIX_IISG_VOCAB + "birthDateFlag"
 
-PERSON_ID = PREFIX_IISG_VOCAB + "personID"
+EVENT_LOCATION = PREFIX_CIV_VOCAB + "eventLocation"
+EVENT_DATE = PREFIX_CIV_VOCAB + "eventDate"
+REGISTRATION_LOCATION = PREFIX_CIV_VOCAB + "registrationLocation"
+REGISTRATION_DATE = PREFIX_CIV_VOCAB + "registrationDate"
+REGISTRATION_ID = PREFIX_CIV_VOCAB + "registrationID"
+REGISTRATION_SEQUENCE = PREFIX_CIV_VOCAB + "registrationSeqID"
+
+
+BIRTH_DATE_FLAG = PREFIX_CIV_VOCAB + "birthDateFlag"
+
+PERSON_ID = PREFIX_CIV_VOCAB + "personID"
 GIVEN_NAME = PREFIX_SCHEMA + "givenName"
 FAMILY_NAME = PREFIX_SCHEMA + "familyName"
 GENDER = PREFIX_SCHEMA + "gender"
-OCCUPATION = PREFIX_SCHEMA + "hasOccupation"
-FAMILY_NAME_PREFIX = PREFIX_IISG_VOCAB + "prefixFamilyName"
-AGE = PREFIX_FOAF + "age"
+OCCUPATION = PREFIX_CIV_VOCAB + "occupationTitle"
+FAMILY_NAME_PREFIX = PREFIX_CIV_VOCAB + "prefixFamilyName"
+AGE = PREFIX_CIV_VOCAB + "age"
 
-ROLE_NEWBORN = PREFIX_IISG_VOCAB + "newborn"
-ROLE_MOTHER = PREFIX_IISG_VOCAB + "mother"
-ROLE_FATHER = PREFIX_IISG_VOCAB + "father"
-ROLE_DECEASED = PREFIX_IISG_VOCAB + "deceased"
-ROLE_DECEASED_PARTNER = PREFIX_IISG_VOCAB + "deceasedPartner"
-ROLE_BRIDE = PREFIX_IISG_VOCAB + "bride"
-ROLE_BRIDE_MOTHER = PREFIX_IISG_VOCAB + "motherBride"
-ROLE_BRIDE_FATHER = PREFIX_IISG_VOCAB + "fatherBride"
-ROLE_GROOM = PREFIX_IISG_VOCAB + "groom"
-ROLE_GROOM_MOTHER = PREFIX_IISG_VOCAB + "motherGroom"
-ROLE_GROOM_FATHER = PREFIX_IISG_VOCAB + "fatherGroom"
-ROLE_UNKNOWN = PREFIX_IISG_VOCAB + "unknown"
+ROLE_NEWBORN = PREFIX_CIV_VOCAB + "newborn"
+ROLE_MOTHER = PREFIX_CIV_VOCAB + "mother"
+ROLE_FATHER = PREFIX_CIV_VOCAB + "father"
+ROLE_DECEASED = PREFIX_CIV_VOCAB + "deceased"
+ROLE_PARTNER = PREFIX_CIV_VOCAB + "partner"
+ROLE_BRIDE = PREFIX_CIV_VOCAB + "bride"
+ROLE_BRIDE_MOTHER = PREFIX_CIV_VOCAB + "motherBride"
+ROLE_BRIDE_FATHER = PREFIX_CIV_VOCAB + "fatherBride"
+ROLE_GROOM = PREFIX_CIV_VOCAB + "groom"
+ROLE_GROOM_MOTHER = PREFIX_CIV_VOCAB + "motherGroom"
+ROLE_GROOM_FATHER = PREFIX_CIV_VOCAB + "fatherGroom"
+ROLE_UNKNOWN = PREFIX_CIV_VOCAB + "unknown"
+
+
 
 def isNaN(num):
     if num == "\\N" or num == "":
@@ -75,14 +84,14 @@ def isNaN_Number(num):
 def transformToInt(someNumber):
     return '"' + str(someNumber) + '"^^<http://www.w3.org/2001/XMLSchema#int>'
 
-def transformToString(someWord):
-    return '"' + str(someWord) + '"^^<http://www.w3.org/2001/XMLSchema#string>'
+def transformToString(someString):
+    return '"' + str(someString) + '"^^<http://www.w3.org/2001/XMLSchema#string>'
 
 def transformToDate(someDate):
     return '"' + str(someDate) + '"^^<http://www.w3.org/2001/XMLSchema#date>'
 
 def createQuad(s, p, o):
-    return s + ' ' + p + ' ' + o + ' <https://iisg.amsterdam/links/persons/assertion> .\n'
+    return s + ' ' + p + ' ' + o + ' <https://druid.datalegend.net/LINKS/civ/graphs/' + DATASET_NAME + '> .\n'
 
 def getRole(role_number, registrationID):
     if str(role_number) == '1':
@@ -106,44 +115,46 @@ def getRole(role_number, registrationID):
     if str(role_number) == '10':
         return ROLE_DECEASED
     if str(role_number) == '11':
-        return ROLE_DECEASED_PARTNER
+        return ROLE_PARTNER
     else:
         print("Role number:", role_number, "- Certificate ID:", registrationID)
         return "UNKNOWN"
 
-def createRegistrationURI(registrationID):
-    return "<" + PREFIX_IISG + "registration/" + (str(registrationID)) + ">"
-
-def createPersonURI(personID):
-    return "<" + PREFIX_IISG + "person/" + (str(personID)) + ">"
 
 def createEventURI(registrationID):
-    return "<" + PREFIX_IISG + "event/" + (str(registrationID)) + ">"
+    return "<" + PREFIX_DATASET + "event/e-" + (str(registrationID)) + ">"
+
+def createPersonURI(personID):
+    return "<" + PREFIX_DATASET + "person/p-" + (str(personID)) + ">"
 
 def createTripleRegistrationID(registrationURI, registrationID):
-    p = "<" + PREFIX_IISG_VOCAB + "registrationID" + ">"
+    p = "<" + PREFIX_CIV_VOCAB + "registrationID" + ">"
     o = transformToInt(registrationID)
     return createQuad(registrationURI,p,o)
 
-def createRegistrationTypeURI(registrationType):
+def createRegistrationTypeURI(registrationType, registrationMainType):
     if registrationType == 'g':
-        return "<" + PREFIX_IISG_VOCAB + "BirthRegistration" + ">"
+        return "<" + TYPE_BIRTH + ">"
     if registrationType == 'h':
-        return "<" + PREFIX_IISG_VOCAB + "MarriageRegistration" + ">"
+        return "<" + TYPE_MARRIAGE + ">"
     if registrationType == 'o':
-        return "<" + PREFIX_IISG_VOCAB + "DeathRegistration" + ">"
+        return "<" + TYPE_DEATH + ">"
     if registrationType == 's':
-        return "<" + PREFIX_IISG_VOCAB + "DivorceRegistration" + ">"
+        return "<" + TYPE_DIVORCE + ">"
     else:
-        return "<" + PREFIX_IISG_VOCAB + "MarriageRegistration" + ">"
+        if str(registrationMainType) == '1':
+            return "<" + TYPE_BIRTH + ">"
+        if str(registrationMainType) == '2':
+            return "<" + TYPE_MARRIAGE + ">"
+        if str(registrationMainType) == '3':
+            return "<" + TYPE_DEATH + ">"
+        else:
+            return "<" + TYPE_UKNOWN + ">"
 
-def createTripleRegistrationType(registrationURI, registrationType):
+def createTripleRegistrationType(registrationURI, registrationType, registrationMainType):
     p = "<" + RDF_TYPE + ">"
-    o = createRegistrationTypeURI(registrationType)
-    if o != "EMTPY":
-        return createQuad(registrationURI, p, o)
-    else:
-        print("Something is wrong", registrationURI, registrationType)
+    o = createRegistrationTypeURI(registrationType, registrationMainType)
+    return createQuad(registrationURI, p, o)
 
 def createDate(year, month, day):
     fixedYear = str(year).zfill(4)
@@ -151,25 +162,34 @@ def createDate(year, month, day):
     fixedDay = str(day).zfill(2)
     return transformToDate(fixedYear + "-" + fixedMonth + "-" + fixedDay)
 
-def createTripleDate(registrationURI, fixedDate):
-    p = "<" + DATE + ">"
+def createTripleRegistrationDate(registrationURI, fixedDate):
+    p = "<" + REGISTRATION_DATE + ">"
+    return createQuad(registrationURI, p , fixedDate)
+
+def createTripleEventDate(registrationURI, fixedDate):
+    p = "<" + EVENT_DATE + ">"
     return createQuad(registrationURI, p , fixedDate)
 
 def createLocationURI(locationID):
-    return "<" + PREFIX_IISG + "place/" + str(locationID) + ">"
+    return "<" + PREFIX_DATASET + "place/l-" + str(locationID) + ">"
 
-def createTripleLocation(registrationURI, locationID):
-    p = "<" + LOCATION + ">"
+def createTripleRegistrationLocation(registrationURI, locationID):
+    p = "<" + REGISTRATION_LOCATION + ">"
+    o = createLocationURI(locationID)
+    return createQuad(registrationURI,p ,o)
+
+def createTripleEventLocation(registrationURI, locationID):
+    p = "<" + EVENT_LOCATION + ">"
     o = createLocationURI(locationID)
     return createQuad(registrationURI,p ,o)
 
 def createTripleRegistrationSeq(registrationURI, registrationSeqID):
-    p = "<" + PREFIX_IISG_VOCAB + "registrationSeqID" + ">"
+    p = "<" + PREFIX_CIV_VOCAB + "registrationSeqID" + ">"
     o = transformToString(registrationSeqID)
     return createQuad(registrationURI, p, o)
 
 def createTripleLinksBase(registrationURI, not_linksbase):
-    p = "<" + PREFIX_IISG_VOCAB + "linksBase" + ">"
+    p = "<" + PREFIX_CIV_VOCAB + "linksBase" + ">"
     o = transformToString(not_linksbase)
     return createQuad(registrationURI, p, o)
 
@@ -183,7 +203,7 @@ def createTriplePersonType(personURI):
     return createQuad(personURI, p, o)
 
 def createTriplePersonID(personURI, personID):
-    p = "<" + PREFIX_IISG_VOCAB + "personID" + ">"
+    p = "<" + PREFIX_CIV_VOCAB + "personID" + ">"
     o = transformToInt(personID)
     return createQuad(personURI, p, o)
 
@@ -221,8 +241,8 @@ def createTripleRole(eventURI, normalisedRole, personURI):
     p = "<" + normalisedRole + ">"
     return createQuad(eventURI, p, personURI)
 
+
 def convertRegistrationsToRDF(inputData, outputData):
-    print("Converting Registrations CSV file to RDF...")
     start_time = datetime.now()
     f = open(outputData,"w+")
     ch_size = 10000
@@ -234,33 +254,37 @@ def convertRegistrationsToRDF(inputData, outputData):
         filebuffer = []
         for index, row in chunk.iterrows():
             registrationID = row['id_registration']
-            registrationURI = createRegistrationURI(registrationID)
             if not isNaN(registrationID):
-                filebuffer.append(createTripleRegistrationID(registrationURI, registrationID))
+                eventURI = createEventURI(registrationID)
+                filebuffer.append(createTripleRegistrationID(eventURI, registrationID))
                 registrationType = row['registration_type']
+                registrationMainType = row['registration_maintype']
                 if not isNaN(registrationType):
-                    filebuffer.append(createTripleRegistrationType(registrationURI, registrationType))
+                    filebuffer.append(createTripleRegistrationType(eventURI, registrationType, registrationMainType))
                 year = row['registration_year']
                 month = row['registration_month']
                 day = row['registration_day']
                 if not isNaN_Number(year) and not isNaN_Number(month) and not isNaN_Number(day):
                     if not isNaN(year) and not isNaN(month) and not isNaN(day):
-                        fixedDate = createDate(year, month, day)
-                        filebuffer.append(createTripleDate(registrationURI, fixedDate))
+                        correctedDate = createDate(year, month, day)
+                        filebuffer.append(createTripleRegistrationDate(eventURI, correctedDate))
                 locationID = row['registration_location']
                 if not isNaN(locationID):
-                    filebuffer.append(createTripleLocation(registrationURI, locationID))
+                    filebuffer.append(createTripleRegistrationLocation(eventURI, locationID))
                 registrationSeqID = row['registration_seq']
                 if not isNaN(registrationSeqID):
-                    filebuffer.append(createTripleRegistrationSeq(registrationURI, registrationSeqID))
+                    filebuffer.append(createTripleRegistrationSeq(eventURI, registrationSeqID))
         f.writelines(filebuffer)
     f.close()
     print("Program Finished!")
     time_elapsed = datetime.now() - start_time
     print('Time elapsed (hh:mm:ss) {}'.format(time_elapsed))
 
+
+# In[ ]:
+
+
 def convertPersonsToRDF(inputData, outputData):
-    print("Converting Persons CSV file to RDF...")
     start_time = datetime.now()
     f = open(outputData,"w+")
     ch_size = 10000
@@ -275,7 +299,6 @@ def convertPersonsToRDF(inputData, outputData):
             registrationID = row['id_registration']
             if not isNaN(personID) and not isNaN(registrationID):
                 personURI = createPersonURI(personID)
-                registrationURI = createRegistrationURI(registrationID)
                 eventURI = createEventURI(registrationID)
                 filebuffer.append(createTriplePersonType(personURI))
                 filebuffer.append(createTriplePersonID(personURI, personID))
@@ -323,19 +346,17 @@ def convertPersonsToRDF(inputData, outputData):
                         day = row['death_day']
                         locationID = row['death_location']
                     if main == True:
-                        filebuffer.append(createTriplesRegisterEvent(registrationURI, eventURI))
                         if not isNaN_Number(year) and not isNaN_Number(month) and not isNaN_Number(day):
                             if not isNaN(year) and not isNaN(month) and not isNaN(day):
                                 fixedDate = createDate(year, month, day)
-                                filebuffer.append(createTripleDate(eventURI, fixedDate))
+                                filebuffer.append(createTripleEventDate(eventURI, fixedDate))
                         if not isNaN(locationID):
-                            filebuffer.append(createTripleLocation(eventURI, locationID))
+                            filebuffer.append(createTripleEventLocation(eventURI, locationID))
         f.writelines(filebuffer)
     f.close()
     print("Program Finished!")
     time_elapsed = datetime.now() - start_time
     print('Time elapsed (hh:mm:ss) {}'.format(time_elapsed))
-
 
 registrations_csv_path = "registrations.csv"
 output_file_registrations = "registrations.nq"
@@ -343,3 +364,6 @@ convertRegistrationsToRDF(registrations_csv_path, output_file_registrations)
 persons_csv_path = "persons.csv"
 output_file_persons = "persons.nq"
 convertPersonsToRDF(persons_csv_path, output_file_persons)
+
+# using the terminal, you can later merge the resulting files using the following cat command:
+# cat registrations.nq persons.nq > merged-dataset.nq
