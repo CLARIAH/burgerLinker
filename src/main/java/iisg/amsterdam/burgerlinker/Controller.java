@@ -1,5 +1,7 @@
-package iisg.amsterdam.wp4_links;
+package iisg.amsterdam.burgerlinker;
 
+
+import static iisg.amsterdam.burgerlinker.Properties.*;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -7,16 +9,15 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import iisg.amsterdam.wp4_links.processes.*;
-import iisg.amsterdam.wp4_links.utilities.*;
-
-import static iisg.amsterdam.wp4_links.Properties.*;
+import iisg.amsterdam.burgerlinker.processes.*;
+import iisg.amsterdam.burgerlinker.utilities.*;
 
 public class Controller {
 
 	@SuppressWarnings("unused")
-	final private String[] FUNCTIONS_not_implemented = {"within_b_d", "within_m_d", "within_b_b", "within_m_m", "within_d_d", "between_d_m"};
-	final private String[] FUNCTIONS = {"showDatasetStats", "convertToHDT", "closure", "within_b_m", "between_b_m", "between_m_m"};
+	final private String[] FUNCTIONS_not_implemented = {"within_m_d", "within_b_b", "within_m_m", "within_d_d"};
+	final private String[] FUNCTIONS = {"showDatasetStats", "convertToHDT", "closure", "within_b_m", "within_b_d", 
+			"between_b_m", "between_m_m", "between_d_m", "between_b_d"};
 	private String function, inputDataset, outputDirectory;
 	private int maxLev;
 	private boolean fixedLev = false, bestLink = false, outputFormatCSV = true; 
@@ -25,7 +26,7 @@ public class Controller {
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public Controller(String function, int maxlev, Boolean fixedLev, Boolean bestLink, String inputDataset, String outputDirectory, String outputFormat) {
+	public Controller(String function, int maxlev, Boolean fixedLev,  String inputDataset, String outputDirectory, String outputFormat) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -58,12 +59,36 @@ public class Controller {
 					LOG.outputTotalRuntime("Within Births-Marriages (i.e. newborn --> partner)", startTime, true);
 				}
 				break;
+			case "within_b_d":
+				if(checkAllUserInputs()) {
+					long startTime = System.currentTimeMillis();
+					LOG.outputConsole("START: Within Births-Deaths (i.e. newborn --> deceased)");
+					Within_B_D();
+					LOG.outputTotalRuntime("Within Births-Deaths (i.e. newborn --> deceased)", startTime, true);
+				}
+				break;
 			case "between_b_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Marriages (i.e. newborn parents --> partners)");
 					Between_B_M();
 					LOG.outputTotalRuntime("Between Births-Marriages (i.e. newborn parents --> partners)", startTime, true);
+				}
+				break;
+			case "between_b_d":
+				if(checkAllUserInputs()) {
+					long startTime = System.currentTimeMillis();
+					LOG.outputConsole("START: Between Births-Deaths (i.e. newborn parents --> deceased and partner)");
+					Between_B_D();
+					LOG.outputTotalRuntime("Between Births-Deaths (i.e. newborn parents --> deceased and partner)", startTime, true);
+				}
+				break;
+			case "between_d_m":
+				if(checkAllUserInputs()) {
+					long startTime = System.currentTimeMillis();
+					LOG.outputConsole("START: Between Deaths-Marriages (i.e. deceased parents --> partners)");
+					Between_D_M();
+					LOG.outputTotalRuntime("Between Deaths-Marriages (i.e. deceased parents --> partners)", startTime, true);
 				}
 				break;
 			case "between_m_m":
@@ -243,6 +268,30 @@ public class Controller {
 			LOG.logError("Within_B_M", "Error in creating the main output directory");
 		}
 	}
+	
+	public void Within_B_D() {
+		String fixed = "";
+		if(fixedLev == true) {
+			fixed = "-fixed";
+		}
+		String dirName = function + "-maxLev-" + maxLev + fixed;
+		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
+		if(processDirCreated == true) {
+			String mainDirectory = outputDirectory + "/" + dirName;
+			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
+			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
+			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
+			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
+				MyHDT myHDT = new MyHDT(inputDataset);	
+				new Within_B_D(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				myHDT.closeDataset();
+			} else {
+				LOG.logError("Within_B_D", "Error in creating the three sub output directories");
+			}
+		} else {
+			LOG.logError("Within_B_D", "Error in creating the main output directory");
+		}
+	}
 
 
 	public void Between_B_M() {
@@ -266,6 +315,55 @@ public class Controller {
 			}
 		} else {
 			LOG.logError("Between_B_M", "Error in creating the main output directory");
+		}
+	}
+	
+	public void Between_B_D() {
+		String fixed = "";
+		if(fixedLev == true) {
+			fixed = "-fixed";
+		}
+		String dirName = function + "-maxLev-" + maxLev + fixed;
+		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
+		if(processDirCreated == true) {
+			String mainDirectory = outputDirectory + "/" + dirName;
+			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
+			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
+			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
+			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
+				MyHDT myHDT = new MyHDT(inputDataset);	
+				new Between_B_D(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				myHDT.closeDataset();
+			} else {
+				LOG.logError("Between_B_D", "Error in creating the three sub output directories");
+			}
+		} else {
+			LOG.logError("Between_B_D", "Error in creating the main output directory");
+		}
+	}
+	
+	
+	public void Between_D_M() {
+		String fixed = "";
+		if(fixedLev == true) {
+			fixed = "-fixed";
+		}
+		String dirName = function + "-maxLev-" + maxLev + fixed;
+		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
+		if(processDirCreated == true) {
+			String mainDirectory = outputDirectory + "/" + dirName;
+			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
+			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
+			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
+			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
+				MyHDT myHDT = new MyHDT(inputDataset);	
+				new Between_D_M(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				myHDT.closeDataset();
+			} else {
+				LOG.logError("Between_D_M", "Error in creating the three sub output directories");
+			}
+		} else {
+			LOG.logError("Between_D_M", "Error in creating the main output directory");
 		}
 	}
 

@@ -1,4 +1,4 @@
-package iisg.amsterdam.wp4_links;
+package iisg.amsterdam.burgerlinker;
 
 
 /**
@@ -43,7 +43,7 @@ import com.github.liblevenshtein.transducer.Candidate;
 import com.github.liblevenshtein.transducer.ITransducer;
 import com.github.liblevenshtein.transducer.factory.TransducerBuilder;
 
-import iisg.amsterdam.wp4_links.utilities.LoggingUtilities;
+import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
 
 
 

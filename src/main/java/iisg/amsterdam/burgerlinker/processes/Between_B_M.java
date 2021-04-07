@@ -1,10 +1,10 @@
-package iisg.amsterdam.wp4_links.processes;
+package iisg.amsterdam.burgerlinker.processes;
 
-import static iisg.amsterdam.wp4_links.Properties.ROLE_BRIDE;
-import static iisg.amsterdam.wp4_links.Properties.ROLE_FATHER;
-import static iisg.amsterdam.wp4_links.Properties.ROLE_GROOM;
-import static iisg.amsterdam.wp4_links.Properties.ROLE_MOTHER;
-import static iisg.amsterdam.wp4_links.Properties.ROLE_NEWBORN;
+import static iisg.amsterdam.burgerlinker.Properties.ROLE_BRIDE;
+import static iisg.amsterdam.burgerlinker.Properties.ROLE_FATHER;
+import static iisg.amsterdam.burgerlinker.Properties.ROLE_GROOM;
+import static iisg.amsterdam.burgerlinker.Properties.ROLE_MOTHER;
+import static iisg.amsterdam.burgerlinker.Properties.ROLE_NEWBORN;
 
 import java.util.Set;
 
@@ -14,12 +14,12 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import iisg.amsterdam.wp4_links.CandidateList;
-import iisg.amsterdam.wp4_links.Index;
-import iisg.amsterdam.wp4_links.LinksCSV;
-import iisg.amsterdam.wp4_links.MyHDT;
-import iisg.amsterdam.wp4_links.Person;
-import iisg.amsterdam.wp4_links.utilities.LoggingUtilities;
+import iisg.amsterdam.burgerlinker.CandidateList;
+import iisg.amsterdam.burgerlinker.Index;
+import iisg.amsterdam.burgerlinker.LinksCSV;
+import iisg.amsterdam.burgerlinker.MyHDT;
+import iisg.amsterdam.burgerlinker.Person;
+import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 
@@ -76,7 +76,7 @@ public class Between_B_M {
 			indexGroom.createTransducer();
 			try {
 				int cntAll =0 ;
-				// iterate through the marriage certificates to link it to the marriage dictionaries
+				// iterate through the birth certificates to link it to the marriage dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
 				long estNumber = it.estimatedNumResults();
 				LOG.outputConsole("Estimated number of certificates to be linked is: " + estNumber);	
@@ -100,7 +100,7 @@ public class Between_B_M {
 								if(candidatesBride.candidates.isEmpty() == false) {
 									Set<String> finalCandidatesList = candidatesBride.findIntersectionCandidates(candidatesGroom);
 									for(String finalCandidate: finalCandidatesList) {
-										String marriageEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate, "direct");
+										String marriageEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
 										int yearDifference = checkTimeConsistency_between_b_m(birthYear, marriageEventAsCoupleURI);
 										if(yearDifference < 999) { // if it fits the time line
 											Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);

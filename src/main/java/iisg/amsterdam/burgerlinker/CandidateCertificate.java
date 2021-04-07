@@ -107,7 +107,7 @@
 //}
 
 
-package iisg.amsterdam.wp4_links;
+package iisg.amsterdam.burgerlinker;
 
 import java.util.ArrayList;
 import java.util.HashMap;

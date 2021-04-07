@@ -1,7 +1,7 @@
-package iisg.amsterdam.wp4_links;
+package iisg.amsterdam.burgerlinker;
 
-import static iisg.amsterdam.wp4_links.Properties.DIRECTORY_NAME_DATABASE;
-import static iisg.amsterdam.wp4_links.Properties.DIRECTORY_NAME_DICTIONARY;
+import static iisg.amsterdam.burgerlinker.Properties.DIRECTORY_NAME_DATABASE;
+import static iisg.amsterdam.burgerlinker.Properties.DIRECTORY_NAME_DICTIONARY;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -18,8 +18,8 @@ import org.rocksdb.RocksDBException;
 
 import com.github.liblevenshtein.transducer.Candidate;
 
-import iisg.amsterdam.wp4_links.utilities.FileUtilities;
-import iisg.amsterdam.wp4_links.utilities.LoggingUtilities;
+import iisg.amsterdam.burgerlinker.utilities.FileUtilities;
+import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
 
 public class Index {
 

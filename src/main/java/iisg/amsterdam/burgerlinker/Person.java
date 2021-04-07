@@ -1,4 +1,4 @@
-package iisg.amsterdam.wp4_links;
+package iisg.amsterdam.burgerlinker;
 
 
 import java.util.HashMap;
@@ -147,6 +147,13 @@ public class Person {
 
 	public Boolean isFemale() {
 		if(gender.equals("f")){
+			return true;
+		}
+		return false;
+	}
+	
+	public Boolean isMale() {
+		if(gender.equals("m")){
 			return true;
 		}
 		return false;

@@ -1,4 +1,4 @@
-package iisg.amsterdam.wp4_links;
+package iisg.amsterdam.burgerlinker;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
-import iisg.amsterdam.wp4_links.utilities.LoggingUtilities;
+import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
 
 
 
@@ -16,6 +16,12 @@ public class App
 {
 	@Parameter(names = "--function")
 	String function = null;
+	
+	@Parameter(names = "--inputData")
+	String inputData = null;
+
+	@Parameter(names = "--outputDir")
+	String outputDir = null;
 
 	@Parameter(names = "--maxLev")
 	int maxLev = 4;
@@ -23,14 +29,8 @@ public class App
 	@Parameter(names = "--fixedLev")
 	boolean fixedLev = false;
 
-	@Parameter(names = "--bestLink")
-	boolean bestLink = false; 
-
-	@Parameter(names = "--inputData")
-	String inputData = null;
-
-	@Parameter(names = "--outputDir")
-	String outputDir = null;
+//	@Parameter(names = "--bestLink")
+//	boolean bestLink = false; 
 
 	@Parameter(names = "--format")
 	String format = "CSV"; // or "RDF"
@@ -74,7 +74,7 @@ public class App
 			if(debug.equals("all")) { 
 				Configurator.setRootLevel(Level.DEBUG);
 			}
-			Controller cntrl = new Controller(function, maxLev, fixedLev, bestLink, inputData, outputDir, format);
+			Controller cntrl = new Controller(function, maxLev, fixedLev, inputData, outputDir, format);
 			cntrl.runProgram();
 		} else { 
 			// do not run program and show some help message if user enter: --help	

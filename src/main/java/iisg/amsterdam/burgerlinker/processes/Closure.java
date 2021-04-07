@@ -1,8 +1,7 @@
-package iisg.amsterdam.wp4_links.processes;
+package iisg.amsterdam.burgerlinker.processes;
 
 
-import static iisg.amsterdam.wp4_links.Properties.*;
-
+import static iisg.amsterdam.burgerlinker.Properties.*;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,12 +18,11 @@ import org.rdfhdt.hdt.triples.TripleString;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
-import iisg.amsterdam.wp4_links.Index;
-import iisg.amsterdam.wp4_links.LinksCSV;
-
-import iisg.amsterdam.wp4_links.MyHDT;
-import iisg.amsterdam.wp4_links.Properties;
-import iisg.amsterdam.wp4_links.utilities.*;
+import iisg.amsterdam.burgerlinker.Index;
+import iisg.amsterdam.burgerlinker.LinksCSV;
+import iisg.amsterdam.burgerlinker.MyHDT;
+import iisg.amsterdam.burgerlinker.Properties;
+import iisg.amsterdam.burgerlinker.utilities.*;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 

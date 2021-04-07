@@ -1,6 +1,7 @@
-package iisg.amsterdam.wp4_links.processes;
+package iisg.amsterdam.burgerlinker.processes;
 
-import static iisg.amsterdam.wp4_links.Properties.*;
+
+import static iisg.amsterdam.burgerlinker.Properties.*;
 
 import java.util.Set;
 
@@ -10,29 +11,29 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import iisg.amsterdam.wp4_links.CandidateList;
-import iisg.amsterdam.wp4_links.Index;
-import iisg.amsterdam.wp4_links.LinksCSV;
-import iisg.amsterdam.wp4_links.MyHDT;
-import iisg.amsterdam.wp4_links.Person;
-import iisg.amsterdam.wp4_links.utilities.LoggingUtilities;
+import iisg.amsterdam.burgerlinker.CandidateList;
+import iisg.amsterdam.burgerlinker.Index;
+import iisg.amsterdam.burgerlinker.LinksCSV;
+import iisg.amsterdam.burgerlinker.MyHDT;
+import iisg.amsterdam.burgerlinker.Person;
+import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 
-public class Within_B_M {
+public class Within_B_D {
 
 	private String mainDirectoryPath, processName = "";;
 	private MyHDT myHDT;
-	private final int MIN_YEAR_DIFF = 13, MAX_YEAR_DIFF = 80, indexingUpdateInterval = 2000, linkingUpdateInterval = 10000;
+	private final int MIN_YEAR_DIFF = 0, MAX_YEAR_DIFF = 110, indexingUpdateInterval = 2000, linkingUpdateInterval = 10000;
 	private int maxLev;
 	private Boolean fixedLev;
-	Index indexPartner, indexMother, indexFather;
+	Index indexDeceased, indexMother, indexFather;
 
 	public static final Logger lg = LogManager.getLogger(Within_B_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Within_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean bestLink, Boolean formatCSV) {
+	public Within_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean bestLink, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
@@ -44,10 +45,10 @@ public class Within_B_M {
 		if(bestLink == true) {
 			best = "-best";
 		}
-		String resultsFileName = "within-B-M-maxLev-" + maxLevenshtein + fixed + best;
+		String resultsFileName = "within-B-D-maxLev-" + maxLevenshtein + fixed + best;
 		if(formatCSV == true) {
 			String header = "id_certificate_newborn,"
-					+ "id_certificate_partner,"
+					+ "id_certificate_deceased,"
 					+ "family_line,"
 					+ "levenshtein_total_newborn,"
 					+ "levenshtein_max_newborn,"
@@ -57,7 +58,7 @@ public class Within_B_M {
 					+ "levenshtein_max_father,"
 					+ "matched_names_newborn,"
 					+ "number_names_newborn,"
-					+ "number_names_partner,"
+					+ "number_names_deceased,"
 					+ "matched_names_mother,"
 					+ "number_names_newbornMother,"
 					+ "number_names_partnerMother,"
@@ -67,34 +68,28 @@ public class Within_B_M {
 					+ "year_diff";
 			LINKS = new LinksCSV(resultsFileName, mainDirectoryPath, header);
 		}
-		link_within_B_M("f", false); // false = do not close stream
-		link_within_B_M("m", true); // true = close stream
+		link_within_B_D("f", false); // false = do not close stream
+		link_within_B_D("m", true); // true = close stream
 	}
 
 
-	public void link_within_B_M(String gender, Boolean closeStream) {
-		Boolean success = generatePartnerIndex(gender);
+	public void link_within_B_D(String gender, Boolean closeStream) {
+		Boolean success = generateDeceasedIndex(gender);
 		if(success == true) {	
-			indexPartner.createTransducer();
+			indexDeceased.createTransducer();
 			indexMother.createTransducer();
 			indexFather.createTransducer();
 			try {
 				int cntAll =0 ;
-				String rolePartner, rolePartnerMother, rolePartnerFather, familyCode;
+				String familyCode;
 				if(gender == "f") {
 					familyCode = "21";
-					rolePartner = ROLE_BRIDE;
-					rolePartnerMother = ROLE_BRIDE_MOTHER;
-					rolePartnerFather = ROLE_BRIDE_FATHER;
-					processName = "Brides";
+					processName = "Deceased women";
 				} else {
 					familyCode = "22";
-					rolePartner = ROLE_GROOM;
-					rolePartnerMother = ROLE_GROOM_MOTHER;
-					rolePartnerFather = ROLE_GROOM_FATHER;
-					processName = "Grooms";
+					processName = "Deceased men";
 				}
-				// iterate through the marriage certificates to link it to the marriage dictionaries
+				// iterate through the birth certificates to link it to the death dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
 				long estNumber = it.estimatedNumResults();
 				LOG.outputConsole("Estimated number of certificates to be linked is: " + estNumber);	
@@ -114,28 +109,32 @@ public class Within_B_M {
 								Person mother, father;
 								mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
 								father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);
-								CandidateList candidatesPartner=null, candidatesMother=null, candidatesFather=null;
+								CandidateList candidatesDeceased=null, candidatesMother=null, candidatesFather=null;
 								if(mother.isValidWithFullName() || father.isValidWithFullName()) {
-									candidatesPartner = indexPartner.searchForCandidate(newborn, birthEventID);
-									if(candidatesPartner.candidates.isEmpty() == false) {
+									candidatesDeceased = indexDeceased.searchForCandidate(newborn, birthEventID);
+									if(candidatesDeceased.candidates.isEmpty() == false) {
 										if(mother.isValidWithFullName()){
 											candidatesMother = indexMother.searchForCandidate(mother, birthEventID);
 											if(candidatesMother.candidates.isEmpty() == false) {
-												Set<String> finalCandidatesMother = candidatesPartner.findIntersectionCandidates(candidatesMother);
+												Set<String> finalCandidatesMother = candidatesDeceased.findIntersectionCandidates(candidatesMother);
 												for(String finalCandidate: finalCandidatesMother) {
 													Boolean link = true;
 													if(father.isValidWithFullName()){ 
-														if(candidatesPartner.candidates.get(finalCandidate).individualsInCertificate.contains("F")) {
+														if(candidatesDeceased.candidates.get(finalCandidate).individualsInCertificate.contains("F")) {
 															link = false; // if both have fathers, but their names did not match
 														}
 													}
 													if(link == true) { // if one of them does not have a father, we match on two individuals
-														String marriageEventURI = myHDT.getEventURIfromID(finalCandidate, "direct");
-														int yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+														String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
+														int yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
 														if(yearDifference < 999) { // if it fits the time line
-															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
-															Person partner_mother = myHDT.getPersonInfo(marriageEventURI, rolePartnerMother);
-															LINKS.saveLinks_Within_B_M_mother(candidatesPartner, candidatesMother, finalCandidate, partner, partner_mother, familyCode, yearDifference);																				
+															Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);
+															Person deceased_mother = myHDT.getPersonInfo(deathEventURI, ROLE_MOTHER);
+															if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
+																if(checkTimeConsistencyWithAge(yearDifference, deceased_mother)) {
+																	LINKS.saveLinks_Within_B_M_mother(candidatesDeceased, candidatesMother, finalCandidate, deceased, deceased_mother, familyCode, yearDifference);	
+																}
+															}
 														}
 													}
 												}
@@ -144,21 +143,25 @@ public class Within_B_M {
 										if(father.isValidWithFullName()){
 											candidatesFather = indexFather.searchForCandidate(father, birthEventID);
 											if(candidatesFather.candidates.isEmpty() == false) {
-												Set<String> finalCandidatesFather = candidatesPartner.findIntersectionCandidates(candidatesFather);
+												Set<String> finalCandidatesFather = candidatesDeceased.findIntersectionCandidates(candidatesFather);
 												for(String finalCandidate: finalCandidatesFather) {
 													Boolean link = true;
 													if(mother.isValidWithFullName()){
-														if(candidatesPartner.candidates.get(finalCandidate).individualsInCertificate.contains("M")) {
+														if(candidatesDeceased.candidates.get(finalCandidate).individualsInCertificate.contains("M")) {
 															link = false; // if both have mothers, but their names did not match
 														}
 													}
 													if(link == true) { // if one of them does not have a mother, we match on two individuals
-														String marriageEventURI = myHDT.getEventURIfromID(finalCandidate, "direct");
-														int yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+														String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
+														int yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
 														if(yearDifference < 999) { // if it fits the time line
-															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);		
-															Person partner_father = myHDT.getPersonInfo(marriageEventURI, rolePartnerFather);
-															LINKS.saveLinks_Within_B_M_father(candidatesPartner, candidatesFather, finalCandidate, partner, partner_father, familyCode, yearDifference);																				
+															Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);		
+															Person deceased_father = myHDT.getPersonInfo(deathEventURI, ROLE_FATHER);
+															if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
+																if(checkTimeConsistencyWithAge(yearDifference, deceased_father)) {
+																	LINKS.saveLinks_Within_B_M_father(candidatesDeceased, candidatesFather, finalCandidate, deceased, deceased_father, familyCode, yearDifference);	
+																}
+															}
 														}
 													}
 												}
@@ -166,15 +169,21 @@ public class Within_B_M {
 										}
 										if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 											if(candidatesMother.candidates.isEmpty() == false && candidatesFather.candidates.isEmpty() == false) {
-												Set<String> finalCandidatesMotherFather = candidatesPartner.findIntersectionCandidates(candidatesMother, candidatesFather);
+												Set<String> finalCandidatesMotherFather = candidatesDeceased.findIntersectionCandidates(candidatesMother, candidatesFather);
 												for(String finalCandidate: finalCandidatesMotherFather) {
-													String marriageEventURI = myHDT.getEventURIfromID(finalCandidate, "direct");
-													int yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+													String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
+													int yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
 													if(yearDifference < 999) { // if it fits the time line
-														Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
-														Person partner_mother = myHDT.getPersonInfo(marriageEventURI, rolePartnerMother);
-														Person partner_father = myHDT.getPersonInfo(marriageEventURI, rolePartnerFather);	
-														LINKS.saveLinks_Within_B_M(candidatesPartner, candidatesMother, candidatesFather, finalCandidate, partner, partner_mother, partner_father, familyCode, yearDifference);																				
+														Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);
+														Person deceased_mother = myHDT.getPersonInfo(deathEventURI, ROLE_MOTHER);
+														Person deceased_father = myHDT.getPersonInfo(deathEventURI, ROLE_FATHER);
+														if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
+															if(checkTimeConsistencyWithAge(yearDifference, deceased_mother)) {
+																if(checkTimeConsistencyWithAge(yearDifference, deceased_father)) {
+																	LINKS.saveLinks_Within_B_M(candidatesDeceased, candidatesMother, candidatesFather, finalCandidate, deceased, deceased_mother, deceased_father, familyCode, yearDifference);																				
+																}
+															}
+														}
 													}
 												}
 											}
@@ -202,35 +211,28 @@ public class Within_B_M {
 	}
 
 
-	public Boolean generatePartnerIndex(String gender) {
+	public Boolean generateDeceasedIndex(String gender) {
 		long startTime = System.currentTimeMillis();
 		int cntInserts=0, cntAll =0 , cnt_P_M_F=0, cnt_P_M =0 , cnt_P_F=0, cnt_P=0, cnt_no_P=0  ;
 		IteratorTripleString it;
-		String rolePartner, rolePartnerMother, rolePartnerFather; 
 		if(gender == "f") {
-			rolePartner = ROLE_BRIDE;
-			rolePartnerMother = ROLE_BRIDE_MOTHER;
-			rolePartnerFather = ROLE_BRIDE_FATHER;
-			processName = "Brides";
-			indexPartner = new Index("bride", mainDirectoryPath, maxLev, fixedLev);
-			indexMother = new Index("bride-mother", mainDirectoryPath, maxLev, fixedLev);
-			indexFather = new Index("bride-father", mainDirectoryPath, maxLev, fixedLev);
+			processName = "Deceased women";
+			indexDeceased = new Index("deceased-women", mainDirectoryPath, maxLev, fixedLev);
+			indexMother = new Index("deceased-women-mother", mainDirectoryPath, maxLev, fixedLev);
+			indexFather = new Index("deceased-women-father", mainDirectoryPath, maxLev, fixedLev);
 		} else {
-			rolePartner = ROLE_GROOM;
-			rolePartnerMother = ROLE_GROOM_MOTHER;
-			rolePartnerFather = ROLE_GROOM_FATHER;
-			processName = "Grooms";
-			indexPartner = new Index("groom", mainDirectoryPath, maxLev, fixedLev);
-			indexMother = new Index("groom-mother", mainDirectoryPath, maxLev, fixedLev);
-			indexFather = new Index("groom-father", mainDirectoryPath, maxLev, fixedLev);
+			processName = "Deceased men";
+			indexDeceased = new Index("deceased-men", mainDirectoryPath, maxLev, fixedLev);
+			indexMother = new Index("deceased-men-mother", mainDirectoryPath, maxLev, fixedLev);
+			indexFather = new Index("deceased-men-father", mainDirectoryPath, maxLev, fixedLev);
 		}
 		LOG.outputConsole("START: Generating Dictionary for " + processName);
 		try {
-			indexPartner.openIndex();
+			indexDeceased.openIndex();
 			indexMother.openIndex();
 			indexFather.openIndex();
 			// iterate over all brides or grooms of marriage events
-			it = myHDT.dataset.search("", rolePartner, "");
+			it = myHDT.dataset.search("", ROLE_DECEASED, "");
 			long estNumber = it.estimatedNumResults();
 			LOG.outputConsole("Estimated number of certificates to be indexed is: " + estNumber);	
 			String taskName = "Indexing " + processName;
@@ -240,34 +242,38 @@ public class Within_B_M {
 				while(it.hasNext()) {
 					TripleString ts = it.next();
 					cntAll++;
-					String marriageEvent = ts.getSubject().toString();
-					String eventID = myHDT.getIDofEvent(marriageEvent);
-					Person partner = myHDT.getPersonInfo(marriageEvent, rolePartner);
-					if(partner.isValidWithFullName()) {
-						Person partnerMother = myHDT.getPersonInfo(marriageEvent, rolePartnerMother);
-						Person partnerFather = myHDT.getPersonInfo(marriageEvent, rolePartnerFather);
-						if(partnerMother.isValidWithFullName()){
-							if(partnerFather.isValidWithFullName()){
-								indexPartner.addPersonToIndex(partner, eventID, "M-F");
-								indexMother.addPersonToIndex(partnerMother, eventID, "M-F");
-								indexFather.addPersonToIndex(partnerFather, eventID, "M-F");
-								cnt_P_M_F++;
-								cntInserts++;
+					String deathEvent = ts.getSubject().toString();
+					String eventID = myHDT.getIDofEvent(deathEvent);
+					Person deceased = myHDT.getPersonInfo(deathEvent, ROLE_DECEASED);	
+					if(deceased.getGender().equals(gender) || deceased.getGender().equals("u")) {
+						if(deceased.isValidWithFullName()) {
+							Person partnerMother = myHDT.getPersonInfo(deathEvent, ROLE_MOTHER);
+							Person partnerFather = myHDT.getPersonInfo(deathEvent, ROLE_FATHER);
+							if(partnerMother.isValidWithFullName()){
+								if(partnerFather.isValidWithFullName()){
+									indexDeceased.addPersonToIndex(deceased, eventID, "M-F");
+									indexMother.addPersonToIndex(partnerMother, eventID, "M-F");
+									indexFather.addPersonToIndex(partnerFather, eventID, "M-F");
+									cnt_P_M_F++;
+									cntInserts++;
+								} else {
+									indexDeceased.addPersonToIndex(deceased, eventID, "M");
+									indexMother.addPersonToIndex(partnerMother, eventID, "M");
+									cnt_P_M++;
+									cntInserts++;
+								}
 							} else {
-								indexPartner.addPersonToIndex(partner, eventID, "M");
-								indexMother.addPersonToIndex(partnerMother, eventID, "M");
-								cnt_P_M++;
-								cntInserts++;
+								if(partnerFather.isValidWithFullName()){
+									indexDeceased.addPersonToIndex(deceased, eventID, "F");
+									indexFather.addPersonToIndex(partnerFather, eventID, "F");
+									cnt_P_F++;
+									cntInserts++;			
+								} else {
+									cnt_P++;
+								}
 							}
-						} else {
-							if(partnerFather.isValidWithFullName()){
-								indexPartner.addPersonToIndex(partner, eventID, "F");
-								indexFather.addPersonToIndex(partnerFather, eventID, "F");
-								cnt_P_F++;
-								cntInserts++;			
-							} else {
-								cnt_P++;
-							}
+						}  else {
+							cnt_no_P++;
 						}
 					} else {
 						cnt_no_P++;
@@ -284,7 +290,7 @@ public class Within_B_M {
 			LOG.logError("", e.toString());
 			return false;
 		} finally {
-			indexPartner.closeStream();
+			indexDeceased.closeStream();
 			indexMother.closeStream();
 			indexFather.closeStream();
 			LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);
@@ -309,9 +315,9 @@ public class Within_B_M {
 	 * @param candidateMarriageEvent
 	 *            marriage event URI            
 	 */
-	public int checkTimeConsistency_Within_B_M(int birthYear, String candidateMarriageEvent) {
-		int marriageYear = myHDT.getEventDate(candidateMarriageEvent);
-		int diff = marriageYear - birthYear;
+	public int checkTimeConsistency_Within_B_D(int birthYear, String candidateDeathEvent) {
+		int deathYear = myHDT.getEventDate(candidateDeathEvent);
+		int diff = deathYear - birthYear;
 		if(diff >= MIN_YEAR_DIFF && diff < MAX_YEAR_DIFF) {
 			return diff;
 		} else {
@@ -320,6 +326,18 @@ public class Within_B_M {
 	}
 
 
+	public Boolean checkTimeConsistencyWithAge(int registrationDifference, Person personURI) {
+		int ageDeceased = myHDT.getAgeFromHDT(personURI.getURI());
+		if(ageDeceased != 999) {
+			if(Math.abs(registrationDifference - ageDeceased) < 2) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
 
 }
 

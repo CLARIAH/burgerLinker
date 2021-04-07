@@ -1,0 +1,548 @@
+@prefix : <https://iisg.amsterdam/id/civ/> .
+@prefix bio: <http://purl.org/vocab/bio/0.1/> .
+@prefix civ: <https://iisg.amsterdam/id/civ/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix idot: <http://identifiers.org/idot/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@base <https://iisg.amsterdam/id/civ/> .
+
+<https://iisg.amsterdam/id/civ/> rdf:type owl:Ontology ;
+                                  idot:alternatePrefix "civreg" ;
+                                  idot:preferredPrefix "civ" ;
+                                  dct:contributor "dataLegend team (WP4 of the CLARIAH Project)"@en ;
+                                  dct:creator "Joe Raad"@en ;
+                                  dct:date "2021-04-04" ;
+                                  dct:language "en"@en ;
+                                  dct:publisher "International Institute of Social History (IISG) as part of the CLARIAH project"@en ;
+                                  dct:subject "Vocabulary for describing the Dutch civil registries"@en ;
+                                  dct:title "Civil Registries Schema (CIV)"@en ;
+                                  foaf:homepage "https://druid.datalegend.net/links/civ/" .
+
+#################################################################
+#    Annotation properties
+#################################################################
+
+###  http://identifiers.org/idot/alternatePrefix
+idot:alternatePrefix rdf:type owl:AnnotationProperty .
+
+
+###  http://identifiers.org/idot/preferredPrefix
+idot:preferredPrefix rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/contributor
+dct:contributor rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/creator
+dct:creator rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/date
+dct:date rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/hasVersion
+dct:hasVersion rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/language
+dct:language rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/publisher
+dct:publisher rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/subject
+dct:subject rdf:type owl:AnnotationProperty .
+
+
+###  http://purl.org/dc/terms/title
+dct:title rdf:type owl:AnnotationProperty .
+
+
+###  http://xmlns.com/foaf/0.1/homepage
+foaf:homepage rdf:type owl:AnnotationProperty .
+
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://schema.org/children
+<http://schema.org/children> rdf:type owl:ObjectProperty ;
+                             owl:inverseOf civ:childOf ;
+                             rdfs:comment "A child of the person"@en ;
+                             rdfs:label "children"@en .
+
+
+###  http://schema.org/hasOccupation
+<http://schema.org/hasOccupation> rdf:type owl:ObjectProperty ;
+                                  owl:equivalentProperty civ:participant ;
+                                  rdfs:comment "The Person's occupation"@en ;
+                                  rdfs:label "has occupation"@en .
+
+
+###  http://schema.org/location
+<http://schema.org/location> rdf:type owl:ObjectProperty ;
+                             rdfs:comment "The location of for example where the event is happening, an organization is located, or where an action takes place."@en ;
+                             rdfs:label "location"@en .
+
+
+###  http://schema.org/sibling
+<http://schema.org/sibling> rdf:type owl:ObjectProperty ;
+                            owl:equivalentProperty civ:sibling ;
+                            rdf:type owl:SymmetricProperty ,
+                                     owl:TransitiveProperty ;
+                            rdfs:comment "A sibling of the person"@en ;
+                            rdfs:label "sibling"@en .
+
+
+###  https://iisg.amsterdam/id/civ/bride
+civ:bride rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf civ:partner ;
+          rdfs:comment "A person that takes the role of the bride in a marriage event (e.g. :marriage1 civ:bride :person1)"@en ;
+          rdfs:label "bride"@en .
+
+
+###  https://iisg.amsterdam/id/civ/childOf
+civ:childOf rdf:type owl:ObjectProperty ;
+            rdfs:comment "Property indicating that the person in the subject position is the child of the person in the object position (i.e. has parent)"@en ;
+            rdfs:label "child of"@en .
+
+
+###  https://iisg.amsterdam/id/civ/deceased
+civ:deceased rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf civ:participant ;
+             rdfs:comment "A person that takes the role of the deceased in a death event (e.g. :marriage1 civ:deceased :person1)"@en ;
+             rdfs:label "deceased"@en .
+
+
+###  https://iisg.amsterdam/id/civ/eventLocation
+civ:eventLocation rdf:type owl:ObjectProperty ;
+                  rdfs:subPropertyOf <http://schema.org/location> ;
+                  rdfs:label "event location"@en .
+
+
+###  https://iisg.amsterdam/id/civ/father
+civ:father rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf civ:participant ;
+           rdfs:comment "A person that takes the role of a father in an event (e.g. :birth1 civ:father :person1)"@en ;
+           rdfs:label "father"@en .
+
+
+###  https://iisg.amsterdam/id/civ/fatherBride
+civ:fatherBride rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf civ:father ;
+                rdfs:comment "A person that takes the role of the bride's father in a marriage event (e.g. :marriage1 civ:fatherBride :person1)"@en ;
+                rdfs:label "father of bride"@en .
+
+
+###  https://iisg.amsterdam/id/civ/fatherGroom
+civ:fatherGroom rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf civ:father ;
+                rdfs:comment "A person that takes the role of the groom's father in a marriage event (e.g. :marriage1 civ:fatherGroom :person1)"@en ;
+                rdfs:label "father of groom"@en .
+
+
+###  https://iisg.amsterdam/id/civ/groom
+civ:groom rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf civ:partner ;
+          rdfs:comment "A person that takes the role of the groom in a marriage event (e.g. :marriage1 civ:groom :person1)"@en ;
+          rdfs:label "groom"@en .
+
+
+###  https://iisg.amsterdam/id/civ/inCountry
+civ:inCountry rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf civ:inLocation ;
+              rdfs:range civ:Country ;
+              rdfs:label "in country"@en .
+
+
+###  https://iisg.amsterdam/id/civ/inLocation
+civ:inLocation rdf:type owl:ObjectProperty ;
+               rdfs:label "in location"@en .
+
+
+###  https://iisg.amsterdam/id/civ/inMunicipality
+civ:inMunicipality rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf civ:inLocation ;
+                   rdfs:range civ:Municipality ;
+                   rdfs:label "in municipality"@en .
+
+
+###  https://iisg.amsterdam/id/civ/inProvince
+civ:inProvince rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf civ:inLocation ;
+               rdfs:range civ:Province ;
+               rdfs:label "in province"@en .
+
+
+###  https://iisg.amsterdam/id/civ/inRegion
+civ:inRegion rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf civ:inLocation ;
+             rdfs:range civ:Region ;
+             rdfs:label "in region"@en .
+
+
+###  https://iisg.amsterdam/id/civ/mother
+civ:mother rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf civ:participant ;
+           rdfs:comment "A person that takes the role of a mother in an event (e.g. :birth1 civ:mother :person1)"@en ;
+           rdfs:label "mother"@en .
+
+
+###  https://iisg.amsterdam/id/civ/motherBride
+civ:motherBride rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf civ:mother ;
+                rdfs:comment "A person that takes the role of the bride's mother in a marriage event (e.g. :marriage1 civ:motherBride :person1)"@en ;
+                rdfs:label "mother of bride"@en .
+
+
+###  https://iisg.amsterdam/id/civ/motherGroom
+civ:motherGroom rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf civ:mother ;
+                rdfs:comment "A person that takes the role of the groom's mother in a marriage event (e.g. :marriage1 civ:motherGroom :person1)"@en ;
+                rdfs:label "mother of groom"@en .
+
+
+###  https://iisg.amsterdam/id/civ/newborn
+civ:newborn rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf civ:participant ;
+            rdfs:comment "A person that takes the role of the newborn in a birth event (e.g. :birth1 civ:newborn :person1)"@en ;
+            rdfs:label "newborn"@en .
+
+
+###  https://iisg.amsterdam/id/civ/occupation
+civ:occupation rdf:type owl:ObjectProperty ;
+               rdfs:label "occupation"@en .
+
+
+###  https://iisg.amsterdam/id/civ/participant
+civ:participant rdf:type owl:ObjectProperty ;
+                rdfs:comment "General property relating an event to a participant of this event. This property is only used when the type of relationship between the event and the participant is unkown (e.g. :birth1 civ:participant :person1)"@en ;
+                rdfs:label "participant"@en .
+
+
+###  https://iisg.amsterdam/id/civ/partner
+civ:partner rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf civ:participant ;
+            rdfs:comment "A person that takes the role of the partner in an event. In marriage events, the more specific properties civ:bride and civ:groom are used instead (e.g. :death1 civ:partner :person1)"@en ;
+            rdfs:label "partner"@en .
+
+
+###  https://iisg.amsterdam/id/civ/registrationLocation
+civ:registrationLocation rdf:type owl:ObjectProperty ;
+                         rdfs:subPropertyOf <http://schema.org/location> ;
+                         rdfs:label "registration location"@en .
+
+
+###  https://iisg.amsterdam/id/civ/sibling
+civ:sibling rdf:type owl:ObjectProperty ,
+                     owl:SymmetricProperty ,
+                     owl:IrreflexiveProperty ;
+            rdfs:comment "Property relating two siblings"@en ;
+            rdfs:label "sibling"@en .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://purl.org/vocab/bio/0.1/date
+bio:date rdf:type owl:DatatypeProperty ;
+         rdfs:comment "The date at which an event occurred"@en ;
+         rdfs:label "date"@en .
+
+
+###  http://schema.org/birthDate
+<http://schema.org/birthDate> rdf:type owl:DatatypeProperty ;
+                              rdfs:comment "Date of birth"@en ;
+                              rdfs:label "birth date"@en .
+
+
+###  http://schema.org/deathDate
+<http://schema.org/deathDate> rdf:type owl:DatatypeProperty ;
+                              rdfs:label "death date"@en .
+
+
+###  http://schema.org/familyName
+<http://schema.org/familyName> rdf:type owl:DatatypeProperty ;
+                               rdfs:comment "Family name. In the U.S., the last name of an Person. This can be used along with givenName instead of the name property"@en ;
+                               rdfs:label "family name"@en .
+
+
+###  http://schema.org/gender
+<http://schema.org/gender> rdf:type owl:DatatypeProperty ;
+                           rdfs:comment "Gender of something, typically a Person, but possibly also fictional characters, animals, etc. While http://schema.org/Male and http://schema.org/Female may be used, text strings are also acceptable for people who do not identify as a binary gender. The gender property can also be used in an extended sense to cover e.g. the gender of sports teams. As with the gender of individuals, we do not try to enumerate all possibilities. A mixed-gender SportsTeam can be indicated with a text value of \"Mixed\""@en ;
+                           rdfs:label "gender"@en .
+
+
+###  http://schema.org/givenName
+<http://schema.org/givenName> rdf:type owl:DatatypeProperty ;
+                              rdfs:comment "Given name. In the U.S., the first name of a Person. This can be used along with familyName instead of the name property"@en ;
+                              rdfs:label "given name"@en .
+
+
+###  http://schema.org/identifier
+<http://schema.org/identifier> rdf:type owl:DatatypeProperty ;
+                               rdfs:comment "The identifier property represents any kind of identifier for any kind of Thing, such as ISBNs, GTIN codes, UUIDs etc. Schema.org provides dedicated properties for representing many of these, either as textual strings or as URL (URI) links"@en ;
+                               rdfs:label "identifier"@en .
+
+
+###  https://iisg.amsterdam/id/civ/ageDays
+civ:ageDays rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:comment "Age in days beyond weeks"@en ;
+            rdfs:label "age in days"@en .
+
+
+###  https://iisg.amsterdam/id/civ/ageMonths
+civ:ageMonths rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:comment "Age in months beyond years"@en ;
+              rdfs:label "age in months"@en .
+
+
+###  https://iisg.amsterdam/id/civ/ageWeeks
+civ:ageWeeks rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:comment "Age in weeks beyond months"@en ;
+             rdfs:label "age in weeks"@en .
+
+
+###  https://iisg.amsterdam/id/civ/ageYears
+civ:ageYears rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:comment "Age in years"@en ;
+             rdfs:label "age in years"@en .
+
+
+###  https://iisg.amsterdam/id/civ/alive
+civ:alive rdf:type owl:DatatypeProperty ;
+          rdfs:label "Is the person alive or dead at the date of the registration?"@en ,
+                     "alive"@en .
+
+
+###  https://iisg.amsterdam/id/civ/birthDateFlag
+civ:birthDateFlag rdf:type owl:DatatypeProperty ;
+                  rdfs:comment """Quality of the date. Values:
+1 Valid date of birth from source
+2 No date of birth; date of registration used
+as proxy
+3 No valid date of birth; date of registration used as proxy"""@en ;
+                  rdfs:label "birth date flag"@en .
+
+
+###  https://iisg.amsterdam/id/civ/civilStatus
+civ:civilStatus rdf:type owl:DatatypeProperty ;
+                rdfs:comment "Civil status is included a) if it is explicitly mentioned in the sources, b) from the scanning of the remarks. Values: divorced, divorced or widowed married, unknown, unmarried, widow, widowed, widower"@en ;
+                rdfs:label "civil status"@en .
+
+
+###  https://iisg.amsterdam/id/civ/deathDateFlag
+civ:deathDateFlag rdf:type owl:DatatypeProperty ;
+                  rdfs:comment """Quality of the data. Values:
+1 Valid date of death from source
+2 No date of death; date of registration used
+as proxy
+3 No valid date of death; date of registration
+used as proxy"""@en ;
+                  rdfs:label "death date flag"@en .
+
+
+###  https://iisg.amsterdam/id/civ/eventDate
+civ:eventDate rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf bio:date ;
+              rdfs:comment """date when an event happened. The event date can be different from the registration date, where the property civ:registrationDate is used.
+Example, a birth event that happened on 1979-01-15 can be registered on 1979-01-17 (:birth1 civ:eventDate 1979-01-15 ; civ:registrationDate 1979-01-17)"""@en ;
+              rdfs:label "event date"@en .
+
+
+###  https://iisg.amsterdam/id/civ/extract
+civ:extract rdf:type owl:DatatypeProperty ;
+            rdfs:comment "Is the registration an extract (summary) of another one?"@en ;
+            rdfs:label "extract"@en .
+
+
+###  https://iisg.amsterdam/id/civ/marriageDateFlag
+civ:marriageDateFlag rdf:type owl:DatatypeProperty ;
+                     rdfs:comment """Quality of the marriage date. Values:
+1 Valid date of marriage from source
+2 No date of marriage; date of registration
+used as proxy
+3 No valid date of marriage; date of
+registration used as proxy"""@en ;
+                     rdfs:label "marriage date flag"@en .
+
+
+###  https://iisg.amsterdam/id/civ/occupationTitle
+civ:occupationTitle rdf:type owl:DatatypeProperty ;
+                    rdfs:label "occupation title"@en .
+
+
+###  https://iisg.amsterdam/id/civ/originalRegistrationID
+civ:originalRegistrationID rdf:type owl:DatatypeProperty ;
+                           rdfs:comment "Original identifier for a registration, originating from an archive or database not without the pretention to be persistent"@en ;
+                           rdfs:label "original registration ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/persistentRegistrationID
+civ:persistentRegistrationID rdf:type owl:DatatypeProperty ;
+                             rdfs:comment "Persistent identifier of the registration. This identifies each separate registration like civil certificate; in principle this identifier is assigned by the archive where the source is kept"@en ;
+                             rdfs:label "persistent registration ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/personID
+civ:personID rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf <http://schema.org/identifier> ;
+             rdfs:label "person ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/placeID
+civ:placeID rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf <http://schema.org/identifier> ;
+            rdfs:label "place ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/prefixFamilyName
+civ:prefixFamilyName rdf:type owl:DatatypeProperty ;
+                     rdfs:label "prefix of family name"@en .
+
+
+###  https://iisg.amsterdam/id/civ/registrationDate
+civ:registrationDate rdf:type owl:DatatypeProperty ;
+                     rdfs:subPropertyOf bio:date ;
+                     rdfs:comment "registration date of an event. The date of registration can be different from the date when the event occurred where the property civ:eventDate is used."@en ;
+                     rdfs:label "registration date"@en .
+
+
+###  https://iisg.amsterdam/id/civ/registrationFlag
+civ:registrationFlag rdf:type owl:DatatypeProperty ;
+                     rdfs:comment """Date of the registration may be derived from the date of the event of the registration (not all archives have delivered date of registration)
+0: original date from registration field; 1: derived date from event date; 2: derived date from components registration date"""@en ;
+                     rdfs:label "registration flag"@en .
+
+
+###  https://iisg.amsterdam/id/civ/registrationID
+civ:registrationID rdf:type owl:DatatypeProperty ;
+                   rdfs:subPropertyOf <http://schema.org/identifier> ;
+                   rdfs:label "registration ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/registrationSeqID
+civ:registrationSeqID rdf:type owl:DatatypeProperty ;
+                      rdfs:comment "Sequential number of the registration in the source (this may be an alpha numerical value)"@en ;
+                      rdfs:label "registration sequence ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/sourceID
+civ:sourceID rdf:type owl:DatatypeProperty ;
+             rdfs:label "source ID"@en .
+
+
+###  https://iisg.amsterdam/id/civ/sourceName
+civ:sourceName rdf:type owl:DatatypeProperty ;
+               rdfs:comment "Name of the archive that deliver the data"@en ;
+               rdfs:label "source name"@en .
+
+
+###  https://iisg.amsterdam/id/civ/stillbirth
+civ:stillbirth rdf:type owl:DatatypeProperty ;
+               rdfs:comment """In two ways information of ‘lifeless reported’ (not always ‘stillbirths’) was identified.
+- y: in the firstname one can find terms such as ‘levenloos’ and
+- y-r: lifeless-reported was retrieved from the remarks in the registration"""@en ;
+               rdfs:label "stillbirth"@en .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://purl.org/vocab/bio/0.1/Event
+bio:Event rdf:type owl:Class ;
+          rdfs:subClassOf <http://schema.org/Event> ;
+          rdfs:comment "This class is intended to describe biographical events, i.e. events in the life of a person."@en ;
+          rdfs:label "Event"@en .
+
+
+###  http://schema.org/Event
+<http://schema.org/Event> rdf:type owl:Class ;
+                          rdfs:comment "An event happening at a certain time and location, such as a concert, lecture, or festival. Ticketing information may be added via the offers property. Repeated events may be structured as separate Event objects"@en ;
+                          rdfs:label "Event"@en .
+
+
+###  http://schema.org/Person
+<http://schema.org/Person> rdf:type owl:Class ;
+                           rdfs:comment "A person (alive, dead, undead, or fictional)"@en ;
+                           rdfs:label "Person"@en .
+
+
+###  http://schema.org/Place
+<http://schema.org/Place> rdf:type owl:Class ;
+                          rdfs:comment "Entities that have a somewhat fixed, physical extension"@en ;
+                          rdfs:label "Place"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Birth
+civ:Birth rdf:type owl:Class ;
+          rdfs:subClassOf civ:Event ;
+          rdfs:label "Birth Event"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Country
+civ:Country rdf:type owl:Class ;
+            rdfs:subClassOf <http://schema.org/Place> ;
+            rdfs:label "Country"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Death
+civ:Death rdf:type owl:Class ;
+          rdfs:subClassOf civ:Event ;
+          rdfs:label "Death Event"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Divorce
+civ:Divorce rdf:type owl:Class ;
+            rdfs:subClassOf civ:Event ;
+            rdfs:label "Divorce Event"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Event
+civ:Event rdf:type owl:Class ;
+          rdfs:subClassOf bio:Event ;
+          rdfs:label "Civil Registration Event"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Marriage
+civ:Marriage rdf:type owl:Class ;
+             rdfs:subClassOf civ:Event ;
+             rdfs:label "Marriage Event"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Municipality
+civ:Municipality rdf:type owl:Class ;
+                 rdfs:subClassOf <http://schema.org/Place> ;
+                 rdfs:label "Municipality"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Province
+civ:Province rdf:type owl:Class ;
+             rdfs:subClassOf <http://schema.org/Place> ;
+             rdfs:label "Province"@en .
+
+
+###  https://iisg.amsterdam/id/civ/Region
+civ:Region rdf:type owl:Class ;
+           rdfs:subClassOf <http://schema.org/Place> ;
+           rdfs:label "Region"@en .
+
+
+###  Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi

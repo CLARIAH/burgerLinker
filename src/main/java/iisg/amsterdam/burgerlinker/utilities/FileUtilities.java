@@ -1,4 +1,4 @@
-package iisg.amsterdam.wp4_links.utilities;
+package iisg.amsterdam.burgerlinker.utilities;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;

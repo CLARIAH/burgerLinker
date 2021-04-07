@@ -1,4 +1,4 @@
-package iisg.amsterdam.wp4_links.utilities;
+package iisg.amsterdam.burgerlinker.utilities;
 
 import org.apache.logging.log4j.Logger;
 
