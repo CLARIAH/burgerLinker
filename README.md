@@ -13,7 +13,7 @@ This tool is being developed to improve and replace the current [LINKS](https://
 Historians use archival records to describe persons' lives. Each record (e.g. a marriage record) just describes a point in time. Hence historians try to link multiple records on the same person to describe a life course. This tool focuses on "just" the linkage of civil records. By doing so, pedigrees of humans can be created over multiple generations for research on social inequality, especially in the part of health sciences where the focus is on gene-social contact interactions.
 
 ### User profile
-The software is designed for the so called "digital historians" (e.g. someone with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
+The software is designed for the so called "digital historians" (e.g. humanities scholars with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
 
 ### Data
 In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/CIV.ttl). An overview of the Civil Registries schema is available as a [PNG file](/assets/CIV.png), and you can browse it on [Druid](https://druid.datalegend.net/LINKS/civ).
