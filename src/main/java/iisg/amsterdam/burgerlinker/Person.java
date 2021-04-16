@@ -158,6 +158,14 @@ public class Person {
 		}
 		return false;
 	}
+	
+	public Boolean hasGender(String gender) {
+		if(this.gender.equals(gender) || gender.equals("u")) {
+			return true;
+		}
+		return false;
+	}
+	
 
 	public Boolean hasDoubleBarreledFirstName() {
 		if (this.getFirstName() != null) {

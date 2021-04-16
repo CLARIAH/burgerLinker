@@ -2,6 +2,10 @@ package iisg.amsterdam.burgerlinker;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+
+import java.io.InputStream;
+
+import org.apache.log4j.PropertyConfigurator;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
@@ -29,8 +33,6 @@ public class App
 	@Parameter(names = "--fixedLev")
 	boolean fixedLev = false;
 
-//	@Parameter(names = "--bestLink")
-//	boolean bestLink = false; 
 
 	@Parameter(names = "--format")
 	String format = "CSV"; // or "RDF"
@@ -61,9 +63,12 @@ public class App
 		long startTime = System.currentTimeMillis();
 
 		// default option is to show only errors 
-		// BasicConfigurator.configure();
 		Configurator.setRootLevel(Level.ERROR);
-
+		InputStream log4jConfPath = Thread.currentThread().getContextClassLoader().getResourceAsStream("log4j.properties");
+		PropertyConfigurator.configure(log4jConfPath);
+		
+		
+		
 
 		if(help == false) {
 			// show only error and warning logs if user enters: --debug warn

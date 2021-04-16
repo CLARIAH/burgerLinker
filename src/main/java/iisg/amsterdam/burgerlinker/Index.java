@@ -1,7 +1,6 @@
 package iisg.amsterdam.burgerlinker;
 
-import static iisg.amsterdam.burgerlinker.Properties.DIRECTORY_NAME_DATABASE;
-import static iisg.amsterdam.burgerlinker.Properties.DIRECTORY_NAME_DICTIONARY;
+import static iisg.amsterdam.burgerlinker.Properties.*;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -30,11 +29,8 @@ public class Index {
 	private final String eventID_matchedNames_separator = ":";
 	private final int flush_limit = 50;
 	private int maxLev = 0, counterDictionaryFirstNames = 0, counterDictionaryLastNames = 0;
-	private Boolean fixedLev;
 	public TreeMap<Integer, Integer> nameLengthLevenshtein;
 	public HashSet<String> indexedFullNames;  
-
-
 
 	public static final Logger lg = LogManager.getLogger(Index.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -44,18 +40,17 @@ public class Index {
 	public Index(String ID, String directoryPath, int maxLev, Boolean fixedLev) {
 		this.indexID = ID;
 		this.maxLev = maxLev;
-		this.fixedLev = fixedLev;
 		this.directoryDB = directoryPath + "/" + DIRECTORY_NAME_DATABASE + "/" + indexID;
 		this.directoryDictionaryFirstNames = directoryPath + "/" + DIRECTORY_NAME_DICTIONARY + "/" + indexID + "-FN.txt";
 		this.directoryDictionaryLastNames = directoryPath + "/" + DIRECTORY_NAME_DICTIONARY + "/" + indexID + "-LN.txt";
-		setNameLengthLevenshteinRules();
+		setNameLengthLevenshteinRules(fixedLev);
 		indexedFullNames = new HashSet<String>();
 	}
 
-	public void setNameLengthLevenshteinRules() {
+	public void setNameLengthLevenshteinRules(Boolean fixedLevenshtein) {
 		// if fixedLev == true
 		int[] maxLevenshtein = new int[]{maxLev, maxLev, maxLev, maxLev, maxLev};
-		if(fixedLev == false) 
+		if(fixedLevenshtein == false) 
 			switch(maxLev) {
 			case 0:
 				maxLevenshtein = new int[]{0, 0, 0, 0, 0};
@@ -350,6 +345,14 @@ public class Index {
 		}
 		return result;
 	}
+	
+	
+	
+
+	
+	
+	
+	
 
 }
 
