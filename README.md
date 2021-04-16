@@ -62,9 +62,15 @@ Functionalities that are supported in the current version: (case insensitive)
 
 - `Within_B_M`: link *newborns* in Birth Certificates to *brides/grooms* in Marriage Certificates (reconstructs life course)
 
+- `Within_B_D`: link *newborns* in Birth Certificates to *deceased* individuals in Death Certificates (reconstructs life course)
+
 - `Between_B_M`: link *parents of newborns* in Birth Certificates to *brides & grooms* in Marriage Certificates (reconstructs family ties)
 
+- `Between_B_D`: link *parents of newborns* in Birth Certificates to *deceased & partner* in Death Certificates (reconstructs family ties)
+
 - `Between_M_M`: link *parents of brides/grooms* in Marriage Certificates to *brides & grooms* in Marriage Certificates (reconstructs family ties)
+
+- `Between_D_M`: link *parents of deceased* in Death Certificates to *brides & grooms* in Marriage Certificates (reconstructs family ties)
 
 - `Closure`: compute the transitive closure of all detected links to get a unique identifier per individual. The output of this function is a new RDF dataset, where linked individuals are replaced by the same identifier in the civil registries dataset.
 
