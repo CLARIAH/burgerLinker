@@ -9,6 +9,8 @@ This tool is being developed to improve and replace the current [LINKS](https://
 - allows family and life course reconstruction (by computing the transitive closure over all detected links);
 - open software.
 
+To download the latest version of the tool click [releases](https://github.com/CLARIAH/burgerLinker/releases) on the right of the screen.
+
 ### Use case
 Historians use archival records to describe persons' lives. Each record (e.g. a marriage record) just describes a point in time. Hence historians try to link multiple records on the same person to describe a life course. This tool focuses on "just" the linkage of civil records. By doing so, pedigrees of humans can be created over multiple generations for research on social inequality, especially in the part of health sciences where the focus is on gene-social contact interactions.
 
