@@ -65,6 +65,7 @@ public class MyTransducer {
 
 	public ITransducer<Candidate> constructTransducer()
 	{
+		ClassLoader.getSystemResource("/res/log4j.properties");
 		long startTime = System.currentTimeMillis();
 		LOG.logDebug("constructTransducer", "START: Constructing transducer for dictionary located at: " + dictionaryPath);
 		SortedDawg dictionary;

@@ -48,7 +48,20 @@ public class MyHDT implements ProgressListener {
 			long startTime = System.currentTimeMillis();
 			dataset = HDTManager.loadIndexedHDT(filePath, null);	
 			LOG.outputTotalRuntime("Loading HDT Dataset", startTime, true);	
-			System.out.println("Total Triples: "+ dataset.getTriples().getNumberOfElements());
+			
+			
+			LOG.outputConsole("");
+			LOG.outputConsole("--------");
+			LOG.outputConsole("- Number of statements in this dataset: "+ dataset.getTriples().getNumberOfElements());
+			LOG.outputConsole("- Number of distinct subjects: "+ dataset.getDictionary().getNsubjects());
+			LOG.outputConsole("- Number of distinct predicates: "+ dataset.getDictionary().getNpredicates());
+			LOG.outputConsole("- Number of distinct objects: "+ dataset.getDictionary().getNobjects());
+			LOG.outputConsole("--------");
+			LOG.outputConsole("");
+			
+			
+			
+			System.out.println();
 			//	System.out.println("Different subjects: "+dataset.getDictionary().getNsubjects());
 			//	System.out.println("Different predicates: "+dataset.getDictionary().getNpredicates());
 			//	System.out.println("Different objects: "+dataset.getDictionary().getNobjects());
@@ -252,15 +265,17 @@ public class MyHDT implements ProgressListener {
 	 * @param eventURI
 	 * 		the URI of a life event
 	 */
-//	public String getIDofEvent(String eventURI) {
-//		// Of course the more correct way would be to query the HDT file and get the registration ID from the event URI
-//		String[] bits = eventURI.split("/");
-//		return bits[bits.length-1];
-//	}
-	
+	//	public String getIDofEvent(String eventURI) {
+	//		// Of course the more correct way would be to query the HDT file and get the registration ID from the event URI
+	//		String[] bits = eventURI.split("/");
+	//		return bits[bits.length-1];
+	//	}
+
 	public String getIDofEvent(String eventURI) {
+		//		try {
+		IteratorTripleString it;
 		try {
-			IteratorTripleString it = dataset.search(eventURI, REGISTRATION_ID, "");
+			it = dataset.search(eventURI, REGISTRATION_ID, "");
 			if(it.hasNext()) {
 				TripleString ts = it.next();
 				String eventID = ts.getObject().toString();
@@ -270,23 +285,22 @@ public class MyHDT implements ProgressListener {
 					LOG.logError("getIDofEvent", "The ID for the following event URI is not found in the dataset: " + eventURI);
 				}
 			} 
-		}
-		catch (NotFoundException e) {
-			LOG.logError("getIDofEvent", "The ID for the following event URI is not found in the dataset: " + eventURI);
+		} catch (NotFoundException e) {	
 			e.printStackTrace();
 		}
+		LOG.logError("getIDofEvent", "The ID for the following event URI is not found in the dataset: " + eventURI);
 		return null;
 	}
 
 
 
-//	public String getIDofPerson(String personURI) {
-//		// Of course the more correct way would be to query the HDT file and get the registration ID from the event URI
-//		String[] bits = personURI.split("/");
-//		return bits[bits.length-1];
-//	}
+	//	public String getIDofPerson(String personURI) {
+	//		// Of course the more correct way would be to query the HDT file and get the registration ID from the event URI
+	//		String[] bits = personURI.split("/");
+	//		return bits[bits.length-1];
+	//	}
 
-	
+
 	public String getIDofPerson(String personURI) {
 		try {
 			IteratorTripleString it = dataset.search(personURI, PERSON_ID, "");
@@ -306,7 +320,7 @@ public class MyHDT implements ProgressListener {
 		}
 		return null;
 	}
-	
+
 
 
 	/**
@@ -366,6 +380,13 @@ public class MyHDT implements ProgressListener {
 				TripleString ts = it.next();
 				first_name = ts.getObject().toString();
 				first_name = getStringValueFromLiteral(first_name);
+			} else {
+				it = dataset.search(URI, GIVEN_NAME_S, "");
+				if(it.hasNext()){
+					TripleString ts = it.next();
+					first_name = ts.getObject().toString();
+					first_name = getStringValueFromLiteral(first_name);			
+				}
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
@@ -388,7 +409,14 @@ public class MyHDT implements ProgressListener {
 				TripleString ts = it.next();
 				last_name = ts.getObject().toString();
 				last_name = getStringValueFromLiteral(last_name);
-			}
+			} else {
+				it = dataset.search(URI, FAMILY_NAME_S, "");
+				if(it.hasNext()){
+					TripleString ts = it.next();
+					last_name = ts.getObject().toString();
+					last_name = getStringValueFromLiteral(last_name);
+				}
+			}	
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
@@ -409,10 +437,10 @@ public class MyHDT implements ProgressListener {
 			if(it.hasNext()){
 				TripleString ts = it.next();
 				gender = ts.getObject().toString();
-				if(gender.equals(GENDER_FEMALE_URI) || gender.equals("f") || gender.equals("\"f\"")) {
+				if(gender.equals("f") || gender.equals(GENDER_FEMALE_URI) || gender.equals(GENDER_FEMALE_URI_S) || gender.equals("\"f\"")) {
 					return "f";
 				} else {
-					if(gender.equals(GENDER_MALE_URI) || gender.equals("m") || gender.equals("\"m\"")) {
+					if(gender.equals("m") || gender.equals(GENDER_MALE_URI) || gender.equals(GENDER_MALE_URI_S) || gender.equals("\"m\"")) {
 						return "m";
 					}
 				}
@@ -526,16 +554,16 @@ public class MyHDT implements ProgressListener {
 	}
 
 
-//	public String getEventURIfromID(String eventID, String prov) {
-//		// Of course the more correct way would be to query the HDT file and get the event URI from the registration ID		
-//		return PREFIX_IISG  + "event/" + eventID;
-//	}
-//
-//
-//	public String getPersonURIfromID(String personID, String prov) {
-//		// Of course the more correct way would be to query the HDT file and get the event URI from the person ID		
-//		return PREFIX_IISG  + "person/" + personID;
-//	}
+	//	public String getEventURIfromID(String eventID, String prov) {
+	//		// Of course the more correct way would be to query the HDT file and get the event URI from the registration ID		
+	//		return PREFIX_IISG  + "event/" + eventID;
+	//	}
+	//
+	//
+	//	public String getPersonURIfromID(String personID, String prov) {
+	//		// Of course the more correct way would be to query the HDT file and get the event URI from the person ID		
+	//		return PREFIX_IISG  + "person/" + personID;
+	//	}
 
 
 	public String getPersonID(String eventID, String role) {

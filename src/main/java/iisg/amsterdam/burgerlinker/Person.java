@@ -160,7 +160,7 @@ public class Person {
 	}
 	
 	public Boolean hasGender(String gender) {
-		if(this.gender.equals(gender) || gender.equals("u")) {
+		if(this.gender.equals(gender) || this.gender.equals("u")) {
 			return true;
 		}
 		return false;

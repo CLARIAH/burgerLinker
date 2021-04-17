@@ -92,8 +92,7 @@ public class Within_B_D {
 				}
 				// iterate through the birth certificates to link it to the death dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
-				long estNumber = it.estimatedNumResults();
-				LOG.outputConsole("Estimated number of certificates to be linked is: " + estNumber);	
+				long estNumber = it.estimatedNumResults();	
 				String taskName = "Linking Newborns to " + processName;
 				ProgressBar pb = null;
 				try {

@@ -2,10 +2,7 @@ package iisg.amsterdam.burgerlinker;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-
-import java.io.InputStream;
-
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
@@ -57,15 +54,23 @@ public class App
 	}
 
 	public void run() {
-		LOG.outputConsole("PROGRAM STARTED!!");
-		LOG.outputConsole("-----------------");
+		LOG.outputConsole("");
+		LOG.outputConsole("=======================");
+		LOG.outputConsole("Welcome to burgerLinker");
+		LOG.outputConsole("=======================");
 		LOG.outputConsole("");
 		long startTime = System.currentTimeMillis();
 
+		
+//		BasicConfigurator.configure();
+		ClassLoader.getSystemResource("/res/log4j.properties");
+		
 		// default option is to show only errors 
 		Configurator.setRootLevel(Level.ERROR);
-		InputStream log4jConfPath = Thread.currentThread().getContextClassLoader().getResourceAsStream("log4j.properties");
-		PropertyConfigurator.configure(log4jConfPath);
+		Configurator.setAllLevels("com.github.liblevenshtein", Level.OFF);
+		Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
+		
+		
 		
 		
 		
@@ -99,14 +104,33 @@ public class App
 			System.out.printf(formatting, "ConvertToHDT:", "Convert an RDF dataset (given as --inputData) to an HDT file generated in the same directory. This function can also be used for merging two HDT files into one (see Example 3 below).");
 			System.out.printf(formatting, "ShowDatasetStats:", "Display some general stats about the HDT dataset (given as --inputData)");
 			System.out.printf(formatting, "Within_B_M:", "Link newborns in Birth Certificates to brides/grooms in Marriage Certificates (reconstructs life course)");
+			System.out.printf(formatting, "Within_B_D:", "Link newborns in Birth Certificates to deceased individuals in Death Certificates (reconstructs life course)");
 			System.out.printf(formatting, "Between_B_M:", "Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
+			System.out.printf(formatting, "Between_B_D:", "Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates (reconstructs family ties)");
 			System.out.printf(formatting, "Between_M_M:", "Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");	
+			System.out.printf(formatting, "Between_D_M:", "Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");	
 			System.out.printf(formatting, "Closure:", "Compute the transitive closure of all detected links to get a unique identifier per individual");	
 			
 			System.out.println("\n");
 			System.out.println("------------------------");
 
-			System.out.println("Example 1. Linking parents of newborns to brides and grooms:");
+			System.out.println("Example 1. Generate an HDT file and its index from an RDF dataset:");
+			System.out.println("--function ConvertToHDT --inputData dataDirectory/myData.nq --outputDir . ");
+			System.out.println("\nThis will generate the HDT file 'myData.hdt' and its index 'myData.hdt.index' in the same directory."
+					+ "\nThe index should be kept in the same directory of the HDT file to speed up all queries.");
+
+			System.out.println("\n");
+			System.out.println("------------------------");
+
+			System.out.println("Example 2. Merge two HDT files into one:");
+			System.out.println("--function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . ");
+			System.out.println("\nThis will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory."
+					+ "\nThe two input HDT files are separated by a comma ',' without a space)");
+			
+			System.out.println("\n");
+			System.out.println("------------------------");
+			
+			System.out.println("Example 3. Linking parents of newborns to brides and grooms:");
 			System.out.println("--function Between_B_M --inputData dataDirectory/myData.hdt --outputDir . --format CSV  --maxLev 3 --fixedLev");
 			System.out.println("\nThese arguments indicate that the user wants to:\n "
 					+ "\t \t [Between_B_M] link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates,\n "
@@ -118,27 +142,27 @@ public class App
 
 			System.out.println("\n");
 			System.out.println("------------------------");
-
-			System.out.println("Example 2. Generate an HDT file and its index from an RDF dataset:");
-			System.out.println("--function ConvertToHDT --inputData dataDirectory/myData.nq --outputDir . ");
-			System.out.println("\nThis will generate the HDT file 'myData.hdt' and its index 'myData.hdt.index' in the same directory."
-					+ "\nThe index should be kept in the same directory of the HDT file to speed up all queries.");
-
+			
+			System.out.println("Example 4. Family Reconstruction:");
+			System.out.println("--function closure --inputData dataDirectory/myData.hdt --outputDir myResultsDirectory ");
+			System.out.println("\nThis command computes the transitive closure of all links existing in the directory myResultsDirectory, and generates a new finalDataset.nt.gz dataset in this directory "
+					+ "\n by replacing all matched individuals' identifiers from the myData.hdt input dataset with the same unique identifier)");
+			
 			System.out.println("\n");
 			System.out.println("------------------------");
-
-			System.out.println("Example 3. Merge two HDT files into one:");
-			System.out.println("--function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . ");
-			System.out.println("\nThis will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory."
-					+ "\nThe two input HDT files are separated by a comma ',' without a space)");
-
+			
+			
+			System.out.println("For further details, visit https://github.com/CLARIAH/burgerLinker");
+			
 			// Add example of computing the closure			
 			
 		}
 
 		LOG.outputConsole("");
-		LOG.outputConsole("-----------------");
-		LOG.outputTotalRuntime("PROGRAM", startTime, true);	
+		LOG.outputConsole("=====================");
+		LOG.outputTotalRuntime("burgerLinker", startTime, true);
+		LOG.outputConsole("=====================");
+		LOG.outputConsole("");
 	}
 
 

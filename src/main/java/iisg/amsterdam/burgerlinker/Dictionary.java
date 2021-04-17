@@ -48,7 +48,6 @@ public class Dictionary {
 			indexMalePartner.openIndex();
 			it = myHDT.dataset.search("", roleFemalePartner, "");
 			long estNumber = it.estimatedNumResults();
-			LOG.outputConsole("Estimated number of certificates to be indexed is: " + estNumber);	
 			String taskName = "Indexing " + processName;
 			ProgressBar pb = null;
 			try {
@@ -106,8 +105,7 @@ public class Dictionary {
 			indexMother.openIndex();
 			indexFather.openIndex();
 			it = myHDT.dataset.search("", roleMain, "");
-			long estNumber = it.estimatedNumResults();
-			LOG.outputConsole("Estimated number of certificates to be indexed is: " + estNumber);	
+			long estNumber = it.estimatedNumResults();	
 			String taskName = "Indexing " + processName;
 			ProgressBar pb = null;
 			try {
@@ -165,15 +163,29 @@ public class Dictionary {
 			indexFather.closeStream();
 			LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);	
 			countInserts = count_Main_Mother_Father + count_Main_Mother + count_Main_Father;	
-			int countNonIndexed = countAll - countInserts;
+			int countNonIndexed = countAll - countInserts;	
+			LOG.outputConsole("");
+			LOG.outputConsole("--------");
 			LOG.outputConsole("- Number of Certificates: " +  countAll);
 			LOG.outputConsole("- Number of Indexed Certificates: " +  countInserts); 
-			LOG.outputConsole("-> 3 Individuals (Main + Mother + Father): " +  count_Main_Mother_Father); 
-			LOG.outputConsole("-> 2 Individuals (Main + Mother ): " +  count_Main_Mother); 
-			LOG.outputConsole("-> 2 Individuals (Main + Father): " +  count_Main_Father); 
+			if(count_Main_Mother_Father > 0) {
+				LOG.outputConsole("-> Includes 3 Individuals (Main + Mother + Father): " +  count_Main_Mother_Father); 
+			}
+			if(count_Main_Mother > 0) {
+				LOG.outputConsole("-> Includes 2 Individuals (Main + Mother ): " +  count_Main_Mother);  
+			}
+			if(count_Main_Father > 0) {
+				LOG.outputConsole("-> Includes 2 Individuals (Main + Father): " +  count_Main_Father);  
+			}
 			LOG.outputConsole("- Number of Non-Indexed Certificates: " +  countNonIndexed);
-			LOG.outputConsole("-> Only Main Individual: " +  count_Main); 
-			LOG.outputConsole("-> No Main Individual: " +  count_No_Main); 
+			if(count_Main > 0) {
+				LOG.outputConsole("-> Includes only Main Individual: " +  count_Main); 
+			}
+			if(count_No_Main > 0) {
+				LOG.outputConsole("-> Includes no Main Individual: " +  count_No_Main);  
+			}	
+			LOG.outputConsole("--------");
+			LOG.outputConsole("");						
 		}
 		return true;
 	}

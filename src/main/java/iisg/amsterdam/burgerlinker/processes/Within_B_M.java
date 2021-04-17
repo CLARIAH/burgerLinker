@@ -98,7 +98,6 @@ public class Within_B_M {
 				// iterate through the marriage certificates to link it to the marriage dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
 				long estNumber = it.estimatedNumResults();
-				LOG.outputConsole("Estimated number of certificates to be linked is: " + estNumber);	
 				String taskName = "Linking Newborns to " + processName;
 				ProgressBar pb = null;
 				try {

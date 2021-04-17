@@ -54,49 +54,49 @@ public class Controller {
 			case "within_b_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Within Births-Marriages (i.e. newborn --> partner)");
+					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
 					Within_B_M();
-					LOG.outputTotalRuntime("Within Births-Marriages (i.e. newborn --> partner)", startTime, true);
+					LOG.outputTotalRuntime("Within Births-Marriages (newborn -> bride/groom)", startTime, true);
 				}
 				break;
 			case "within_b_d":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Within Births-Deaths (i.e. newborn --> deceased)");
+					LOG.outputConsole("START: Within Births-Deaths (newborn -> deceased)");
 					Within_B_D();
-					LOG.outputTotalRuntime("Within Births-Deaths (i.e. newborn --> deceased)", startTime, true);
+					LOG.outputTotalRuntime("Within Births-Deaths (newborn -> deceased)", startTime, true);
 				}
 				break;
 			case "between_b_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Births-Marriages (i.e. newborn parents --> partners)");
+					LOG.outputConsole("START: Between Births-Marriages (newborn parents -> bride + groom)");
 					Between_B_M();
-					LOG.outputTotalRuntime("Between Births-Marriages (i.e. newborn parents --> partners)", startTime, true);
+					LOG.outputTotalRuntime("Between Births-Marriages (newborn parents -> bride + groom)", startTime, true);
 				}
 				break;
 			case "between_b_d":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Births-Deaths (i.e. newborn parents --> deceased and partner)");
+					LOG.outputConsole("START: Between Births-Deaths (parents of newborn -> deceased + partner)");
 					Between_B_D();
-					LOG.outputTotalRuntime("Between Births-Deaths (i.e. newborn parents --> deceased and partner)", startTime, true);
+					LOG.outputTotalRuntime("Between Births-Deaths (parents of newborn -> deceased + partner)", startTime, true);
 				}
 				break;
 			case "between_d_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Deaths-Marriages (i.e. deceased parents --> partners)");
+					LOG.outputConsole("START: Between Deaths-Marriages (parents of deceased -> bride + groom)");
 					Between_D_M();
-					LOG.outputTotalRuntime("Between Deaths-Marriages (i.e. deceased parents --> partners)", startTime, true);
+					LOG.outputTotalRuntime("Between Deaths-Marriages (parents of deceased -> bride + groom)", startTime, true);
 				}
 				break;
 			case "between_m_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Marriages-Marriages (i.e. newly-weds' parents --> newly-weds)");
+					LOG.outputConsole("START: Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
 					Between_M_M();
-					LOG.outputTotalRuntime("Between Marriages-Marriages (i.e. newly-weds' parents --> newly-weds)", startTime, true);
+					LOG.outputTotalRuntime("Between Marriages-Marriages (parents of bride/groom -> bride + groom)", startTime, true);
 				}
 				break;
 			case "closure":

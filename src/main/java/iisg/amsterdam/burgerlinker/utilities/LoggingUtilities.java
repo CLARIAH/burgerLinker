@@ -17,36 +17,36 @@ public final class LoggingUtilities {
 	}
 
 	public void logDebug(String function, String message) {
-		LOG.debug("\n	FUNCTION --> " + function
-				+ "\n	DEBUG --> " + message
+		LOG.debug("\n	FUNCTION -> " + function
+				+ "\n	DEBUG -> " + message
 				+ "\n -----");
 	}
 
 
 	public void logWarn(String function, String message) {
-		LOG.warn( "\n	FUNCTION --> " + function
-				+ "\n	WARNING --> " + message 
+		LOG.warn( "\n	FUNCTION -> " + function
+				+ "\n	WARNING -> " + message 
 				+ "\n -----");
 	}
 
 	public void logWarn(String function, String message, String suggestion) {
-		LOG.warn( "\n	FUNCTION --> " + function
-				+ "\n	WARNING --> " + message
+		LOG.warn( "\n	FUNCTION -> " + function
+				+ "\n	WARNING -> " + message
 				+ "\n	FIX --> " + suggestion
 				+ "\n -----");
 	}
 
 
 	public void logError(String function, String message) {
-		LOG.error("\n	FUNCTION --> " + function
-				+ "\n	ERROR --> " + message
+		LOG.error("\n	FUNCTION -> " + function
+				+ "\n	ERROR -> " + message
 				+ "\n -----");
 	}
 
 	public void logError(String function, String message, String suggestion) {
-		LOG.error("\n	FUNCTION --> " + function
-				+ "\n	ERROR --> " + message
-				+ "\n	FIX --> " + suggestion
+		LOG.error("\n	FUNCTION -> " + function
+				+ "\n	ERROR -> " + message
+				+ "\n	FIX -> " + suggestion
 				+ "\n -----");
 	}
 	
@@ -56,7 +56,14 @@ public final class LoggingUtilities {
 		double rounded_totalTime = Math.round(totalTime * 100.0) / 100.0;
 		double totalTime_minutes = totalTime / 60.0;
 		double rounded_totalTime_minutes = Math.round(totalTime_minutes * 100.0) / 100.0;
-		String message = "FINISHED: " + processName + " - Total runtime: " + rounded_totalTime + " seconds (" + rounded_totalTime_minutes + " minutes)";
+		String message = "*DONE: " + processName;
+		if(rounded_totalTime > 1) {
+			if(rounded_totalTime_minutes > 1) {
+				 message =  message + " [runtime: " + rounded_totalTime + " s / " + rounded_totalTime_minutes + " m)]";
+			} else {
+				 message = message + " [runtime: " + rounded_totalTime + " s]";
+			}
+		}
 		if(output == true) {
 			outputConsole(message);
 		}
