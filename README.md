@@ -38,9 +38,9 @@ The only other set of initiatives that we are aware of are bespoke programming i
 - Only the [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), which is free and installed on almost every computer these days.
 
 ### Input requirements
-- Only one RDF dataset, describing the civil registries that are modelled according to our simple [Civil Registries schema](assets/CIV.png). For efficient querying (i.e. lower memory usage with fast search), the matching tool requires the dataset to be compressed and given as an HDT file with its index. [What is HDT?](http://www.rdfhdt.org/what-is-hdt/)
+- Only one RDF dataset, describing the civil registries that are modelled according to our simple [Civil Registries schema](assets/CIV.png) (see [Wiki](https://github.com/CLARIAH/burgerLinker/wiki/Adapting-the-data-model) for more details regarding the data model and the conversion to RDF).
 
-The tool allows the conversion of any valid RDF file to HDT using the `--function convertToHDT` (see Example 2 below).
+- For efficient querying (i.e. lower memory usage with fast search), the matching tool requires the dataset to be compressed and given as an [HDT](http://www.rdfhdt.org/what-is-hdt/) file with its index. The tool allows the conversion of any valid RDF file to HDT using the `--function convertToHDT` (see Example 2 below).
 
 ### Output format
 Two possible output formats to represent the detected links:
