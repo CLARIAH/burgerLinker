@@ -29,7 +29,7 @@ public class Within_B_D {
 	private Boolean fixedLev;
 	Index indexDeceased, indexMother, indexFather;
 
-	public static final Logger lg = LogManager.getLogger(Within_B_M.class);
+	public static final Logger lg = LogManager.getLogger(Within_B_D.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 

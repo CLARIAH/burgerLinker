@@ -29,7 +29,7 @@ public class Between_D_M {
 	private Boolean fixedLev;
 	Index indexBride, indexGroom;
 
-	public static final Logger lg = LogManager.getLogger(Between_B_M.class);
+	public static final Logger lg = LogManager.getLogger(Between_D_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 

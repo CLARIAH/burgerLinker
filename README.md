@@ -1,5 +1,8 @@
 ## **burgerLinker -** Civil Registries Linking Tool
 
+Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki).
+
+
 ### Purpose
 This tool is being developed to improve and replace the current [LINKS](https://iisg.amsterdam/en/hsn/projects/links) software. Points of improvement are:
 - extremely fast and scalable matching procedure (using Levenshtein automaton and HDT);
