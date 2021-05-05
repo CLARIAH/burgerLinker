@@ -20,16 +20,18 @@ public class Controller {
 			"between_b_m", "between_m_m", "between_d_m", "between_b_d"};
 	private String function, inputDataset, outputDirectory;
 	private int maxLev;
-	private boolean fixedLev = false, bestLink = false, outputFormatCSV = true; 
+	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, outputFormatCSV = true; 
 
 	public static final Logger lg = LogManager.getLogger(Controller.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public Controller(String function, int maxlev, Boolean fixedLev,  String inputDataset, String outputDirectory, String outputFormat) {
+	public Controller(String function, int maxlev, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, String inputDataset, String outputDirectory, String outputFormat) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
+		this.ignoreDate = ignoreDate;
+		this.ignoreBlock = ignoreBlock;
 		this.inputDataset = inputDataset;
 		this.outputDirectory = outputDirectory;
 		if(!outputFormat.equals("CSV")) {
@@ -259,7 +261,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Within_B_M(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				new Within_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Within_B_M", "Error in creating the three sub output directories");
@@ -283,7 +285,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Within_B_D(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				new Within_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Within_B_D", "Error in creating the three sub output directories");
@@ -308,7 +310,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_B_M(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				new Between_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_B_M", "Error in creating the three sub output directories");
@@ -332,7 +334,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_B_D(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				new Between_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_B_D", "Error in creating the three sub output directories");
@@ -357,7 +359,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_D_M(myHDT, mainDirectory, maxLev, fixedLev, bestLink, outputFormatCSV);
+				new Between_D_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_D_M", "Error in creating the three sub output directories");
@@ -382,7 +384,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_M_M(myHDT, mainDirectory,  maxLev, fixedLev, bestLink, outputFormatCSV);
+				new Between_M_M(myHDT, mainDirectory,  maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_M_M", "Error in creating the three sub output directories");

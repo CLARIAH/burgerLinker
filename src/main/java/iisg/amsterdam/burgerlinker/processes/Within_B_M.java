@@ -25,26 +25,33 @@ public class Within_B_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = 13, MAX_YEAR_DIFF = 80,  linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev;
+	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexPartner, indexMother, indexFather;
 
 	public static final Logger lg = LogManager.getLogger(Within_B_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Within_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean bestLink, Boolean formatCSV) {
+	public Within_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
+		this.ignoreDate = ignoreDate;
+		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
-		String fixed = "", best = "";
+		String fixed = "";
 		if(fixedLev == true) {
 			fixed = "-fixed";
 		}
-		if(bestLink == true) {
-			best = "-best";
+		String date = "";
+		if(ignoreDate == true) {
+			date = "-ignoreDate";
 		}
-		String resultsFileName = "within-B-M-maxLev-" + maxLevenshtein + fixed + best;
+		String block = "";
+		if(ignoreBlock == true) {
+			block = "-ignoreBlock";
+		}
+		String resultsFileName = "within-B-M-maxLev-" + maxLevenshtein + fixed + date + block;
 		if(formatCSV == true) {
 			String header = "id_certificate_newborn,"
 					+ "id_certificate_partner,"
@@ -107,19 +114,18 @@ public class Within_B_M {
 						cntAll++;
 						String birthEvent = ts.getSubject().toString();	
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
-						int birthYear = myHDT.getEventDate(birthEvent);
 						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
-						if(newborn.isValidWithFullName() && birthYear != 0) {
+						if(newborn.isValidWithFullName()) {
 							if(newborn.getGender().equals(gender) || newborn.getGender().equals("u")) {
 								Person mother, father;
 								mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
 								father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);
 								CandidateList candidatesPartner=null, candidatesMother=null, candidatesFather=null;
 								if(mother.isValidWithFullName() || father.isValidWithFullName()) {
-									candidatesPartner = indexPartner.searchForCandidate(newborn, birthEventID);
+									candidatesPartner = indexPartner.searchForCandidate(newborn, birthEventID, ignoreBlock);
 									if(candidatesPartner.candidates.isEmpty() == false) {
 										if(mother.isValidWithFullName()){
-											candidatesMother = indexMother.searchForCandidate(mother, birthEventID);
+											candidatesMother = indexMother.searchForCandidate(mother, birthEventID, ignoreBlock);
 											if(candidatesMother.candidates.isEmpty() == false) {
 												Set<String> finalCandidatesMother = candidatesPartner.findIntersectionCandidates(candidatesMother);
 												for(String finalCandidate: finalCandidatesMother) {
@@ -131,7 +137,11 @@ public class Within_B_M {
 													}
 													if(link == true) { // if one of them does not have a father, we match on two individuals
 														String marriageEventURI = myHDT.getEventURIfromID(finalCandidate);
-														int yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+														int yearDifference = 0;
+														if(ignoreDate == false) {
+															int birthYear = myHDT.getEventDate(birthEvent);
+															yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+														}
 														if(yearDifference < 999) { // if it fits the time line
 															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
 															Person partner_mother = myHDT.getPersonInfo(marriageEventURI, rolePartnerMother);
@@ -142,7 +152,7 @@ public class Within_B_M {
 											}
 										}
 										if(father.isValidWithFullName()){
-											candidatesFather = indexFather.searchForCandidate(father, birthEventID);
+											candidatesFather = indexFather.searchForCandidate(father, birthEventID, ignoreBlock);
 											if(candidatesFather.candidates.isEmpty() == false) {
 												Set<String> finalCandidatesFather = candidatesPartner.findIntersectionCandidates(candidatesFather);
 												for(String finalCandidate: finalCandidatesFather) {
@@ -154,7 +164,11 @@ public class Within_B_M {
 													}
 													if(link == true) { // if one of them does not have a mother, we match on two individuals
 														String marriageEventURI = myHDT.getEventURIfromID(finalCandidate);
-														int yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+														int yearDifference = 0;
+														if(ignoreDate == false) {
+															int birthYear = myHDT.getEventDate(birthEvent);
+															yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+														}
 														if(yearDifference < 999) { // if it fits the time line
 															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);		
 															Person partner_father = myHDT.getPersonInfo(marriageEventURI, rolePartnerFather);
@@ -169,7 +183,11 @@ public class Within_B_M {
 												Set<String> finalCandidatesMotherFather = candidatesPartner.findIntersectionCandidates(candidatesMother, candidatesFather);
 												for(String finalCandidate: finalCandidatesMotherFather) {
 													String marriageEventURI = myHDT.getEventURIfromID(finalCandidate);
-													int yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+													int yearDifference = 0;
+													if(ignoreDate == false) {
+														int birthYear = myHDT.getEventDate(birthEvent);
+														yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+													}
 													if(yearDifference < 999) { // if it fits the time line
 														Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
 														Person partner_mother = myHDT.getPersonInfo(marriageEventURI, rolePartnerMother);
@@ -202,104 +220,104 @@ public class Within_B_M {
 	}
 
 
-//	public Boolean generatePartnerIndex(String gender) {
-//		long startTime = System.currentTimeMillis();
-//		int cntInserts=0, cntAll =0 , cnt_P_M_F=0, cnt_P_M =0 , cnt_P_F=0, cnt_P=0, cnt_no_P=0  ;
-//		IteratorTripleString it;
-//		String rolePartner, rolePartnerMother, rolePartnerFather; 
-//		if(gender == "f") {
-//			rolePartner = ROLE_BRIDE;
-//			rolePartnerMother = ROLE_BRIDE_MOTHER;
-//			rolePartnerFather = ROLE_BRIDE_FATHER;
-//			processName = "Brides";
-//			indexPartner = new Index("bride", mainDirectoryPath, maxLev, fixedLev);
-//			indexMother = new Index("bride-mother", mainDirectoryPath, maxLev, fixedLev);
-//			indexFather = new Index("bride-father", mainDirectoryPath, maxLev, fixedLev);
-//		} else {
-//			rolePartner = ROLE_GROOM;
-//			rolePartnerMother = ROLE_GROOM_MOTHER;
-//			rolePartnerFather = ROLE_GROOM_FATHER;
-//			processName = "Grooms";
-//			indexPartner = new Index("groom", mainDirectoryPath, maxLev, fixedLev);
-//			indexMother = new Index("groom-mother", mainDirectoryPath, maxLev, fixedLev);
-//			indexFather = new Index("groom-father", mainDirectoryPath, maxLev, fixedLev);
-//		}
-//		LOG.outputConsole("START: Generating Dictionary for " + processName);
-//		try {
-//			indexPartner.openIndex();
-//			indexMother.openIndex();
-//			indexFather.openIndex();
-//			// iterate over all brides or grooms of marriage events
-//			it = myHDT.dataset.search("", rolePartner, "");
-//			long estNumber = it.estimatedNumResults();
-//			LOG.outputConsole("Estimated number of certificates to be indexed is: " + estNumber);	
-//			String taskName = "Indexing " + processName;
-//			ProgressBar pb = null;
-//			try {
-//				pb = new ProgressBar(taskName, estNumber, indexingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1);
-//				while(it.hasNext()) {
-//					TripleString ts = it.next();
-//					cntAll++;
-//					String marriageEvent = ts.getSubject().toString();
-//					String eventID = myHDT.getIDofEvent(marriageEvent);
-//					Person partner = myHDT.getPersonInfo(marriageEvent, rolePartner);
-//					if(partner.isValidWithFullName()) {
-//						Person partnerMother = myHDT.getPersonInfo(marriageEvent, rolePartnerMother);
-//						Person partnerFather = myHDT.getPersonInfo(marriageEvent, rolePartnerFather);
-//						if(partnerMother.isValidWithFullName()){
-//							if(partnerFather.isValidWithFullName()){
-//								indexPartner.addPersonToIndex(partner, eventID, "M-F");
-//								indexMother.addPersonToIndex(partnerMother, eventID, "M-F");
-//								indexFather.addPersonToIndex(partnerFather, eventID, "M-F");
-//								cnt_P_M_F++;
-//								cntInserts++;
-//							} else {
-//								indexPartner.addPersonToIndex(partner, eventID, "M");
-//								indexMother.addPersonToIndex(partnerMother, eventID, "M");
-//								cnt_P_M++;
-//								cntInserts++;
-//							}
-//						} else {
-//							if(partnerFather.isValidWithFullName()){
-//								indexPartner.addPersonToIndex(partner, eventID, "F");
-//								indexFather.addPersonToIndex(partnerFather, eventID, "F");
-//								cnt_P_F++;
-//								cntInserts++;			
-//							} else {
-//								cnt_P++;
-//							}
-//						}
-//					} else {
-//						cnt_no_P++;
-//					}
-//					if(cntAll % 10000 == 0) {
-//						pb.stepBy(10000);
-//					}						
-//				} pb.stepTo(estNumber);
-//			} finally {
-//				pb.close();
-//			}
-//		} catch (NotFoundException e) {
-//			LOG.logError("generatePartnerIndex", "Error in iterating over partners of marriage events");
-//			LOG.logError("", e.toString());
-//			return false;
-//		} finally {
-//			indexPartner.closeStream();
-//			indexMother.closeStream();
-//			indexFather.closeStream();
-//			LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);
-//			LOG.outputConsole("--> Total Certificates: " +  cntAll);
-//			LOG.outputConsole("--> Total Indexed Certificates: " +  cntInserts); 
-//			LOG.outputConsole("--> P - M - F: " +  cnt_P_M_F); 
-//			LOG.outputConsole("--> P - M : " +  cnt_P_M); 
-//			LOG.outputConsole("--> P - F: " +  cnt_P_F); 
-//			LOG.outputConsole("--> P: " +  cnt_P); 
-//			LOG.outputConsole("--> NO P: " +  cnt_no_P); 
-//			String nonIndexed = Integer.toString(cntAll - cntInserts);
-//			LOG.outputConsole("--> Total Non-Indexed Certificates (missing first/last name): " + nonIndexed);
-//		}
-//		return true;
-//	}
+	//	public Boolean generatePartnerIndex(String gender) {
+	//		long startTime = System.currentTimeMillis();
+	//		int cntInserts=0, cntAll =0 , cnt_P_M_F=0, cnt_P_M =0 , cnt_P_F=0, cnt_P=0, cnt_no_P=0  ;
+	//		IteratorTripleString it;
+	//		String rolePartner, rolePartnerMother, rolePartnerFather; 
+	//		if(gender == "f") {
+	//			rolePartner = ROLE_BRIDE;
+	//			rolePartnerMother = ROLE_BRIDE_MOTHER;
+	//			rolePartnerFather = ROLE_BRIDE_FATHER;
+	//			processName = "Brides";
+	//			indexPartner = new Index("bride", mainDirectoryPath, maxLev, fixedLev);
+	//			indexMother = new Index("bride-mother", mainDirectoryPath, maxLev, fixedLev);
+	//			indexFather = new Index("bride-father", mainDirectoryPath, maxLev, fixedLev);
+	//		} else {
+	//			rolePartner = ROLE_GROOM;
+	//			rolePartnerMother = ROLE_GROOM_MOTHER;
+	//			rolePartnerFather = ROLE_GROOM_FATHER;
+	//			processName = "Grooms";
+	//			indexPartner = new Index("groom", mainDirectoryPath, maxLev, fixedLev);
+	//			indexMother = new Index("groom-mother", mainDirectoryPath, maxLev, fixedLev);
+	//			indexFather = new Index("groom-father", mainDirectoryPath, maxLev, fixedLev);
+	//		}
+	//		LOG.outputConsole("START: Generating Dictionary for " + processName);
+	//		try {
+	//			indexPartner.openIndex();
+	//			indexMother.openIndex();
+	//			indexFather.openIndex();
+	//			// iterate over all brides or grooms of marriage events
+	//			it = myHDT.dataset.search("", rolePartner, "");
+	//			long estNumber = it.estimatedNumResults();
+	//			LOG.outputConsole("Estimated number of certificates to be indexed is: " + estNumber);	
+	//			String taskName = "Indexing " + processName;
+	//			ProgressBar pb = null;
+	//			try {
+	//				pb = new ProgressBar(taskName, estNumber, indexingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1);
+	//				while(it.hasNext()) {
+	//					TripleString ts = it.next();
+	//					cntAll++;
+	//					String marriageEvent = ts.getSubject().toString();
+	//					String eventID = myHDT.getIDofEvent(marriageEvent);
+	//					Person partner = myHDT.getPersonInfo(marriageEvent, rolePartner);
+	//					if(partner.isValidWithFullName()) {
+	//						Person partnerMother = myHDT.getPersonInfo(marriageEvent, rolePartnerMother);
+	//						Person partnerFather = myHDT.getPersonInfo(marriageEvent, rolePartnerFather);
+	//						if(partnerMother.isValidWithFullName()){
+	//							if(partnerFather.isValidWithFullName()){
+	//								indexPartner.addPersonToIndex(partner, eventID, "M-F");
+	//								indexMother.addPersonToIndex(partnerMother, eventID, "M-F");
+	//								indexFather.addPersonToIndex(partnerFather, eventID, "M-F");
+	//								cnt_P_M_F++;
+	//								cntInserts++;
+	//							} else {
+	//								indexPartner.addPersonToIndex(partner, eventID, "M");
+	//								indexMother.addPersonToIndex(partnerMother, eventID, "M");
+	//								cnt_P_M++;
+	//								cntInserts++;
+	//							}
+	//						} else {
+	//							if(partnerFather.isValidWithFullName()){
+	//								indexPartner.addPersonToIndex(partner, eventID, "F");
+	//								indexFather.addPersonToIndex(partnerFather, eventID, "F");
+	//								cnt_P_F++;
+	//								cntInserts++;			
+	//							} else {
+	//								cnt_P++;
+	//							}
+	//						}
+	//					} else {
+	//						cnt_no_P++;
+	//					}
+	//					if(cntAll % 10000 == 0) {
+	//						pb.stepBy(10000);
+	//					}						
+	//				} pb.stepTo(estNumber);
+	//			} finally {
+	//				pb.close();
+	//			}
+	//		} catch (NotFoundException e) {
+	//			LOG.logError("generatePartnerIndex", "Error in iterating over partners of marriage events");
+	//			LOG.logError("", e.toString());
+	//			return false;
+	//		} finally {
+	//			indexPartner.closeStream();
+	//			indexMother.closeStream();
+	//			indexFather.closeStream();
+	//			LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);
+	//			LOG.outputConsole("--> Total Certificates: " +  cntAll);
+	//			LOG.outputConsole("--> Total Indexed Certificates: " +  cntInserts); 
+	//			LOG.outputConsole("--> P - M - F: " +  cnt_P_M_F); 
+	//			LOG.outputConsole("--> P - M : " +  cnt_P_M); 
+	//			LOG.outputConsole("--> P - F: " +  cnt_P_F); 
+	//			LOG.outputConsole("--> P: " +  cnt_P); 
+	//			LOG.outputConsole("--> NO P: " +  cnt_no_P); 
+	//			String nonIndexed = Integer.toString(cntAll - cntInserts);
+	//			LOG.outputConsole("--> Total Non-Indexed Certificates (missing first/last name): " + nonIndexed);
+	//		}
+	//		return true;
+	//	}
 
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match

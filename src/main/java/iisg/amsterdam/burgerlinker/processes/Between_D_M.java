@@ -26,26 +26,33 @@ public class Between_D_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = -5, MAX_YEAR_DIFF = 146, linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev;
+	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexBride, indexGroom;
 
 	public static final Logger lg = LogManager.getLogger(Between_D_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Between_D_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean bestLink, Boolean formatCSV) {
+	public Between_D_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
+		this.ignoreDate = ignoreDate;
+		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
-		String fixed = "", best = "";
+		String fixed = "";
 		if(fixedLev == true) {
 			fixed = "-fixed";
 		}
-		if(bestLink == true) {
-			best = "-best";
+		String date = "";
+		if(ignoreDate == true) {
+			date = "-ignoreDate";
 		}
-		String resultsFileName = "between-D-M-maxLev-" + maxLevenshtein + fixed + best;
+		String block = "";
+		if(ignoreBlock == true) {
+			block = "-ignoreBlock";
+		}
+		String resultsFileName = "between-D-M-maxLev-" + maxLevenshtein + fixed + date + block;
 		if(formatCSV == true) {
 			String header = "id_certificate_deceasedParents,"
 					+ "id_certificate_partners,"
@@ -88,19 +95,22 @@ public class Between_D_M {
 						cntAll++;
 						String deathEvent = ts.getSubject().toString();	
 						String deathEventID = myHDT.getIDofEvent(deathEvent);
-						int deathYear = myHDT.getEventDate(deathEvent);
 						Person mother = myHDT.getPersonInfo(deathEvent, ROLE_MOTHER);
 						Person father = myHDT.getPersonInfo(deathEvent, ROLE_FATHER);				
 						if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 							// start linking here
-							CandidateList candidatesGroom = indexGroom.searchForCandidate(father, deathEventID);
+							CandidateList candidatesGroom = indexGroom.searchForCandidate(father, deathEventID, ignoreBlock);
 							if(candidatesGroom.candidates.isEmpty() == false) {
-								CandidateList candidatesBride = indexBride.searchForCandidate(mother, deathEventID);
+								CandidateList candidatesBride = indexBride.searchForCandidate(mother, deathEventID, ignoreBlock);
 								if(candidatesBride.candidates.isEmpty() == false) {
 									Set<String> finalCandidatesList = candidatesBride.findIntersectionCandidates(candidatesGroom);
 									for(String finalCandidate: finalCandidatesList) {
 										String marriageEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
-										int yearDifference = checkTimeConsistency_between_d_m(deathYear, marriageEventAsCoupleURI);
+										int yearDifference = 0;
+										if(ignoreDate == false) {
+											int deathYear = myHDT.getEventDate(deathEvent);
+											yearDifference = checkTimeConsistency_between_d_m(deathYear, marriageEventAsCoupleURI);
+										}
 										if(yearDifference < 999) { // if it fits the time line
 											Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);
 											Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);

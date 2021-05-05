@@ -2,7 +2,6 @@ package iisg.amsterdam.burgerlinker;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
@@ -29,6 +28,12 @@ public class App
 
 	@Parameter(names = "--fixedLev")
 	boolean fixedLev = false;
+	
+	@Parameter(names = "--ignoreDate")
+	boolean ignoreDate = false;
+
+	@Parameter(names = "--ignoreBlock")
+	boolean ignoreBlock = false;
 
 
 	@Parameter(names = "--format")
@@ -71,9 +76,7 @@ public class App
 		Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
 		
 		
-		
-		
-		
+
 
 		if(help == false) {
 			// show only error and warning logs if user enters: --debug warn
@@ -84,7 +87,7 @@ public class App
 			if(debug.equals("all")) { 
 				Configurator.setRootLevel(Level.DEBUG);
 			}
-			Controller cntrl = new Controller(function, maxLev, fixedLev, inputData, outputDir, format);
+			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate, ignoreBlock, inputData, outputDir, format);
 			cntrl.runProgram();
 		} else { 
 			// do not run program and show some help message if user enter: --help	

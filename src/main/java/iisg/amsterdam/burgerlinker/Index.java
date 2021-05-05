@@ -265,12 +265,17 @@ public class Index {
 
 
 
-	public CandidateList searchForCandidate(Person person, String sourceCertificateID) {
+	public CandidateList searchForCandidate(Person person, String sourceCertificateID, Boolean ignoreBlock) {
 		CandidateList candidateList = new CandidateList(person, sourceCertificateID);
 		String[] firstNames = person.decomposeFirstname();
 		String lastName = person.getLastName();
 		ArrayList<Candidate> initialCandidates_LastNames = searchLastNameInTransducer(lastName, getAcceptedLevenshteinPerLength(lastName, "LN-"+sourceCertificateID));
-		ArrayList<Candidate> candidates_LastNames = blockFirstLetterLastName(initialCandidates_LastNames, lastName);
+		ArrayList<Candidate> candidates_LastNames;
+		if(ignoreBlock) {
+			candidates_LastNames = initialCandidates_LastNames;
+		} else {
+			candidates_LastNames = blockFirstLetterLastName(initialCandidates_LastNames, lastName);
+		}
 		if (! candidates_LastNames.isEmpty()) {
 			for(String firstName: firstNames) {
 				if(! firstName.equals("")) {
@@ -345,14 +350,14 @@ public class Index {
 		}
 		return result;
 	}
-	
-	
-	
 
-	
-	
-	
-	
+
+
+
+
+
+
+
 
 }
 

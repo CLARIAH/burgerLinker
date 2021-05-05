@@ -26,26 +26,33 @@ public class Within_B_D {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = 0, MAX_YEAR_DIFF = 110,  linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev;
+	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexDeceased, indexMother, indexFather;
 
 	public static final Logger lg = LogManager.getLogger(Within_B_D.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Within_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean bestLink, Boolean formatCSV) {
+	public Within_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
+		this.ignoreDate = ignoreDate;
+		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
-		String fixed = "", best = "";
+		String fixed = "";
 		if(fixedLev == true) {
 			fixed = "-fixed";
 		}
-		if(bestLink == true) {
-			best = "-best";
+		String date = "";
+		if(ignoreDate == true) {
+			date = "-ignoreDate";
 		}
-		String resultsFileName = "within-B-D-maxLev-" + maxLevenshtein + fixed + best;
+		String block = "";
+		if(ignoreBlock == true) {
+			block = "-ignoreBlock";
+		}
+		String resultsFileName = "within-B-D-maxLev-" + maxLevenshtein + fixed + date + block;
 		if(formatCSV == true) {
 			String header = "id_certificate_newborn,"
 					+ "id_certificate_deceased,"
@@ -102,19 +109,18 @@ public class Within_B_D {
 						cntAll++;
 						String birthEvent = ts.getSubject().toString();	
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
-						int birthYear = myHDT.getEventDate(birthEvent);
 						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
-						if(newborn.isValidWithFullName() && birthYear != 0) {
+						if(newborn.isValidWithFullName()) {
 							if(newborn.getGender().equals(gender) || newborn.getGender().equals("u")) {
 								Person mother, father;
 								mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
 								father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);
 								CandidateList candidatesDeceased=null, candidatesMother=null, candidatesFather=null;
 								if(mother.isValidWithFullName() || father.isValidWithFullName()) {
-									candidatesDeceased = indexDeceased.searchForCandidate(newborn, birthEventID);
+									candidatesDeceased = indexDeceased.searchForCandidate(newborn, birthEventID, ignoreBlock);
 									if(candidatesDeceased.candidates.isEmpty() == false) {
 										if(mother.isValidWithFullName()){
-											candidatesMother = indexMother.searchForCandidate(mother, birthEventID);
+											candidatesMother = indexMother.searchForCandidate(mother, birthEventID, ignoreBlock);
 											if(candidatesMother.candidates.isEmpty() == false) {
 												Set<String> finalCandidatesMother = candidatesDeceased.findIntersectionCandidates(candidatesMother);
 												for(String finalCandidate: finalCandidatesMother) {
@@ -126,7 +132,11 @@ public class Within_B_D {
 													}
 													if(link == true) { // if one of them does not have a father, we match on two individuals
 														String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
-														int yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+														int yearDifference = 0;
+														if(ignoreDate == false) {
+															int birthYear = myHDT.getEventDate(birthEvent);
+															yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+														}
 														if(yearDifference < 999) { // if it fits the time line
 															Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);
 															Person deceased_mother = myHDT.getPersonInfo(deathEventURI, ROLE_MOTHER);
@@ -141,7 +151,7 @@ public class Within_B_D {
 											}
 										}
 										if(father.isValidWithFullName()){
-											candidatesFather = indexFather.searchForCandidate(father, birthEventID);
+											candidatesFather = indexFather.searchForCandidate(father, birthEventID, ignoreBlock);
 											if(candidatesFather.candidates.isEmpty() == false) {
 												Set<String> finalCandidatesFather = candidatesDeceased.findIntersectionCandidates(candidatesFather);
 												for(String finalCandidate: finalCandidatesFather) {
@@ -153,7 +163,11 @@ public class Within_B_D {
 													}
 													if(link == true) { // if one of them does not have a mother, we match on two individuals
 														String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
-														int yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+														int yearDifference = 0;
+														if(ignoreDate == false) {
+															int birthYear = myHDT.getEventDate(birthEvent);
+															yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+														}
 														if(yearDifference < 999) { // if it fits the time line
 															Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);		
 															Person deceased_father = myHDT.getPersonInfo(deathEventURI, ROLE_FATHER);
@@ -172,7 +186,11 @@ public class Within_B_D {
 												Set<String> finalCandidatesMotherFather = candidatesDeceased.findIntersectionCandidates(candidatesMother, candidatesFather);
 												for(String finalCandidate: finalCandidatesMotherFather) {
 													String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
-													int yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+													int yearDifference = 0;
+													if(ignoreDate == false) {
+														int birthYear = myHDT.getEventDate(birthEvent);
+														yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+													}
 													if(yearDifference < 999) { // if it fits the time line
 														Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);
 														Person deceased_mother = myHDT.getPersonInfo(deathEventURI, ROLE_MOTHER);
