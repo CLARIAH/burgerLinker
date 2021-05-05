@@ -80,16 +80,16 @@ Functionalities that are supported in the current version: (case insensitive)
 
 ### Tool parameters
 Parameters that can be provided as input to the linking tool:
-- `--function`:        **(required)** one of the functionalities listed below
+- `--function`:        *(required)* one of the functionalities listed below
 
-- `--inputData`:       **(required)** path of the HDT dataset
-- `--outputDir`:       **(required)** path of the directory for saving the indices and the detected links
-- `--maxLev`:          **(optional, default = 4)** integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link
-- `--fixedLev`:        **(optional, default = False)** add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths
-- `--ignoreDate`:        **(optional, default = False)** add this flag without a value (i.e. True) for ignoring the date consistency check before saving a link. By default, the tool only saves links that are  temporally consistent (e.g. when linking newborns to deceased individuals, the tool checks whether the date of death is later than the individual's date of birth)
-- `--ignoreBlock`:        **(optional, default = False)** add this flag without a value (i.e. True) for not requiring the equality of the last names' first letter of the matched individuals. By default, the tool only saves links between individuals that at least have the same first letter of their last names
-- `--format`:          **(optional, default = CSV)** one of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates
-- `--debug`:           **(optional, default = error)** one of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)
+- `--inputData`:       *(required)* path of the HDT dataset
+- `--outputDir`:       *(required)* path of the directory for saving the indices and the detected links
+- `--maxLev`:          *(optional, default = 4)* integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link
+- `--fixedLev`:        *(optional, default = False)* add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths
+- `--ignoreDate`:        *(optional, default = False)* add this flag without a value (i.e. True) for ignoring the date consistency check before saving a link. By default, the tool only saves links that are  temporally consistent (e.g. when linking newborns to deceased individuals, the tool checks whether the date of death is later than the individual's date of birth)
+- `--ignoreBlock`:        *(optional, default = False)* add this flag without a value (i.e. True) for not requiring the equality of the last names' first letter of the matched individuals. By default, the tool only saves links between individuals that at least have the same first letter of their last names
+- `--format`:          *(optional, default = CSV)* one of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates
+- `--debug`:           *(optional, default = error)* one of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)
 
 ---
 
