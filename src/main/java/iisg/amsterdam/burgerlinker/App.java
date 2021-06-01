@@ -35,7 +35,6 @@ public class App
 	@Parameter(names = "--ignoreBlock")
 	boolean ignoreBlock = false;
 
-
 	@Parameter(names = "--format")
 	String format = "CSV"; // or "RDF"
 

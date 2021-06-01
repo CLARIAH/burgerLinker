@@ -188,6 +188,11 @@ def createTripleRegistrationSeq(registrationURI, registrationSeqID):
     o = transformToString(registrationSeqID)
     return createQuad(registrationURI, p, o)
 
+def createTripleScanURL(registrationURI, scanURL):
+    p = "<" + PREFIX_CIV_VOCAB + "scanURL" + ">"
+    o = transformToString(scanURL)
+    return createQuad(registrationURI, p, o)
+
 def createTripleLinksBase(registrationURI, not_linksbase):
     p = "<" + PREFIX_CIV_VOCAB + "linksBase" + ">"
     o = transformToString(not_linksbase)
@@ -274,6 +279,9 @@ def convertRegistrationsToRDF(inputData, outputData):
                 registrationSeqID = row['registration_seq']
                 if not isNaN(registrationSeqID):
                     filebuffer.append(createTripleRegistrationSeq(eventURI, registrationSeqID))
+                scanURL = row['scanURL']
+                if not isNaN(scanURL):
+                    filebuffer.append(createTripleScanURL(eventURI, scanURL))
         f.writelines(filebuffer)
     f.close()
     print("Program Finished!")
