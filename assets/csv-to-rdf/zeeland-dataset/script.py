@@ -279,7 +279,7 @@ def convertRegistrationsToRDF(inputData, outputData):
                 registrationSeqID = row['registration_seq']
                 if not isNaN(registrationSeqID):
                     filebuffer.append(createTripleRegistrationSeq(eventURI, registrationSeqID))
-                scanURL = row['scan_url']
+                scanURL = row['source_digital_original']
                 if not isNaN(scanURL):
                     filebuffer.append(createTripleScanURL(eventURI, scanURL))
         f.writelines(filebuffer)
