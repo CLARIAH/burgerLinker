@@ -1,6 +1,6 @@
 ## **burgerLinker -** Civil Registries Linking Tool
 
-Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki).
+Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki) or via the [burgerLinker lecture](https://vimeo.com/573950112).
 
 
 ### Purpose
