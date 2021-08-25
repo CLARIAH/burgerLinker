@@ -21,6 +21,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import iisg.amsterdam.burgerlinker.Index;
 import iisg.amsterdam.burgerlinker.LinksCSV;
 import iisg.amsterdam.burgerlinker.MyHDT;
+import iisg.amsterdam.burgerlinker.Person;
 import iisg.amsterdam.burgerlinker.Properties;
 import iisg.amsterdam.burgerlinker.utilities.*;
 import me.tongfei.progressbar.ProgressBar;
@@ -366,8 +367,17 @@ public class Closure {
 		if(FILE_UTILS.check_Within_B_M(filePath)) {
 			success = success & saveLinksIndividuals_Within_B_M(filePath);
 		}
+		if(FILE_UTILS.check_Within_B_D(filePath)) {
+			success = success & saveLinksIndividuals_Within_B_D(filePath);
+		}
 		if(FILE_UTILS.check_Between_B_M(filePath)) {
 			success = success & saveLinksIndividuals_Between_B_M(filePath);
+		}
+		if(FILE_UTILS.check_Between_D_M(filePath)) {
+			success = success & saveLinksIndividuals_Between_D_M(filePath);
+		}
+		if(FILE_UTILS.check_Between_B_D(filePath)) {
+			success = success & saveLinksIndividuals_Between_B_D(filePath);
 		}
 		if(FILE_UTILS.check_Between_M_M(filePath)) {
 			success = success & saveLinksIndividuals_Between_M_M(filePath);
@@ -452,6 +462,84 @@ public class Closure {
 		} 
 		return success;
 	}
+	
+	
+	public Boolean saveLinksIndividuals_Within_B_D(String filePath) {		
+		Boolean success = false;
+		try {	
+			String [] nextLine;
+			String linktype = "sameAs", linkProv = "W_B_D", taskName = "Within_B_D";
+			LOG.outputConsole("");
+			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+			int nbLines = FILE_UTILS.countLines(filePath);
+			CSVReader reader = new CSVReader(new FileReader(filePath));
+			ProgressBar pb = null;		
+			try {
+				pb = new ProgressBar(taskName, nbLines, updateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " links", 1); 
+				reader.readNext(); // skip the column names
+				int countProgress = 1;
+				while ((nextLine = reader.readNext()) != null) {
+					countProgress++;
+					int matchedIndiv = 1;
+					Boolean fatherMatched = false,  motherMatched = false;
+					String idBirth = nextLine[0];
+					String idDeath = nextLine[1];
+					String familyLine = nextLine[2];
+					String idNewborn = myHDT.getPersonID(idBirth, ROLE_NEWBORN); 
+					String idDeceased = myHDT.getPersonID(idDeath, ROLE_DECEASED);			
+					String idFatherNewborn = null, idFatherDeceased = null, idMotherNewborn = null, idMotherDeceased = null;
+					if(!nextLine[7].equals("N.A")) { // if there is a match for the fathers
+						idFatherNewborn = myHDT.getPersonID(idBirth, ROLE_FATHER); 
+						if(idFatherNewborn != null) {
+							idFatherDeceased = myHDT.getPersonID(idDeath, ROLE_FATHER);
+							if(idFatherDeceased != null) {
+								matchedIndiv++;
+								fatherMatched = true;							
+							}
+						}
+					}
+					if(!nextLine[5].equals("N.A")) { // if there is a match for the mothers
+						idMotherNewborn = myHDT.getPersonID(idBirth, ROLE_MOTHER); 
+						if(idMotherNewborn != null) {
+							idMotherDeceased = myHDT.getPersonID(idDeath, ROLE_MOTHER);
+							if(idMotherDeceased != null) {
+								matchedIndiv++;
+								motherMatched = true;
+							}
+						}
+					}
+					String meta_newborn = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + "," 
+							+ nextLine[3] + "," + nextLine[4] + ","  + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[18];
+					LINKS.saveIndividualLink(idNewborn, idDeceased, meta_newborn);
+
+					if(fatherMatched) {
+						String meta_fathers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + "," 
+								+ nextLine[7] + "," + nextLine[8] + "," + nextLine[13] + "," + nextLine[14] + "," + nextLine[15] + "," + nextLine[18];
+						LINKS.saveIndividualLink(idFatherNewborn, idFatherDeceased, meta_fathers);
+					}
+
+					if(motherMatched) {
+						String meta_mothers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + "," 
+								+ nextLine[5] + "," + nextLine[6] + "," + nextLine[11] + "," + nextLine[12] + "," + nextLine[13] + "," + nextLine[18];
+						LINKS.saveIndividualLink(idMotherNewborn, idMotherDeceased, meta_mothers);
+					}
+
+
+					if(countProgress % 1000 == 0) {
+						pb.stepBy(1000);
+					}
+				}
+				pb.stepTo(nbLines);					
+			} finally {
+				pb.close();
+				reader.close();	
+				success = true;
+			}
+		} catch (IOException | CsvValidationException e) {
+			e.printStackTrace();
+		} 
+		return success;
+	}
 
 
 
@@ -498,6 +586,105 @@ public class Closure {
 		} 
 		return success;
 	}
+	
+	public Boolean saveLinksIndividuals_Between_B_D(String filePath) {		
+		Boolean success = false;
+		try {
+			String [] nextLine;
+			String linktype = "sameAs", familyLine = "", linkProv = "B_B_D", matchedIndiv = "2", taskName = "Between_B_D";	
+			LOG.outputConsole("");
+			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+			int nbLines = FILE_UTILS.countLines(filePath);	
+			CSVReader reader = new CSVReader(new FileReader(filePath));
+			ProgressBar pb = null;		
+			try {
+				pb = new ProgressBar(taskName, nbLines, updateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " links", 1); 
+				reader.readNext(); // skip the column names
+				int countProgress = 1;
+				while ((nextLine = reader.readNext()) != null) {
+					countProgress++;
+					String idBirth = nextLine[0];
+					String idDeath = nextLine[1];
+					String idFather = myHDT.getPersonID(idBirth, ROLE_FATHER);
+					String idMother = myHDT.getPersonID(idBirth, ROLE_MOTHER);
+					String idDeceased = myHDT.getPersonID(idDeath, ROLE_DECEASED);
+					String idPartner = myHDT.getPersonID(idDeath, ROLE_PARTNER);
+					String meta_father = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + "," 
+							+ nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
+					String meta_mother = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + "," 
+							+ nextLine[2] + "," + nextLine[3] + "," + nextLine[6] + "," + nextLine[7] + "," + nextLine[8] + "," + nextLine[12];	
+					
+					String deathURI = myHDT.getEventURIfromID(idDeath);
+					Person deceased = myHDT.getPersonInfo(deathURI, ROLE_DECEASED);
+					if(deceased.isFemale()) {
+						LINKS.saveIndividualLink(idFather, idPartner, meta_father);
+						LINKS.saveIndividualLink(idMother, idDeceased, meta_mother);	
+					} else {
+						LINKS.saveIndividualLink(idFather, idDeceased, meta_father);
+						LINKS.saveIndividualLink(idMother, idPartner, meta_mother);
+					}
+					if(countProgress % 1000 == 0) {
+						pb.stepBy(1000);
+					}
+				}
+				pb.stepTo(nbLines);					
+			} finally {
+				pb.close();
+				reader.close();	
+				success = true;
+			}
+		} catch (IOException | CsvValidationException e) {
+			e.printStackTrace();
+		} 
+		return success;
+	}
+	
+	
+	public Boolean saveLinksIndividuals_Between_D_M(String filePath) {		
+		Boolean success = false;
+		try {
+			String [] nextLine;
+			String linktype = "sameAs", familyLine = "", linkProv = "B_D_M", matchedIndiv = "2", taskName = "Between_D_M";	
+			LOG.outputConsole("");
+			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+			int nbLines = FILE_UTILS.countLines(filePath);	
+			CSVReader reader = new CSVReader(new FileReader(filePath));
+			ProgressBar pb = null;		
+			try {
+				pb = new ProgressBar(taskName, nbLines, updateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " links", 1); 
+				reader.readNext(); // skip the column names
+				int countProgress = 1;
+				while ((nextLine = reader.readNext()) != null) {
+					countProgress++;
+					String idDeath = nextLine[0];
+					String idMarriage = nextLine[1];
+					String idFather = myHDT.getPersonID(idDeath, ROLE_FATHER);
+					String idMother = myHDT.getPersonID(idDeath, ROLE_MOTHER);
+					String idGroom = myHDT.getPersonID(idMarriage, ROLE_GROOM);
+					String idBride = myHDT.getPersonID(idMarriage, ROLE_BRIDE);	
+					String meta_father_groom = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idDeath + "," + idMarriage + "," 
+							+ nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
+					String meta_mother_bride = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idDeath + "," + idMarriage + "," 
+							+ nextLine[2] + "," + nextLine[3] + "," + nextLine[6] + "," + nextLine[7] + "," + nextLine[8] + "," + nextLine[12];	
+					LINKS.saveIndividualLink(idFather, idGroom, meta_father_groom);
+					LINKS.saveIndividualLink(idMother, idBride, meta_mother_bride);				
+					if(countProgress % 1000 == 0) {
+						pb.stepBy(1000);
+					}
+				}
+				pb.stepTo(nbLines);					
+			} finally {
+				pb.close();
+				reader.close();	
+				success = true;
+			}
+		} catch (IOException | CsvValidationException e) {
+			e.printStackTrace();
+		} 
+		return success;
+	}
+	
+	
 
 
 	public Boolean saveLinksIndividuals_Between_M_M(String filePath) {		

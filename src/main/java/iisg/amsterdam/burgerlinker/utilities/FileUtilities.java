@@ -190,9 +190,24 @@ public class FileUtilities {
 		String regex = "(within)[-_](b)[-_](m)";
 		return checkPattern(filePath, regex);
 	}
+	
+	public Boolean check_Within_B_D(String filePath) {
+		String regex = "(within)[-_](b)[-_](d)";
+		return checkPattern(filePath, regex);
+	}
 
 	public Boolean check_Between_B_M(String filePath) {
 		String regex = "(between)[-_](b)[-_](m)";
+		return checkPattern(filePath, regex);
+	}
+	
+	public Boolean check_Between_D_M(String filePath) {
+		String regex = "(between)[-_](d)[-_](m)";
+		return checkPattern(filePath, regex);
+	}
+	
+	public Boolean check_Between_B_D(String filePath) {
+		String regex = "(between)[-_](b)[-_](d)";
 		return checkPattern(filePath, regex);
 	}
 

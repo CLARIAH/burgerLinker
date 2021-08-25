@@ -27,6 +27,8 @@ import org.apache.jena.query.ARQ;
 public class MyHDT implements ProgressListener {
 
 	public HDT dataset;
+	public HDT targetDataset;
+	public Boolean doubleInputs = false;
 
 	public static final Logger lg = LogManager.getLogger(MyHDT.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -41,15 +43,13 @@ public class MyHDT implements ProgressListener {
 	 * @param hdt_file_path
 	 *            Path of the HDT file
 	 */
-	public MyHDT(String filePath) {  // One HDT file with its index are given as input
+	public MyHDT(String hdtPath) {  // One HDT file with its index are given as input
 		try {
 			ARQ.init();
-			LOG.outputConsole("START: Loading HDT Dataset...");
+			LOG.outputConsole("START: Loading HDT dataset...");
 			long startTime = System.currentTimeMillis();
-			dataset = HDTManager.loadIndexedHDT(filePath, null);	
-			LOG.outputTotalRuntime("Loading HDT Dataset", startTime, true);	
-			
-			
+			dataset = HDTManager.loadIndexedHDT(hdtPath, null);	
+			LOG.outputTotalRuntime("Loading HDT dataset", startTime, true);	
 			LOG.outputConsole("");
 			LOG.outputConsole("--------");
 			LOG.outputConsole("- Number of statements in this dataset: "+ dataset.getTriples().getNumberOfElements());
@@ -58,23 +58,48 @@ public class MyHDT implements ProgressListener {
 			LOG.outputConsole("- Number of distinct objects: "+ dataset.getDictionary().getNobjects());
 			LOG.outputConsole("--------");
 			LOG.outputConsole("");
-			
-			
-			
-			System.out.println();
-			//	System.out.println("Different subjects: "+dataset.getDictionary().getNsubjects());
-			//	System.out.println("Different predicates: "+dataset.getDictionary().getNpredicates());
-			//	System.out.println("Different objects: "+dataset.getDictionary().getNobjects());
-			//  IteratorTripleString it;
-			//	it = dataset.search("", "", "");
-			//	LOG.outputTotalRuntime("Loading HDT Dataset", startTime, true);			
-			//	DecimalFormat formatter = new DecimalFormat("#,###");
-			//	LOG.outputConsole("--- 	# Triples in dataset: " + formatter.format(it.estimatedNumResults()) + " ---");		
+			System.out.println();	
 		} catch (IOException e) {
 			LOG.logError("MyHDT_Constructor", "Error loading HDT dataset");
 			e.printStackTrace();
 		}	
 	}
+	
+	
+	public MyHDT(String hdtPath1, String hdtPath2, Boolean doubleInputs) {  // Two HDT files with their index are given as inputs
+		try {
+			doubleInputs = true;
+			ARQ.init();
+			LOG.outputConsole("START: Loading HDT datasets...");
+			long startTime = System.currentTimeMillis();
+			dataset = HDTManager.loadIndexedHDT(hdtPath1, null);
+			targetDataset = HDTManager.loadIndexedHDT(hdtPath2, null);
+			LOG.outputTotalRuntime("Loading HDT dataset", startTime, true);	
+			LOG.outputConsole("");
+			LOG.outputConsole("Dataset 1: " + hdtPath1);
+			LOG.outputConsole("--------");
+			LOG.outputConsole("- Number of statements in this dataset: "+ dataset.getTriples().getNumberOfElements());
+			LOG.outputConsole("- Number of distinct subjects: "+ dataset.getDictionary().getNsubjects());
+			LOG.outputConsole("- Number of distinct predicates: "+ dataset.getDictionary().getNpredicates());
+			LOG.outputConsole("- Number of distinct objects: "+ dataset.getDictionary().getNobjects());
+			LOG.outputConsole("--------");
+			LOG.outputConsole("");
+			LOG.outputConsole("");
+			LOG.outputConsole("Dataset 2: " + hdtPath2);
+			LOG.outputConsole("--------");
+			LOG.outputConsole("- Number of statements in this dataset: "+ targetDataset.getTriples().getNumberOfElements());
+			LOG.outputConsole("- Number of distinct subjects: "+ targetDataset.getDictionary().getNsubjects());
+			LOG.outputConsole("- Number of distinct predicates: "+ targetDataset.getDictionary().getNpredicates());
+			LOG.outputConsole("- Number of distinct objects: "+ targetDataset.getDictionary().getNobjects());
+			LOG.outputConsole("--------");
+			LOG.outputConsole("");
+			System.out.println();
+		} catch (IOException e) {
+			LOG.logError("MyHDT_Constructor", "Error loading HDT datasets");
+			e.printStackTrace();
+		}	
+	}
+	
 
 
 	public MyHDT(String inputRDF, String outputDir) { // One RDF file is given as input to be converted to HDT
@@ -284,7 +309,12 @@ public class MyHDT implements ProgressListener {
 				} else {
 					LOG.logError("getIDofEvent", "The ID for the following event URI is not found in the dataset: " + eventURI);
 				}
-			} 
+			} else {
+				if(eventURI.contains("e-")) {
+					String test = eventURI.substring(eventURI.lastIndexOf("-") + 1);
+					return test;
+				}
+			}
 		} catch (NotFoundException e) {	
 			e.printStackTrace();
 		}

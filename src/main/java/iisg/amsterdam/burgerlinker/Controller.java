@@ -20,7 +20,7 @@ public class Controller {
 			"between_b_m", "between_m_m", "between_d_m", "between_b_d"};
 	private String function, inputDataset, outputDirectory;
 	private int maxLev;
-	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, outputFormatCSV = true; 
+	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, outputFormatCSV = true, doubleInputs = false ; 
 
 	public static final Logger lg = LogManager.getLogger(Controller.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -164,12 +164,20 @@ public class Controller {
 
 
 	public Boolean checkInputDataset() {
-		if(FILE_UTILS.checkIfFileExists(inputDataset) == true) {
-			LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: " + inputDataset);
-			return true;
+		if(inputDataset.contains(",")){
+			String[] inputs = inputDataset.split(",");
+			Boolean check = checkInputDataset(inputs[0]);
+			check = check & checkInputDataset(inputs[1]);
+			doubleInputs = true;
+			return check;
 		} else {
-			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData", "A valid HDT file is required as input after parameter: --inputData");
-			return false;
+			if(FILE_UTILS.checkIfFileExists(inputDataset) == true) {
+				LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: " + inputDataset);
+				return true;
+			} else {
+				LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData", "A valid HDT file is required as input after parameter: --inputData");
+				return false;
+			}
 		}
 	}
 
@@ -218,7 +226,13 @@ public class Controller {
 
 	public void outputDatasetStatistics() {
 		DecimalFormat formatter = new DecimalFormat("#,###");
-		MyHDT myHDT = new MyHDT(inputDataset);
+		MyHDT myHDT;
+		if(doubleInputs == true) {
+			String[] inputs = inputDataset.split(",");
+			myHDT = new MyHDT(inputs[0], inputs[1], doubleInputs);
+		} else {
+			myHDT = new MyHDT(inputDataset);
+		}
 		int numberOfBirthEvents = myHDT.getNumberOfSubjects(TYPE_BIRTH_EVENT);
 		LOG.outputConsole("--- 	# Birth Events: " + formatter.format(numberOfBirthEvents) + " ---");
 		int numberOfMarriageEvents = myHDT.getNumberOfSubjects(TYPE_MARRIAGE_EVENT);
