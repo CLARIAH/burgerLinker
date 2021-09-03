@@ -26,33 +26,24 @@ public class Within_B_D {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = 0, MAX_YEAR_DIFF = 110,  linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, ignoreDate, ignoreBlock;
+	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexDeceased, indexMother, indexFather;
 
 	public static final Logger lg = LogManager.getLogger(Within_B_D.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Within_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean formatCSV) {
+	public Within_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
+		this.singleInd = singleInd;
 		this.myHDT = hdt;
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String date = "";
-		if(ignoreDate == true) {
-			date = "-ignoreDate";
-		}
-		String block = "";
-		if(ignoreBlock == true) {
-			block = "-ignoreBlock";
-		}
-		String resultsFileName = "within-B-D-maxLev-" + maxLevenshtein + fixed + date + block;
+
+		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String resultsFileName = "within-B-D" + options;
 		if(formatCSV == true) {
 			String header = "id_certificate_newborn,"
 					+ "id_certificate_deceased,"
@@ -75,8 +66,13 @@ public class Within_B_D {
 					+ "year_diff";
 			LINKS = new LinksCSV(resultsFileName, mainDirectoryPath, header);
 		}
-		link_within_B_D("f", false); // false = do not close stream
-		link_within_B_D("m", true); // true = close stream
+		if(this.singleInd == false) {
+			link_within_B_D("f", false); // false = do not close stream
+			link_within_B_D("m", true); // true = close stream
+		} else {
+			link_within_B_D_single("f", false); 
+			link_within_B_D_single("m", true); 
+		}
 	}
 
 
@@ -207,6 +203,74 @@ public class Within_B_D {
 											}
 										}
 									}
+								}
+							}
+						}
+						if(cntAll % 10000 == 0) {
+							pb.stepBy(10000);
+						}
+					} pb.stepTo(estNumber); 
+				} finally {
+					pb.close();
+				}
+			} catch (Exception e) {
+				LOG.logError("link_between_B_M", "Error in linking parents of newborns to partners in process " + processName);
+				e.printStackTrace();
+			} finally {
+				if(closeStream == true) {
+					LINKS.closeStream();
+				}
+			}
+		}
+	}
+
+	public void link_within_B_D_single(String gender, Boolean closeStream) {
+		Dictionary dict = new Dictionary("within-B-D", mainDirectoryPath, maxLev, fixedLev);
+		Boolean success = dict.generateDictionary(myHDT, ROLE_DECEASED, true, gender);
+		if(success == true) {
+			indexDeceased = dict.indexMain; indexDeceased.createTransducer();
+			try {
+				int cntAll =0 ;
+				String familyCode;
+				if(gender == "f") {
+					familyCode = "21";
+					processName = "Deceased women";
+				} else {
+					familyCode = "22";
+					processName = "Deceased men";
+				}
+				// iterate through the birth certificates to link it to the death dictionaries
+				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
+				long estNumber = it.estimatedNumResults();	
+				String taskName = "Linking Newborns to " + processName;
+				ProgressBar pb = null;
+				try {
+					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
+					while(it.hasNext()) {	
+						TripleString ts = it.next();	
+						cntAll++;
+						String birthEvent = ts.getSubject().toString();	
+						String birthEventID = myHDT.getIDofEvent(birthEvent);
+						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
+						if(newborn.isValidWithFullName()) {
+							if(newborn.getGender().equals(gender) || newborn.getGender().equals("u")) {
+								CandidateList candidatesDeceased=null;
+								candidatesDeceased = indexDeceased.searchForCandidate(newborn, birthEventID, ignoreBlock);
+								if(candidatesDeceased.candidates.isEmpty() == false) {
+									for(String finalCandidate: candidatesDeceased.candidates.keySet()) {
+										String deathEventURI = myHDT.getEventURIfromID(finalCandidate);
+										int yearDifference = 0;
+										if(ignoreDate == false) {
+											int birthYear = myHDT.getEventDate(birthEvent);
+											yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
+										}
+										if(yearDifference < 999) { // if it fits the time line
+											Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);
+											if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
+												LINKS.saveLinks_Within_B_M_single(candidatesDeceased, finalCandidate, deceased, familyCode, yearDifference);
+											}
+										}
+									}		
 								}
 							}
 						}

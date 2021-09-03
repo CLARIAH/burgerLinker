@@ -293,6 +293,34 @@ public class LinksCSV {
 		}
 	}
 
+	public void saveLinks_Within_B_M_single(CandidateList partnerList, String targetCertificateID, Person partner, String familyLine, int yearDifference) {		
+		HashMap<String, Candidate> partnerPairedNames = partnerList.candidates.get(targetCertificateID).organiseMetadata();
+		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
+			
+			String link =  partnerList.sourceCertificateID + "," + // source certificateID
+					targetCertificateID + "," + // target CertificateID
+					familyLine + "," + // family line (21:bride, 22:groom)
+
+				partnerList.candidates.get(targetCertificateID).levenshteinTotal + "," + // levenshtein total newborn
+				partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + "," + // max levenshtein newborn
+
+				"N.A,N.A," + 
+
+				"N.A,N.A," + 
+
+				partnerPairedNames.size() + "," + // number of matched names for the newborn
+				partnerList.sourcePerson.getNumberOfFirstNames() + "," + // number of total names for the newborn
+				partnerList.candidates.get(targetCertificateID).numberNames + "," + // number of total names for the partner
+
+				"N.A,N.A,N.A," +
+
+				"N.A,N.A,N.A," + // number of matched names for the newborn_father
+
+				yearDifference ;
+			addToStream(link);
+		}
+	}
+
 
 	public void saveIndividualLink(String idPerson1, String idPerson2, String linksMeta) {
 		if(Integer.parseInt(idPerson1) < Integer.parseInt(idPerson2)) {

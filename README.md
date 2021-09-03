@@ -88,6 +88,7 @@ Parameters that can be provided as input to the linking tool:
 - `--fixedLev`:        *(optional, default = False)* add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths
 - `--ignoreDate`:        *(optional, default = False)* add this flag without a value (i.e. True) for ignoring the date consistency check before saving a link. By default, the tool only saves links that are  temporally consistent (e.g. when linking newborns to deceased individuals, the tool checks whether the date of death is later than the individual's date of birth)
 - `--ignoreBlock`:        *(optional, default = False)* add this flag without a value (i.e. True) for not requiring the equality of the last names' first letter of the matched individuals. By default, the tool only saves links between individuals that at least have the same first letter of their last names
+- `--singleInd`:        *(optional, default = False)* add this flag without a value (i.e. True) for allowing the match of the main individual, without the requirement of matching their parents as well
 - `--format`:          *(optional, default = CSV)* one of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates
 - `--debug`:           *(optional, default = error)* one of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)
 
@@ -114,7 +115,7 @@ This is the most memory-intensive step of the tool. Therefore, for avoiding runn
 
 As an example, here are the flags used for generating the HDT file of all Dutch birth and marriage certificates:
 
-`java -Xms32g -Xmx48g -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
+`java -Xms64g -Xmx96g -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
 
 ---
 
@@ -153,10 +154,13 @@ This command computes the transitive closure of all links existing in the direct
 
 **How?**
 
-The directory `myResultsDirectory` must contain the CSV files that resulted from the linking functions described above, without changing the file names (the tool finds these files using a regular expression search in this directory). It can contain one or all the following CSV files, with X being any integer from 0 to 4:
+The directory `myResultsDirectory` must contain the CSV files that resulted from the linking functions described above, without changing the file names (the tool finds these files using a regular expression search in this directory). It can contain one, or all of the following CSV files, with X being any integer from 0 to 4:
 - within-B-M-maxLev-X.csv
+- within-B-D-maxLev-X.csv
 - between-B-M-maxLev-X.csv
+- between-B-D-maxLev-X.csv
 - between-M-M-maxLev-X.csv
+- between-D-M-maxLev-X.csv
 
 The function will first transform the links in these CSV files, that are asserted between identifiers of certificates, into links between individuals. Since identity links are transitive and symmetric, this function computes the transitive closure of all these transformed individual links, and generates new identifiers for each resulted equivalence class.
 

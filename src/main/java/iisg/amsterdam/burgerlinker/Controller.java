@@ -20,18 +20,19 @@ public class Controller {
 			"between_b_m", "between_m_m", "between_d_m", "between_b_d"};
 	private String function, inputDataset, outputDirectory;
 	private int maxLev;
-	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, outputFormatCSV = true, doubleInputs = false ; 
+	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, singleInd = false, outputFormatCSV = true, doubleInputs = false ; 
 
 	public static final Logger lg = LogManager.getLogger(Controller.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public Controller(String function, int maxlev, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, String inputDataset, String outputDirectory, String outputFormat) {
+	public Controller(String function, int maxlev, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, String inputDataset, String outputDirectory, String outputFormat) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
+		this.singleInd = singleInd;
 		this.inputDataset = inputDataset;
 		this.outputDirectory = outputDirectory;
 		if(!outputFormat.equals("CSV")) {
@@ -116,6 +117,8 @@ public class Controller {
 		}
 	}
 
+	
+	// ========= input checks ========= 
 
 	public Boolean checkAllUserInputs() {
 		Boolean validInputs = true;
@@ -148,7 +151,6 @@ public class Controller {
 		return false;
 	}
 
-
 	public Boolean checkInputMaxLevenshtein() {
 		if(maxLev >= 0 && maxLev <= 4) {
 			LOG.logDebug("checkInputMaxLevenshtein", 
@@ -161,7 +163,6 @@ public class Controller {
 			return false;
 		}
 	}
-
 
 	public Boolean checkInputDataset() {
 		if(inputDataset.contains(",")){
@@ -191,7 +192,6 @@ public class Controller {
 		}
 	}
 
-
 	public Boolean checkInputDirectory() {
 		if(FILE_UTILS.checkIfDirectoryExists(outputDirectory)) {
 			LOG.logDebug("checkInputDirectoryOutput", "The following directory is set to store results: " + outputDirectory);
@@ -201,7 +201,6 @@ public class Controller {
 			return false;
 		}
 	}
-
 
 	public Boolean checkInputDirectoryContents() {
 		if(checkInputDirectory()) {
@@ -222,7 +221,25 @@ public class Controller {
 			return false;
 		}
 	}
-
+	
+	// ========= utilities ========= 
+	
+	public void convertToHDT(String s) {
+		if(inputDataset.contains(",")){
+			System.out.println("Input Dataset: " + inputDataset);
+			String[] inputs = inputDataset.split(",");
+			if(checkInputDataset(inputs[0]) && checkInputDataset(inputs[1])) {
+				new MyHDT(inputs[0], inputs[1], outputDirectory);
+			}
+		} 
+		else {
+			if(checkInputDataset()){
+				new MyHDT(inputDataset, outputDirectory);
+			}
+		}
+	}
+	
+	// ========= functions ========= 
 
 	public void outputDatasetStatistics() {
 		DecimalFormat formatter = new DecimalFormat("#,###");
@@ -245,28 +262,9 @@ public class Controller {
 	}
 
 
-	public void convertToHDT(String s) {
-		if(inputDataset.contains(",")){
-			System.out.println("Input Dataset: " + inputDataset);
-			String[] inputs = inputDataset.split(",");
-			if(checkInputDataset(inputs[0]) && checkInputDataset(inputs[1])) {
-				new MyHDT(inputs[0], inputs[1], outputDirectory);
-			}
-		} 
-		else {
-			if(checkInputDataset()){
-				new MyHDT(inputDataset, outputDirectory);
-			}
-		}
-	}
-
-
 	public void Within_B_M() {
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String dirName = function + "-maxLev-" + maxLev + fixed;
+		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String dirName = function + options;
 		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
@@ -275,7 +273,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Within_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
+				new Within_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Within_B_M", "Error in creating the three sub output directories");
@@ -286,11 +284,8 @@ public class Controller {
 	}
 	
 	public void Within_B_D() {
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String dirName = function + "-maxLev-" + maxLev + fixed;
+		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String dirName = function + options;
 		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
@@ -299,7 +294,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Within_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
+				new Within_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Within_B_D", "Error in creating the three sub output directories");
@@ -311,11 +306,8 @@ public class Controller {
 
 
 	public void Between_B_M() {
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String dirName = function + "-maxLev-" + maxLev + fixed;
+		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String dirName = function + options;
 		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
@@ -324,7 +316,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
+				new Between_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_B_M", "Error in creating the three sub output directories");
@@ -335,11 +327,8 @@ public class Controller {
 	}
 	
 	public void Between_B_D() {
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String dirName = function + "-maxLev-" + maxLev + fixed;
+		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String dirName = function + options;
 		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
@@ -348,7 +337,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
+				new Between_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_B_D", "Error in creating the three sub output directories");
@@ -360,11 +349,8 @@ public class Controller {
 	
 	
 	public void Between_D_M() {
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String dirName = function + "-maxLev-" + maxLev + fixed;
+		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String dirName = function + options;
 		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
@@ -373,7 +359,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_D_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
+				new Between_D_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_D_M", "Error in creating the three sub output directories");
@@ -385,11 +371,8 @@ public class Controller {
 
 
 	public void Between_M_M() {
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String dirName = function + "-maxLev-" + maxLev + fixed;
+		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String dirName = function + options;
 		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
@@ -398,7 +381,7 @@ public class Controller {
 			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated &&  databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);	
-				new Between_M_M(myHDT, mainDirectory,  maxLev, fixedLev, ignoreDate, ignoreBlock, outputFormatCSV);
+				new Between_M_M(myHDT, mainDirectory,  maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 				myHDT.closeDataset();
 			} else {
 				LOG.logError("Between_M_M", "Error in creating the three sub output directories");

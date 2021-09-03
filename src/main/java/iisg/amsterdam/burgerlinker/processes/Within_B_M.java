@@ -25,33 +25,24 @@ public class Within_B_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = 13, MAX_YEAR_DIFF = 80,  linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, ignoreDate, ignoreBlock;
+	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexPartner, indexMother, indexFather;
 
 	public static final Logger lg = LogManager.getLogger(Within_B_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Within_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean formatCSV) {
+	public Within_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
+		this.singleInd = singleInd;
 		this.myHDT = hdt;
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String date = "";
-		if(ignoreDate == true) {
-			date = "-ignoreDate";
-		}
-		String block = "";
-		if(ignoreBlock == true) {
-			block = "-ignoreBlock";
-		}
-		String resultsFileName = "within-B-M-maxLev-" + maxLevenshtein + fixed + date + block;
+
+		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String resultsFileName = "within-B-M" + options;
 		if(formatCSV == true) {
 			String header = "id_certificate_newborn,"
 					+ "id_certificate_partner,"
@@ -74,8 +65,15 @@ public class Within_B_M {
 					+ "year_diff";
 			LINKS = new LinksCSV(resultsFileName, mainDirectoryPath, header);
 		}
-		link_within_B_M("f", false); // false = do not close stream
-		link_within_B_M("m", true); // true = close stream
+
+		if(this.singleInd == false) {
+			link_within_B_M("f", false); // false = do not close stream
+			link_within_B_M("m", true); // true = close stream
+		} else {
+			link_within_B_M_single("f", false); 
+			link_within_B_M_single("m", true); 
+		}
+
 	}
 
 
@@ -220,23 +218,94 @@ public class Within_B_M {
 	}
 
 
-	/**
-	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
-	 * 
-	 * @param birthYear
-	 *            year of birth 
-	 * @param candidateMarriageEvent
-	 *            marriage event URI            
-	 */
-	public int checkTimeConsistency_Within_B_M(int birthYear, String candidateMarriageEvent) {
-		int marriageYear = myHDT.getEventDate(candidateMarriageEvent);
-		int diff = marriageYear - birthYear;
-		if(diff >= MIN_YEAR_DIFF && diff < MAX_YEAR_DIFF) {
-			return diff;
+	public void link_within_B_M_single(String gender, Boolean closeStream) {
+		String rolePartner, familyCode;
+		if(gender == "f") {
+			familyCode = "21";
+			rolePartner = ROLE_BRIDE;
+			processName = "Brides";
 		} else {
-			return 999;
+			familyCode = "22";
+			rolePartner = ROLE_GROOM;
+			processName = "Grooms";
+		}
+		Dictionary dict = new Dictionary("within-B-M", mainDirectoryPath, maxLev, fixedLev);
+		Boolean success = dict.generateDictionary(myHDT, rolePartner, false, "");
+		if(success == true) {	
+			indexPartner = dict.indexMain; indexPartner.createTransducer();
+			try {
+				int cntAll =0 ;
+				// iterate through the marriage certificates to link it to the marriage dictionaries
+				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
+				long estNumber = it.estimatedNumResults();
+				String taskName = "Linking Newborns to " + processName;
+				ProgressBar pb = null;
+				try {
+					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
+					while(it.hasNext()) {	
+						TripleString ts = it.next();	
+						cntAll++;
+						String birthEvent = ts.getSubject().toString();	
+						String birthEventID = myHDT.getIDofEvent(birthEvent);
+						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
+						if(newborn.isValidWithFullName()) {
+							if(newborn.getGender().equals(gender) || newborn.getGender().equals("u")) {
+								CandidateList candidatesPartner=null;
+								candidatesPartner = indexPartner.searchForCandidate(newborn, birthEventID, ignoreBlock);
+								if(candidatesPartner.candidates.isEmpty() == false) {
+									for(String finalCandidate: candidatesPartner.candidates.keySet()) {
+										String marriageEventURI = myHDT.getEventURIfromID(finalCandidate);
+										int yearDifference = 0;
+										if(ignoreDate == false) {
+											int birthYear = myHDT.getEventDate(birthEvent);
+											yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
+										}
+										if(yearDifference < 999) { // if it fits the time line
+											Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
+											LINKS.saveLinks_Within_B_M_single(candidatesPartner, finalCandidate, partner, familyCode, yearDifference);																				
+										}
+									}
+								}
+							}
+						}
+					if(cntAll % 10000 == 0) {
+						pb.stepBy(10000);
+					}
+				} pb.stepTo(estNumber); 
+			} finally {
+				pb.close();
+			}
+		} catch (Exception e) {
+			LOG.logError("link_between_B_M", "Error in linking parents of newborns to partners in process " + processName);
+			e.printStackTrace();
+		} finally {
+			if(closeStream == true) {
+				LINKS.closeStream();
+			}
 		}
 	}
+}
+
+
+
+
+/**
+ * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
+ * 
+ * @param birthYear
+ *            year of birth 
+ * @param candidateMarriageEvent
+ *            marriage event URI            
+ */
+public int checkTimeConsistency_Within_B_M(int birthYear, String candidateMarriageEvent) {
+	int marriageYear = myHDT.getEventDate(candidateMarriageEvent);
+	int diff = marriageYear - birthYear;
+	if(diff >= MIN_YEAR_DIFF && diff < MAX_YEAR_DIFF) {
+		return diff;
+	} else {
+		return 999;
+	}
+}
 
 
 

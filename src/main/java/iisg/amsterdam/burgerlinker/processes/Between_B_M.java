@@ -29,33 +29,24 @@ public class Between_B_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = -10, MAX_YEAR_DIFF = 36, linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, ignoreDate, ignoreBlock;
+	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexBride, indexGroom;
 
 	public static final Logger lg = LogManager.getLogger(Between_B_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Between_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean formatCSV) {
+	public Between_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
+		this.singleInd = singleInd;
 		this.myHDT = hdt;
-		String fixed = "";
-		if(fixedLev == true) {
-			fixed = "-fixed";
-		}
-		String date = "";
-		if(ignoreDate == true) {
-			date = "-ignoreDate";
-		}
-		String block = "";
-		if(ignoreBlock == true) {
-			block = "-ignoreBlock";
-		}
-		String resultsFileName = "between-B-M-maxLev-" + maxLevenshtein + fixed + date + block;
+		
+		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
+		String resultsFileName = "between-B-M" + options;
 		if(formatCSV == true) {
 			String header = "id_certificate_newbornParents,"
 					+ "id_certificate_partners,"

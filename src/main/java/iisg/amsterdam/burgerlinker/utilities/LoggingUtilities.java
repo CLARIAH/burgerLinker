@@ -69,6 +69,26 @@ public final class LoggingUtilities {
 		}
 		return message;
 	}
+	
+	
+	public String getUserOptions(Integer maxLev, Boolean fixedLev, Boolean singleInd, Boolean ignoreDate, Boolean ignoreBlock) {
+		String options = "-maxLev-" + maxLev;
+		if(fixedLev == true) {
+			options =  options + "-fixed";
+		}
+		if(singleInd == true) {
+			options =  options + "-singleInd";
+		}
+		if(ignoreDate == true) {
+			options =  options + "-ignoreDate";
+		}
+		if(ignoreBlock == true) {
+			options =  options + "-ignoreBlock";
+		} 
+		return options;
+	}
+	
+	
 
 
 }

@@ -16,7 +16,7 @@ public class App
 {
 	@Parameter(names = "--function")
 	String function = null;
-	
+
 	@Parameter(names = "--inputData")
 	String inputData = null;
 
@@ -28,12 +28,15 @@ public class App
 
 	@Parameter(names = "--fixedLev")
 	boolean fixedLev = false;
-	
+
 	@Parameter(names = "--ignoreDate")
 	boolean ignoreDate = false;
 
 	@Parameter(names = "--ignoreBlock")
 	boolean ignoreBlock = false;
+
+	@Parameter(names = "--singleInd")
+	boolean singleInd = false;
 
 	@Parameter(names = "--format")
 	String format = "CSV"; // or "RDF"
@@ -65,16 +68,14 @@ public class App
 		LOG.outputConsole("");
 		long startTime = System.currentTimeMillis();
 
-		
-//		BasicConfigurator.configure();
+
+		// BasicConfigurator.configure();
 		ClassLoader.getSystemResource("/res/log4j.properties");
-		
+
 		// default option is to show only errors 
 		Configurator.setRootLevel(Level.ERROR);
 		Configurator.setAllLevels("com.github.liblevenshtein", Level.OFF);
 		Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
-		
-		
 
 
 		if(help == false) {
@@ -86,7 +87,7 @@ public class App
 			if(debug.equals("all")) { 
 				Configurator.setRootLevel(Level.DEBUG);
 			}
-			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate, ignoreBlock, inputData, outputDir, format);
+			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, inputData, outputDir, format);
 			cntrl.runProgram();
 		} else { 
 			// do not run program and show some help message if user enter: --help	
@@ -112,7 +113,7 @@ public class App
 			System.out.printf(formatting, "Between_M_M:", "Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");	
 			System.out.printf(formatting, "Between_D_M:", "Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");	
 			System.out.printf(formatting, "Closure:", "Compute the transitive closure of all detected links to get a unique identifier per individual");	
-			
+
 			System.out.println("\n");
 			System.out.println("------------------------");
 
@@ -128,10 +129,10 @@ public class App
 			System.out.println("--function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . ");
 			System.out.println("\nThis will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory."
 					+ "\nThe two input HDT files are separated by a comma ',' without a space)");
-			
+
 			System.out.println("\n");
 			System.out.println("------------------------");
-			
+
 			System.out.println("Example 3. Linking parents of newborns to brides and grooms:");
 			System.out.println("--function Between_B_M --inputData dataDirectory/myData.hdt --outputDir . --format CSV  --maxLev 3 --fixedLev");
 			System.out.println("\nThese arguments indicate that the user wants to:\n "
@@ -144,20 +145,20 @@ public class App
 
 			System.out.println("\n");
 			System.out.println("------------------------");
-			
+
 			System.out.println("Example 4. Family Reconstruction:");
 			System.out.println("--function closure --inputData dataDirectory/myData.hdt --outputDir myResultsDirectory ");
 			System.out.println("\nThis command computes the transitive closure of all links existing in the directory myResultsDirectory, and generates a new finalDataset.nt.gz dataset in this directory "
 					+ "\n by replacing all matched individuals' identifiers from the myData.hdt input dataset with the same unique identifier)");
-			
+
 			System.out.println("\n");
 			System.out.println("------------------------");
-			
-			
+
+
 			System.out.println("For further details, visit https://github.com/CLARIAH/burgerLinker");
-			
+
 			// Add example of computing the closure			
-			
+
 		}
 
 		LOG.outputConsole("");
