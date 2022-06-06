@@ -80,7 +80,7 @@ public class Closure {
 				verifyClosure();
 				saveClosureToFile();
 				reconstructDataset();
-				FILE_UTILS.deleteFile(sortedFile);
+		//		FILE_UTILS.deleteFile(sortedFile);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -137,9 +137,10 @@ public class Closure {
 
 
 
-	public String getEqClassOfPerson(String someURI) {
-		if(someURI.contains("person/")) {
-			String personID = myHDT.getIDofPerson(someURI);
+	public String getEqClassOfPerson(String someURI) {	
+
+		String personID = myHDT.getIDofPerson(someURI);
+		if(personID != null) {
 			String eqClass = dbIndivToClass.get(personID);
 			if(eqClass != null) {
 				eqClass = namespacePerson + eqClass + ">";
@@ -462,8 +463,8 @@ public class Closure {
 		} 
 		return success;
 	}
-	
-	
+
+
 	public Boolean saveLinksIndividuals_Within_B_D(String filePath) {		
 		Boolean success = false;
 		try {	
@@ -586,7 +587,7 @@ public class Closure {
 		} 
 		return success;
 	}
-	
+
 	public Boolean saveLinksIndividuals_Between_B_D(String filePath) {		
 		Boolean success = false;
 		try {
@@ -613,7 +614,7 @@ public class Closure {
 							+ nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
 					String meta_mother = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + "," 
 							+ nextLine[2] + "," + nextLine[3] + "," + nextLine[6] + "," + nextLine[7] + "," + nextLine[8] + "," + nextLine[12];	
-					
+
 					String deathURI = myHDT.getEventURIfromID(idDeath);
 					Person deceased = myHDT.getPersonInfo(deathURI, ROLE_DECEASED);
 					if(deceased.isFemale()) {
@@ -638,8 +639,8 @@ public class Closure {
 		} 
 		return success;
 	}
-	
-	
+
+
 	public Boolean saveLinksIndividuals_Between_D_M(String filePath) {		
 		Boolean success = false;
 		try {
@@ -683,8 +684,8 @@ public class Closure {
 		} 
 		return success;
 	}
-	
-	
+
+
 
 
 	public Boolean saveLinksIndividuals_Between_M_M(String filePath) {		

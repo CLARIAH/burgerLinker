@@ -64,8 +64,8 @@ public class MyHDT implements ProgressListener {
 			e.printStackTrace();
 		}	
 	}
-	
-	
+
+
 	public MyHDT(String hdtPath1, String hdtPath2, Boolean doubleInputs) {  // Two HDT files with their index are given as inputs
 		try {
 			doubleInputs = true;
@@ -99,7 +99,7 @@ public class MyHDT implements ProgressListener {
 			e.printStackTrace();
 		}	
 	}
-	
+
 
 
 	public MyHDT(String inputRDF, String outputDir) { // One RDF file is given as input to be converted to HDT
@@ -259,7 +259,20 @@ public class MyHDT implements ProgressListener {
 	 * 
 	 * @param typed_literal         
 	 */
-	public String convertStringToTypedInteger(String literal) {
+	public String convertStringToTypedInteger(String literal, String type) {
+		try {
+			if (literal != null) {
+				literal = '"' + literal + '"' + "^^<http://www.w3.org/2001/XMLSchema#" + type +">";
+			}
+		} catch (Exception e) {
+			LOG.logError("convertStringToTypedInteger", "Error in converting String to Integer for input string: " + literal);
+			LOG.logError("convertStringToTypedInteger", e.getLocalizedMessage());
+		}
+		return literal;
+	}
+
+
+	public String convertStringToTypedInt(String literal) {
 		try {
 			if (literal != null) {
 				literal = '"' + literal + '"' + "^^<http://www.w3.org/2001/XMLSchema#int>";
@@ -562,9 +575,9 @@ public class MyHDT implements ProgressListener {
 	 * @param eventID
 	 * 		the ID of this event
 	 */
-	public String getEventURIfromID(String eventID) {
+	public String getEventURIfromID(String eventID, String type) {
 		try {
-			String typedEventID = convertStringToTypedInteger(eventID);
+			String typedEventID = convertStringToTypedInteger(eventID, type);
 			IteratorTripleString it = dataset.search("", REGISTRATION_ID, typedEventID);
 			if(it.hasNext()) {
 				TripleString ts = it.next();
@@ -582,6 +595,19 @@ public class MyHDT implements ProgressListener {
 		}
 		return null;
 	}
+
+
+	public String getEventURIfromID(String eventID) {
+		String result = getEventURIfromID(eventID, "integer");
+		if(result == null) {
+			result = getEventURIfromID(eventID, "int");
+			if (result == null) {
+				LOG.logError("getEventURIfromID", "The following eventID is not found in the dataset: " + eventID);
+			}
+		} 
+		return result;
+	}
+
 
 
 	//	public String getEventURIfromID(String eventID, String prov) {

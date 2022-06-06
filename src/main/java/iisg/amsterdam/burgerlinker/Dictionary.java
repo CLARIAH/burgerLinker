@@ -58,6 +58,7 @@ public class Dictionary {
 						if(personMain.isValidWithFullName()){
 							String eventID = myHDT.getIDofEvent(event);
 							indexMain.addPersonToIndex(personMain, eventID, "");
+							countInserts++;
 						}
 					} else {
 						count_No_Main++;

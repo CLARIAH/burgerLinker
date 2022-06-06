@@ -172,13 +172,7 @@ public class Controller {
 			doubleInputs = true;
 			return check;
 		} else {
-			if(FILE_UTILS.checkIfFileExists(inputDataset) == true) {
-				LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: " + inputDataset);
-				return true;
-			} else {
-				LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData", "A valid HDT file is required as input after parameter: --inputData");
-				return false;
-			}
+			return checkInputDataset(inputDataset);
 		}
 	}
 
@@ -187,7 +181,8 @@ public class Controller {
 			LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: " + inputDataset);
 			return true;
 		} else {
-			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData", "A valid HDT file is required as input after parameter: --inputData");
+			String suggestedFix = "A valid HDT file, or two valid HDT files separated only by a comma (without a space) are required as input after parameter: --inputData " ;
+			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData", suggestedFix);
 			return false;
 		}
 	}
