@@ -383,6 +383,7 @@ public class Closure {
 		if(FILE_UTILS.check_Between_M_M(filePath)) {
 			success = success & saveLinksIndividuals_Between_M_M(filePath);
 		}
+		LINKS.flushLinks();
 		return success;
 	}
 
@@ -454,6 +455,7 @@ public class Closure {
 				}
 				pb.stepTo(nbLines);					
 			} finally {
+				//LINKS.flushLinks();
 				pb.close();
 				reader.close();	
 				success = true;

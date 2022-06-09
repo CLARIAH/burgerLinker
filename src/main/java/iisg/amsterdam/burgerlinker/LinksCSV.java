@@ -77,6 +77,7 @@ public class LinksCSV {
 
 	public Boolean closeStream() {
 		try {
+			flushLinks();
 			streamLinks.close();
 			return true;
 		} catch (IOException e) {

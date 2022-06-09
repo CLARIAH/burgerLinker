@@ -29,7 +29,7 @@ public class Between_B_M {
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = -10, MAX_YEAR_DIFF = 36, linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
+	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexBride, indexGroom;
 
 	public static final Logger lg = LogManager.getLogger(Between_B_M.class);
@@ -42,7 +42,6 @@ public class Between_B_M {
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
-		this.singleInd = singleInd;
 		this.myHDT = hdt;
 		
 		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);

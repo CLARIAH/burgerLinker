@@ -26,7 +26,7 @@ public class Between_B_D {
 	// max year diff = 110 (max living age) - 14 (minimum parenthood age)
 	private final int MIN_YEAR_DIFF = -1, MAX_YEAR_DIFF = 96, linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
+	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexDeceasedBride, indexDeceasedGroom;
 
 	public static final Logger lg = LogManager.getLogger(Between_B_D.class);
@@ -39,7 +39,6 @@ public class Between_B_D {
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
-		this.singleInd = singleInd;
 		this.myHDT = hdt;
 		
 		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);

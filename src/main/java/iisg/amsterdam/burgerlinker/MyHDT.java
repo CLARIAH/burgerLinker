@@ -576,7 +576,7 @@ public class MyHDT implements ProgressListener {
 	 * 		the ID of this event
 	 */
 	public String getEventURIfromID(String eventID, String type) {
-		try {
+		try {		
 			String typedEventID = convertStringToTypedInteger(eventID, type);
 			IteratorTripleString it = dataset.search("", REGISTRATION_ID, typedEventID);
 			if(it.hasNext()) {
