@@ -1,28 +1,44 @@
-<mxfile host="app.diagrams.net" modified="2022-06-12T07:14:36.820Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15" etag="a3qbH8svCMv5AsmkrZ--" version="20.0.0" type="github">
+<mxfile host="app.diagrams.net" modified="2022-06-12T08:05:01.149Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15" etag="EbG50W7oP0S-_YB6NzdK" version="20.0.0" type="github">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Page-1">
     <mxGraphModel dx="1234" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="H7VptXutc-k0U8hvnvOZ-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="H7VptXutc-k0U8hvnvOZ-1" target="H7VptXutc-k0U8hvnvOZ-2">
+        <mxCell id="H7VptXutc-k0U8hvnvOZ-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" parent="1" source="H7VptXutc-k0U8hvnvOZ-1" target="H7VptXutc-k0U8hvnvOZ-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <UserObject label="schema:&lt;br&gt;Place" link="https://schema.org/Place" linkTarget="_blank" id="H7VptXutc-k0U8hvnvOZ-1">
-          <mxCell style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-            <mxGeometry x="130" y="190" width="80" height="80" as="geometry" />
+          <mxCell style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+            <mxGeometry x="130" y="200" width="80" height="80" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="H7VptXutc-k0U8hvnvOZ-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="H7VptXutc-k0U8hvnvOZ-2" target="H7VptXutc-k0U8hvnvOZ-4">
+        <mxCell id="H7VptXutc-k0U8hvnvOZ-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="H7VptXutc-k0U8hvnvOZ-2" target="H7VptXutc-k0U8hvnvOZ-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <UserObject label="dbo:&lt;br&gt;municipality" link="https://dbpedia.org/ontology/municipality" linkTarget="_blank" id="H7VptXutc-k0U8hvnvOZ-2">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-            <mxGeometry x="110" y="360" width="120" height="60" as="geometry" />
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+            <mxGeometry x="110" y="330" width="120" height="60" as="geometry" />
           </mxCell>
         </UserObject>
+        <mxCell id="HsRKVlLNMrJj7ceox4T_-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="1" source="H7VptXutc-k0U8hvnvOZ-4" target="HsRKVlLNMrJj7ceox4T_-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <UserObject label="dbo:&lt;br&gt;Municipality" link="https://dbpedia.org/ontology/Municipality" linkTarget="_blank" id="H7VptXutc-k0U8hvnvOZ-4">
+          <mxCell style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+            <mxGeometry x="130" y="440" width="80" height="80" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="HsRKVlLNMrJj7ceox4T_-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="HsRKVlLNMrJj7ceox4T_-1" target="HsRKVlLNMrJj7ceox4T_-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="dbo:&lt;br&gt;province" link="https://dbpedia.org/ontology/province" linkTarget="_blank" id="HsRKVlLNMrJj7ceox4T_-1">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="230" y="550" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="dbo:&lt;br&gt;Province" link="https://dbpedia.org/ontology/Province" linkTarget="_blank" id="HsRKVlLNMrJj7ceox4T_-2">
           <mxCell style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-            <mxGeometry x="130" y="510" width="80" height="80" as="geometry" />
+            <mxGeometry x="410" y="610" width="80" height="80" as="geometry" />
           </mxCell>
         </UserObject>
       </root>
