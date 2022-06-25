@@ -170,6 +170,23 @@ Example:
 
 This means that all these identifiers (:newborn1, :bride1, and :mother1) refer to the same individual, appearing in different roles in different civil certificates. This function generates a new dataset, replacing all occurrences of these three identifiers with a single unique identifier (e.g. :i-1). This process allows the reconstruction of historical families, without the need of writing complex queries or following a large number of identity links across the dataset.
 
+- Example 6. Link individuals without the requirement of linking one of the parents
+
+Convert a file hkh-maids.nt to HDT
+`java -jar burgerLinker.jar --function convertToHDT --inputData maids/maids-dataset/maids.nt --outputDir maids/maids-dataset/`
+
+Merge the resulting HDT dataset of hkh-maids to the HDT file of the marriages:
+`nohup java -Xms128g -Xmx192g -jar burgerLinker.jar --function convertToHDT --inputData maids/maids-dataset/maids.hdt,civ-reg-2021/HDT/marriages.hdt --outputDir maids/maids-and-marriages-dataset/ &`
+
+Run Within_B_M with the singleInd flag on the resulted mergedDataset:
+`nohup java -Xms128g -Xmx192g -jar burgerLinker.jar --function within_B_M --inputData maids/maids-and-marriages-dataset/merged-dataset.hdt --outputDir maids/results/ --maxLev 1 --ignoreDate --singleInd &`
+
+Links are saved in the following CSV file (around 100K links detected with the above parameters):
+`maids/results/within_b_m-maxLev-1-singleInd-ignoreDate/results/within-B-M-maxLev-1-singleInd-ignoreDate.csv`
+
+NB: when running burgerLinker with nohup, the progress of the linking is saved in the nohup.out file. You can track the progress using `tail -f :
+tail -f nohup.out`.
+
 ---
 
 ## Possible direct extensions
