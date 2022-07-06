@@ -6,7 +6,7 @@ Further details regarding the data standardisation and the data model are availa
 ### Purpose
 This tool is being developed to improve and replace the current [LINKS](https://iisg.amsterdam/en/hsn/projects/links) software. Points of improvement are:
 - extremely fast and scalable matching procedure (using Levenshtein automaton and HDT);
-- searches candidate matches based on main individuals and relations, but if need be, allows for matching of the main individual only;
+- searches candidate matches based on main individuals and relations, or if need be, allows for matching of the main individual only;
 - when matching two individuals with multiple first names, at least two names need to be similar in order to find a candidate match; when matching individuals with multiple first names to individuals with only one first name any first name that is identical results in a match(!);
 - blocking is not required (i.e. all candidate records can be considered for matching, with no restrictions on their registration date or location, and no requirements on blocking parts of their individual names);
 - candidate matches contain detailed metadata on why they are suggested, and can be saved in different formats (CSV and RDF are covered in the current version);
