@@ -191,12 +191,7 @@ tail -f nohup.out`.
 ---
 ## Post-processing rules
 
-### 1. Adaptive Levenshtein
--	max Lev Dist 3 for family names with 8+ characters
--	max Lev Dist 2 for family names with 4-7 characters
--	max Lev Dist 1 for family names with 2-3 characters
-
-### 2. Date filtering assumptions
+### Date filtering assumptions
 - Persons will not become older than 110 years of age
 - Persons can marry after age 13
 - Children are born to 1) married parents, 2) five years before the parents married, or 3) up to 9 months after a married father perished. 
