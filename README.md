@@ -197,8 +197,8 @@ tail -f nohup.out`.
 - Children are born to: 
     1. married parents, 
     2. up to 9 months after a married father perished,
-    3. up to 5 years before the parents married IF acknowledged at marriage, or
-    4. up to 10 years before the parents married IF acknowledged at birth
+    3. up to 5 years before the parents married IF acknowledged by the father, or
+    4. up to 10 years before the parents married IF acknowledged by the father from birth
 - Women can give birth to children between age 14 and 50 years 
 - Men can become father at age 14, and stop reproducing after their wife turns 50
 
