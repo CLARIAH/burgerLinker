@@ -197,13 +197,14 @@ tail -f nohup.out`.
 -	max Lev Dist 1 for family names with 2-3 characters
 
 ### 2. Date filtering assumptions
-1.	Persons will not become older than 110 years of age 
-2.	Children are born to 
+1.	Persons will not become older than 110 years of age
+2.  Persons can marry after age 14
+3.	Children are born to 
 - married parents, 
 - five years before the parents married, or 
 - up to 9 months after the father perished. 
-3.	A woman will give birth to children at an age between 14 and 50 years 
-4.	A man will father children at an age between 14 and stop depending on the partner
+4.	Women can give birth to children between age 14 and 50 years 
+5.	Men can become father after age 14, and stop reproducing after their wife turns 50
 
 ---
 
