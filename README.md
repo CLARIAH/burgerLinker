@@ -197,14 +197,13 @@ tail -f nohup.out`.
 -	max Lev Dist 1 for family names with 2-3 characters
 
 ### 2. Date filter
-1.	A woman will give birth to children at an age between 14 and 50 years 
-2.	A man will father children at an age between 14 and 100 years
-3	Children are born in a legitimate state, i.e. parents are married at child birth (this requirement is not met in 2 to 5% of the cases)
-4	Persons will not become older than 110 years of age 
-5	Difference in age between partners will be maximally 66 years
-6	Maximal age of marriage for a woman is 90 years 
-7	Maximal age of marriage for a man is 100 years
-8	Maximal age in combination of maxima will be maximal 100 years
+-	Persons will not become older than 110 years of age 
+-	Children are born to 1) married parents, 2) five years before the parents married, or 3) up to 9 months after the father perished. 
+-	A woman will give birth to children at an age between 14 and 50 years 
+-	A man will father children at an age between 14 and 100 years
+-	Difference in age between partners will be maximally 66 years
+-	Maximal age of marriage for a woman is 90 years 
+-	Maximal age of marriage for a man is 100 years
 
 ---
 
