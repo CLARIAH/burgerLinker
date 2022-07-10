@@ -193,10 +193,10 @@ tail -f nohup.out`.
 
 ### Date filtering assumptions
 - Persons will not become older than 110 years of age
-- Persons can marry after age 13
+- Persons can marry at age 13
 - Children are born to 1) married parents, 2) five years before the parents married, or 3) up to 9 months after a married father perished. 
 - Women can give birth to children between age 14 and 50 years 
-- Men can become father after age 14, and stop reproducing after their wife turns 50
+- Men can become father at age 14, and stop reproducing after their wife turns 50
 
 ---
 
