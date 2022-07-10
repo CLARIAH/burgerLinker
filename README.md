@@ -196,14 +196,14 @@ tail -f nohup.out`.
 -	max Lev Dist 2 for family names with 4-7 characters
 -	max Lev Dist 1 for family names with 2-3 characters
 
-### 2. Date filter
--	Persons will not become older than 110 years of age 
--	Children are born to 1) married parents, 2) five years before the parents married, or 3) up to 9 months after the father perished. 
--	A woman will give birth to children at an age between 14 and 50 years 
--	A man will father children at an age between 14 and 100 years
--	Difference in age between partners will be maximally 66 years
--	Maximal age of marriage for a woman is 90 years 
--	Maximal age of marriage for a man is 100 years
+### 2. Date filtering assumptions
+1.	Persons will not become older than 110 years of age 
+2.	Children are born to 
+- married parents, 
+- five years before the parents married, or 
+- up to 9 months after the father perished. 
+3.	A woman will give birth to children at an age between 14 and 50 years 
+4.	A man will father children at an age between 14 and stop depending on the partner
 
 ---
 
