@@ -197,8 +197,8 @@ tail -f nohup.out`.
 -	max Lev Dist 1 for family names with 2-3 characters
 
 ### 2. Date filter
-1	A woman will give birth to children at an age between 14 and 50 years 
-2	A man will father children at an age between 14 and 100 years
+1.	A woman will give birth to children at an age between 14 and 50 years 
+2.	A man will father children at an age between 14 and 100 years
 3	Children are born in a legitimate state, i.e. parents are married at child birth (this requirement is not met in 2 to 5% of the cases)
 4	Persons will not become older than 110 years of age 
 5	Difference in age between partners will be maximally 66 years
