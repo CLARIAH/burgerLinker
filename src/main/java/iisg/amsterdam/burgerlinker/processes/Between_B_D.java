@@ -24,7 +24,7 @@ public class Between_B_D {
 	private String mainDirectoryPath, processName = "";;
 	private MyHDT myHDT;
 	// max year diff = 110 (max living age) - 14 (minimum parenthood age)
-	private final int MIN_YEAR_DIFF = -1, MAX_YEAR_DIFF = 96, linkingUpdateInterval = 10000;
+	private final int MIN_YEAR_DIFF = -5, MAX_YEAR_DIFF = 96, linkingUpdateInterval = 10000;
 	private int maxLev;
 	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexDeceasedBride, indexDeceasedGroom;
