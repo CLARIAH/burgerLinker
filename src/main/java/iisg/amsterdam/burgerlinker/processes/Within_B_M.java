@@ -23,7 +23,7 @@ public class Within_B_M {
 
 	private String mainDirectoryPath, processName = "";;
 	private MyHDT myHDT;
-	private final int MIN_YEAR_DIFF = 13, MAX_YEAR_DIFF = 80,  linkingUpdateInterval = 10000;
+	private final int MIN_YEAR_DIFF = 14, MAX_YEAR_DIFF = 80,  linkingUpdateInterval = 10000;
 	private int maxLev;
 	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexPartner, indexMother, indexFather;
