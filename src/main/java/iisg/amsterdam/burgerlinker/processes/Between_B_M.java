@@ -27,7 +27,7 @@ public class Between_B_M {
 
 	private String mainDirectoryPath, processName = "";
 	private MyHDT myHDT;
-	private final int MIN_YEAR_DIFF = -10, MAX_YEAR_DIFF = 36, linkingUpdateInterval = 10000;
+	private final int MIN_YEAR_DIFF = -5, MAX_YEAR_DIFF = 36, linkingUpdateInterval = 10000;
 	private int maxLev;
 	private Boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexBride, indexGroom;
