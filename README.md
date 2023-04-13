@@ -31,7 +31,7 @@ The Golden Agents project has brought about [Lenticular Lenses](https://www.gold
 
 The only other set of initiatives that we are aware of are bespoke programming initiatives by domain specific researchers, with country and time specific rules for linking in for example R. These linkage tools are on the whole slow. What we did do is make our own rule set for linking modular, to allow in the future for country and time specific rule sets to be incorporated in *burgerLinker*.
 
-**Update** At the ESSHC 2023 we learned of [population-linkage](https://github.com/stacs-srg/population-linkage) and [hope](https://github.com/stacs-srg/population-linkage/issues/4) to set up talks to discuss the similarities and differences in our approaches.
+**Update** At the ESSHC 2023 we learned of [population-linkage](https://github.com/stacs-srg/population-linkage) and [hope](https://github.com/stacs-srg/population-linkage/issues/4) to set up talks to discuss the similarities and differences in our approaches. Also at the ESSHC 2023, we learned of the Norwegian effort for historical record linking: [https://github.com/uit-hdl/rhd-linking](https://github.com/uit-hdl/rhd-linking) (for documentation see: [https://munin.uit.no/handle/10037/28399](https://munin.uit.no/handle/10037/28399)).
 
 ---
 
