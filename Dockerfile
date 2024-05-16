@@ -24,4 +24,6 @@ COPY --from=build /app/burgerlinker/target/burgerLinker-0.0.1-SNAPSHOT-jar-with-
 COPY --from=build /app/burgerlinker/assets/docker/entrypoint.sh /app/
 COPY --from=build /app/burgerlinker/assets/csv-to-rdf/zeeland-dataset/script.py /app/convert-to-RDF.py
 
+ENV JAVA_OPTS=""
+
 ENTRYPOINT ["/app/entrypoint.sh"]

@@ -222,6 +222,6 @@ A Docker image can be created from a checkout or directly from GitHub:
 
 The docker image supports the complete pipeline as mentioned above, starting from the CSV files `registrations.csv` and `persons.csv` which it expects in a `CSV` subdirectory of your dataset, e.g. `/path-to/my-dataset/CSV`. To start linking:
 
-```docker -m 16g run -v /path-to:/data burgerlinker my-dataset --function between_m_m --maxLev 1```
+```docker -e JAVA_OPTS="-Xms128g -Xmx192g" run -v /path-to:/data burgerlinker my-dataset --function between_m_m --maxLev 1```
 
-It will put the result of the RDF and HDT conversions into the `RDF` subdirectory, e.g. `/path-to/my-dataset/RDF`. The result directories and a log file  are created next to the `CSV` and `RDF` subdirectories. Running time and memory consumption depend on the input size, but creating the HDT index takes quite some time and memory (tune the `-m 16g` as needed).
+It will put the result of the RDF and HDT conversions into the `RDF` subdirectory, e.g. `/path-to/my-dataset/RDF`. The result directories and a log file are created next to the `CSV` and `RDF` subdirectories. Running time and memory consumption depend on the input size, but creating the HDT index takes quite some time and memory (tune the `JAVA_OPTS=-Xms128g -Xmx192g` as needed).

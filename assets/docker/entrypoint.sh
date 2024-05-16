@@ -45,7 +45,7 @@ if [ ! -f ${DATA}/${DS}/RDF/${DS}.hdt ]; then
 
     # turn NQ into HDT
     echo "?INF: generate HDT"  2>&1 | tee -a ${LOG}
-    java -jar burgerLinker-0.0.1-SNAPSHOT-jar-with-dependencies.jar --inputData ${DATA}/${DS}/RDF/${DS}.nq --outputDir ${DATA}/${DS}/RDF --function convertToHDT 2>&1 | tee -a ${LOG}
+    java $JAVA_OPTS -jar burgerLinker-0.0.1-SNAPSHOT-jar-with-dependencies.jar --inputData ${DATA}/${DS}/RDF/${DS}.nq --outputDir ${DATA}/${DS}/RDF --function convertToHDT 2>&1 | tee -a ${LOG}
     ERR="${?}"
     if [ ${ERR} -ne 0 ]; then
         exit ${ERR}
@@ -55,7 +55,7 @@ fi
 # get rid of $DS in $1
 shift
 
-java -jar burgerLinker-0.0.1-SNAPSHOT-jar-with-dependencies.jar --inputData ${DATA}/${DS}/RDF/${DS}.hdt --outputDir ${DATA}/${DS} $* 2>&1 | tee -a ${LOG}
+java $JAVA_OPTS -jar burgerLinker-0.0.1-SNAPSHOT-jar-with-dependencies.jar --inputData ${DATA}/${DS}/RDF/${DS}.hdt --outputDir ${DATA}/${DS} $* 2>&1 | tee -a ${LOG}
 ERR="${?}"
 echo " END [`date`] ${*}" >> ${LOG}
 

@@ -297,7 +297,7 @@ def convertPersonsToRDF(inputData, outputData):
     start_time = datetime.now()
     f = open(outputData,"w+")
     ch_size = 10000
-    df_chunk = pd.read_csv(inputData, chunksize=ch_size, sep=";", low_memory=False, error_bad_lines=False, keep_default_na=False, encoding = 'latin-1')
+    df_chunk = pd.read_csv(inputData, chunksize=ch_size, sep=";", low_memory=False, on_bad_lines='skip', keep_default_na=False, encoding = 'latin-1')
     counter = 0
     for chunk in df_chunk:
         print("# " + str(counter) + " rows")
