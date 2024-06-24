@@ -211,3 +211,17 @@ It would be possible to add more general matching functionalities that are not d
 One possible way would be to provide a JSON Schema as an additional input to any given dataset, specifying the (i) Classes that the user wish to match their instances (e.g. sourceClass: iisg:Newborn ; targetClass: iisg:Groom), and the (ii) Properties that should be considered in the matching (e.g. schema:givenName; schema:familyName).
 
 Subsequently, the fast matching algorithm could be used for many other linkage purposes (in Digital Humanities), e.g. places, occupations and products.
+
+---
+
+## Docker setup
+
+A Docker image can be created from a checkout or directly from GitHub:
+
+```docker build -t burgerlinker https://raw.githubusercontent.com/CLARIAH/burgerLinker/main/Dockerfile```
+
+The docker image supports the complete pipeline as mentioned above, starting from the CSV files `registrations.csv` and `persons.csv` which it expects in a `CSV` subdirectory of your dataset, e.g. `/path-to/my-dataset/CSV`. To start linking:
+
+```docker -e JAVA_OPTS="-Xms128g -Xmx192g" run -v /path-to:/data burgerlinker my-dataset --function between_m_m --maxLev 1```
+
+It will put the result of the RDF and HDT conversions into the `RDF` subdirectory, e.g. `/path-to/my-dataset/RDF`. The result directories and a log file are created next to the `CSV` and `RDF` subdirectories. Running time and memory consumption depend on the input size, but creating the HDT index takes quite some time and memory (tune the `JAVA_OPTS=-Xms128g -Xmx192g` as needed).

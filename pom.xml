@@ -13,8 +13,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>3.8</maven.compiler.source>
-		<maven.compiler.target>3.8</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 	</properties>
     <build>
 		<plugins>
@@ -29,9 +29,12 @@
 						</goals>
 						<configuration>
 							<archive>
+								<manifestEntries>
+									<Multi-Release>true</Multi-Release>
+								</manifestEntries>
 								<manifest>
 									<mainClass>
-										iisg.amsterdam.burgerLinker.App
+										iisg.amsterdam.burgerlinker.App
 									</mainClass>
 								</manifest>
 							</archive>
@@ -75,7 +78,7 @@
 		<dependency>
 			<groupId>org.rdfhdt</groupId>
 			<artifactId>hdt-java-core</artifactId>
-			<version>3.0.9</version>
+			<version>3.0.10</version>
 		</dependency>
 <!-- 		<dependency>
 			<groupId>org.rdfhdt</groupId>
@@ -104,6 +107,12 @@
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.32</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>
