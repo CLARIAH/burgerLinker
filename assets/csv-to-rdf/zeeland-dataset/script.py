@@ -7,6 +7,7 @@ import numpy as np
 import glob
 import collections
 import re
+import sys
 from datetime import datetime
 
 
@@ -296,7 +297,7 @@ def convertPersonsToRDF(inputData, outputData):
     start_time = datetime.now()
     f = open(outputData,"w+")
     ch_size = 10000
-    df_chunk = pd.read_csv(inputData, chunksize=ch_size, sep=";", low_memory=False, error_bad_lines=False, keep_default_na=False, encoding = 'latin-1')
+    df_chunk = pd.read_csv(inputData, chunksize=ch_size, sep=";", low_memory=False, on_bad_lines='skip', keep_default_na=False, encoding = 'latin-1')
     counter = 0
     for chunk in df_chunk:
         print("# " + str(counter) + " rows")
@@ -366,11 +367,22 @@ def convertPersonsToRDF(inputData, outputData):
     time_elapsed = datetime.now() - start_time
     print('Time elapsed (hh:mm:ss) {}'.format(time_elapsed))
 
-registrations_csv_path = "registrations.csv"
-output_file_registrations = "registrations.nq"
+
+if len(sys.argv) >= 3:
+    indir = sys.argv[1]
+    outdir = sys.argv[2]
+elif len(sys.argv) >= 2:
+    indir = sys.argv[1]
+    outdir = indir
+else:
+    indir =  "."
+    outdir = "."
+
+registrations_csv_path = indir + "/registrations.csv"
+output_file_registrations = outdir + "/registrations.nq"
 convertRegistrationsToRDF(registrations_csv_path, output_file_registrations)
-persons_csv_path = "persons.csv"
-output_file_persons = "persons.nq"
+persons_csv_path = indir + "/persons.csv"
+output_file_persons = outdir + "/persons.nq"
 convertPersonsToRDF(persons_csv_path, output_file_persons)
 
 # using the terminal, you can later merge the resulting files using the following cat command:
