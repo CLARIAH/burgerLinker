@@ -17,6 +17,7 @@ import nl.knaw.iisg.burgerlinker.MyHDT;
 import nl.knaw.iisg.burgerlinker.Person;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 // Between_M_M: link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)
@@ -42,7 +43,7 @@ public class Between_M_M {
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
-		
+
 		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String resultsFileName = "between-M-M" + options;
 		if(formatCSV == true) {
@@ -68,7 +69,7 @@ public class Between_M_M {
 	public void link_between_M_M() {
 		Dictionary dict = new Dictionary("between-M-M", mainDirectoryPath, maxLev, fixedLev);
 		Boolean success = dict.generateDictionary(myHDT, ROLE_BRIDE, ROLE_GROOM, true);
-		if(success == true) {	
+		if(success == true) {
 			indexBride = dict.indexFemalePartner;
 			indexGroom = dict.indexMalePartner;
 			indexBride.createTransducer();
@@ -78,19 +79,24 @@ public class Between_M_M {
 				String familyCode = "";
 				// iterate through the marriage certificates to link it to the marriage dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_BRIDE, "");
-				long estNumber = it.estimatedNumResults();	
+				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String marriageEvent = ts.getSubject().toString();	
+						String marriageEvent = ts.getSubject().toString();
 						String marriageEventID = myHDT.getIDofEvent(marriageEvent);
-						Person mother, father;			
+						Person mother, father;
 						for(int i=0; i<2; i++) {
-							mother = null; father = null;   
+							mother = null; father = null;
 							if(i==0) {
 								// bride's parents
 								mother = myHDT.getPersonInfo(marriageEvent, ROLE_BRIDE_MOTHER);
@@ -118,18 +124,18 @@ public class Between_M_M {
 											}
 											if(yearDifference < 999) { // if it fits the time line
 												Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);
-												Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);	
-												LINKS.saveLinks_Between_M_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, familyCode, yearDifference);																				
+												Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);
+												LINKS.saveLinks_Between_M_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, familyCode, yearDifference);
 											}
 										}
 									}
 								}
-							}								
+							}
 						}
 						if(cntAll % 10000 == 0) {
 							pb.stepBy(10000);
 						}
-					} pb.stepTo(estNumber); 
+					} pb.stepTo(estNumber);
 				} finally {
 					pb.close();
 				}
@@ -145,13 +151,13 @@ public class Between_M_M {
 
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
-	 * 
+	 *
 	 * @param birthYear
-	 *            year of birth 
+	 *            year of birth
 	 * @param candidateMarriageEvent
-	 *            marriage event URI            
+	 *            marriage event URI
 	 */
-	public int checkTimeConsistencyMarriageToMarriage(int marriageAsParentsYear, String marriageAsCouple) {	
+	public int checkTimeConsistencyMarriageToMarriage(int marriageAsParentsYear, String marriageAsCouple) {
 		int marriageAsCoupleYear = myHDT.getEventDate(marriageAsCouple);
 		int diff = marriageAsParentsYear - marriageAsCoupleYear;
 		if(diff >= MIN_YEAR_DIFF && diff < MAX_YEAR_DIFF) {

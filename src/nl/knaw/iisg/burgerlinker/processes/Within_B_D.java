@@ -18,9 +18,12 @@ import nl.knaw.iisg.burgerlinker.MyHDT;
 import nl.knaw.iisg.burgerlinker.Person;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 public class Within_B_D {
+	public static final Logger lg = LogManager.getLogger(Within_B_D.class);
+	LoggingUtilities LOG = new LoggingUtilities(lg);
 
 	private String mainDirectoryPath, processName = "";;
 	private MyHDT myHDT;
@@ -29,8 +32,6 @@ public class Within_B_D {
 	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexDeceased, indexMother, indexFather;
 
-	public static final Logger lg = LogManager.getLogger(Within_B_D.class);
-	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
 	public Within_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, Boolean formatCSV) {
@@ -70,8 +71,8 @@ public class Within_B_D {
 			link_within_B_D("f", false); // false = do not close stream
 			link_within_B_D("m", true); // true = close stream
 		} else {
-			link_within_B_D_single("f", false); 
-			link_within_B_D_single("m", true); 
+			link_within_B_D_single("f", false);
+			link_within_B_D_single("m", true);
 		}
 	}
 
@@ -95,15 +96,20 @@ public class Within_B_D {
 				}
 				// iterate through the birth certificates to link it to the death dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
-				long estNumber = it.estimatedNumResults();	
+				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking Newborns to " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String birthEvent = ts.getSubject().toString();	
+						String birthEvent = ts.getSubject().toString();
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
 						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
 						if(newborn.isValidWithFullName()) {
@@ -121,7 +127,7 @@ public class Within_B_D {
 												Set<String> finalCandidatesMother = candidatesDeceased.findIntersectionCandidates(candidatesMother);
 												for(String finalCandidate: finalCandidatesMother) {
 													Boolean link = true;
-													if(father.isValidWithFullName()){ 
+													if(father.isValidWithFullName()){
 														if(candidatesDeceased.candidates.get(finalCandidate).individualsInCertificate.contains("F")) {
 															link = false; // if both have fathers, but their names did not match
 														}
@@ -138,7 +144,7 @@ public class Within_B_D {
 															Person deceased_mother = myHDT.getPersonInfo(deathEventURI, ROLE_MOTHER);
 															if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
 																if(checkTimeConsistencyWithAge(yearDifference, deceased_mother)) {
-																	LINKS.saveLinks_Within_B_M_mother(candidatesDeceased, candidatesMother, finalCandidate, deceased, deceased_mother, familyCode, yearDifference);	
+																	LINKS.saveLinks_Within_B_M_mother(candidatesDeceased, candidatesMother, finalCandidate, deceased, deceased_mother, familyCode, yearDifference);
 																}
 															}
 														}
@@ -165,11 +171,11 @@ public class Within_B_D {
 															yearDifference = checkTimeConsistency_Within_B_D(birthYear, deathEventURI);
 														}
 														if(yearDifference < 999) { // if it fits the time line
-															Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);		
+															Person deceased = myHDT.getPersonInfo(deathEventURI, ROLE_DECEASED);
 															Person deceased_father = myHDT.getPersonInfo(deathEventURI, ROLE_FATHER);
 															if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
 																if(checkTimeConsistencyWithAge(yearDifference, deceased_father)) {
-																	LINKS.saveLinks_Within_B_M_father(candidatesDeceased, candidatesFather, finalCandidate, deceased, deceased_father, familyCode, yearDifference);	
+																	LINKS.saveLinks_Within_B_M_father(candidatesDeceased, candidatesFather, finalCandidate, deceased, deceased_father, familyCode, yearDifference);
 																}
 															}
 														}
@@ -194,7 +200,7 @@ public class Within_B_D {
 														if(checkTimeConsistencyWithAge(yearDifference, deceased)) {
 															if(checkTimeConsistencyWithAge(yearDifference, deceased_mother)) {
 																if(checkTimeConsistencyWithAge(yearDifference, deceased_father)) {
-																	LINKS.saveLinks_Within_B_M(candidatesDeceased, candidatesMother, candidatesFather, finalCandidate, deceased, deceased_mother, deceased_father, familyCode, yearDifference);																				
+																	LINKS.saveLinks_Within_B_M(candidatesDeceased, candidatesMother, candidatesFather, finalCandidate, deceased, deceased_mother, deceased_father, familyCode, yearDifference);
 																}
 															}
 														}
@@ -209,7 +215,7 @@ public class Within_B_D {
 						if(cntAll % 10000 == 0) {
 							pb.stepBy(10000);
 						}
-					} pb.stepTo(estNumber); 
+					} pb.stepTo(estNumber);
 				} finally {
 					pb.close();
 				}
@@ -241,15 +247,20 @@ public class Within_B_D {
 				}
 				// iterate through the birth certificates to link it to the death dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
-				long estNumber = it.estimatedNumResults();	
+				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking Newborns to " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String birthEvent = ts.getSubject().toString();	
+						String birthEvent = ts.getSubject().toString();
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
 						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
 						if(newborn.isValidWithFullName()) {
@@ -270,14 +281,14 @@ public class Within_B_D {
 												LINKS.saveLinks_Within_B_M_single(candidatesDeceased, finalCandidate, deceased, familyCode, yearDifference);
 											}
 										}
-									}		
+									}
 								}
 							}
 						}
 						if(cntAll % 10000 == 0) {
 							pb.stepBy(10000);
 						}
-					} pb.stepTo(estNumber); 
+					} pb.stepTo(estNumber);
 				} finally {
 					pb.close();
 				}
@@ -295,11 +306,11 @@ public class Within_B_D {
 
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
-	 * 
+	 *
 	 * @param birthYear
-	 *            year of birth 
+	 *            year of birth
 	 * @param candidateMarriageEvent
-	 *            marriage event URI            
+	 *            marriage event URI
 	 */
 	public int checkTimeConsistency_Within_B_D(int birthYear, String candidateDeathEvent) {
 		int deathYear = myHDT.getEventDate(candidateDeathEvent);

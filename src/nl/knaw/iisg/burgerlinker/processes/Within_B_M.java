@@ -17,6 +17,7 @@ import nl.knaw.iisg.burgerlinker.MyHDT;
 import nl.knaw.iisg.burgerlinker.Person;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 public class Within_B_M {
@@ -70,8 +71,8 @@ public class Within_B_M {
 			link_within_B_M("f", false); // false = do not close stream
 			link_within_B_M("m", true); // true = close stream
 		} else {
-			link_within_B_M_single("f", false); 
-			link_within_B_M_single("m", true); 
+			link_within_B_M_single("f", false);
+			link_within_B_M_single("m", true);
 		}
 
 	}
@@ -94,7 +95,7 @@ public class Within_B_M {
 		}
 		Dictionary dict = new Dictionary("within-B-M", mainDirectoryPath, maxLev, fixedLev);
 		Boolean success = dict.generateDictionary(myHDT, rolePartner, rolePartnerMother, rolePartnerFather, false, "");
-		if(success == true) {	
+		if(success == true) {
 			indexPartner = dict.indexMain; indexPartner.createTransducer();
 			indexMother = dict.indexMother; indexMother.createTransducer();
 			indexFather = dict.indexFather;	indexFather.createTransducer();
@@ -104,13 +105,18 @@ public class Within_B_M {
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
 				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking Newborns to " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String birthEvent = ts.getSubject().toString();	
+						String birthEvent = ts.getSubject().toString();
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
 						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
 						if(newborn.isValidWithFullName()) {
@@ -128,7 +134,7 @@ public class Within_B_M {
 												Set<String> finalCandidatesMother = candidatesPartner.findIntersectionCandidates(candidatesMother);
 												for(String finalCandidate: finalCandidatesMother) {
 													Boolean link = true;
-													if(father.isValidWithFullName()){ 
+													if(father.isValidWithFullName()){
 														if(candidatesPartner.candidates.get(finalCandidate).individualsInCertificate.contains("F")) {
 															link = false; // if both have fathers, but their names did not match
 														}
@@ -143,7 +149,7 @@ public class Within_B_M {
 														if(yearDifference < 999) { // if it fits the time line
 															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
 															Person partner_mother = myHDT.getPersonInfo(marriageEventURI, rolePartnerMother);
-															LINKS.saveLinks_Within_B_M_mother(candidatesPartner, candidatesMother, finalCandidate, partner, partner_mother, familyCode, yearDifference);																				
+															LINKS.saveLinks_Within_B_M_mother(candidatesPartner, candidatesMother, finalCandidate, partner, partner_mother, familyCode, yearDifference);
 														}
 													}
 												}
@@ -168,9 +174,9 @@ public class Within_B_M {
 															yearDifference = checkTimeConsistency_Within_B_M(birthYear, marriageEventURI);
 														}
 														if(yearDifference < 999) { // if it fits the time line
-															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);		
+															Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
 															Person partner_father = myHDT.getPersonInfo(marriageEventURI, rolePartnerFather);
-															LINKS.saveLinks_Within_B_M_father(candidatesPartner, candidatesFather, finalCandidate, partner, partner_father, familyCode, yearDifference);																				
+															LINKS.saveLinks_Within_B_M_father(candidatesPartner, candidatesFather, finalCandidate, partner, partner_father, familyCode, yearDifference);
 														}
 													}
 												}
@@ -189,8 +195,8 @@ public class Within_B_M {
 													if(yearDifference < 999) { // if it fits the time line
 														Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
 														Person partner_mother = myHDT.getPersonInfo(marriageEventURI, rolePartnerMother);
-														Person partner_father = myHDT.getPersonInfo(marriageEventURI, rolePartnerFather);	
-														LINKS.saveLinks_Within_B_M(candidatesPartner, candidatesMother, candidatesFather, finalCandidate, partner, partner_mother, partner_father, familyCode, yearDifference);																				
+														Person partner_father = myHDT.getPersonInfo(marriageEventURI, rolePartnerFather);
+														LINKS.saveLinks_Within_B_M(candidatesPartner, candidatesMother, candidatesFather, finalCandidate, partner, partner_mother, partner_father, familyCode, yearDifference);
 													}
 												}
 											}
@@ -202,7 +208,7 @@ public class Within_B_M {
 						if(cntAll % 10000 == 0) {
 							pb.stepBy(10000);
 						}
-					} pb.stepTo(estNumber); 
+					} pb.stepTo(estNumber);
 				} finally {
 					pb.close();
 				}
@@ -231,7 +237,7 @@ public class Within_B_M {
 		}
 		Dictionary dict = new Dictionary("within-B-M", mainDirectoryPath, maxLev, fixedLev);
 		Boolean success = dict.generateDictionary(myHDT, rolePartner, false, "");
-		if(success == true) {	
+		if(success == true) {
 			indexPartner = dict.indexMain; indexPartner.createTransducer();
 			try {
 				int cntAll =0 ;
@@ -239,13 +245,18 @@ public class Within_B_M {
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
 				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking Newborns to " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String birthEvent = ts.getSubject().toString();	
+						String birthEvent = ts.getSubject().toString();
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
 						Person newborn = myHDT.getPersonInfo(birthEvent, ROLE_NEWBORN);
 						if(newborn.isValidWithFullName()) {
@@ -262,7 +273,7 @@ public class Within_B_M {
 										}
 										if(yearDifference < 999) { // if it fits the time line
 											Person partner = myHDT.getPersonInfo(marriageEventURI, rolePartner);
-											LINKS.saveLinks_Within_B_M_single(candidatesPartner, finalCandidate, partner, familyCode, yearDifference);																				
+											LINKS.saveLinks_Within_B_M_single(candidatesPartner, finalCandidate, partner, familyCode, yearDifference);
 										}
 									}
 								}
@@ -271,7 +282,7 @@ public class Within_B_M {
 					if(cntAll % 10000 == 0) {
 						pb.stepBy(10000);
 					}
-				} pb.stepTo(estNumber); 
+				} pb.stepTo(estNumber);
 			} finally {
 				pb.close();
 			}
@@ -291,11 +302,11 @@ public class Within_B_M {
 
 /**
  * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
- * 
+ *
  * @param birthYear
- *            year of birth 
+ *            year of birth
  * @param candidateMarriageEvent
- *            marriage event URI            
+ *            marriage event URI
  */
 public int checkTimeConsistency_Within_B_M(int birthYear, String candidateMarriageEvent) {
 	int marriageYear = myHDT.getEventDate(candidateMarriageEvent);

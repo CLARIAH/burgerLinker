@@ -18,6 +18,7 @@ import nl.knaw.iisg.burgerlinker.MyHDT;
 import nl.knaw.iisg.burgerlinker.Person;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 public class Between_D_M {
@@ -40,7 +41,7 @@ public class Between_D_M {
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
-		
+
 		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String resultsFileName = "between-D-M" + options;
 		if(formatCSV == true) {
@@ -61,12 +62,12 @@ public class Between_D_M {
 		}
 		link_between_D_M();
 	}
-	
-	
+
+
 	public void link_between_D_M() {
 		Dictionary dict = new Dictionary("between-D-M", mainDirectoryPath, maxLev, fixedLev);
 		Boolean success = dict.generateDictionary(myHDT, ROLE_BRIDE, ROLE_GROOM, true);
-		if(success == true) {	
+		if(success == true) {
 			indexBride = dict.indexFemalePartner;
 			indexGroom = dict.indexMalePartner;
 			indexBride.createTransducer();
@@ -75,18 +76,23 @@ public class Between_D_M {
 				int cntAll =0 ;
 				// iterate through the death certificates to link it to the marriage dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_DECEASED, "");
-				long estNumber = it.estimatedNumResults();	
+				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String deathEvent = ts.getSubject().toString();	
+						String deathEvent = ts.getSubject().toString();
 						String deathEventID = myHDT.getIDofEvent(deathEvent);
 						Person mother = myHDT.getPersonInfo(deathEvent, ROLE_MOTHER);
-						Person father = myHDT.getPersonInfo(deathEvent, ROLE_FATHER);				
+						Person father = myHDT.getPersonInfo(deathEvent, ROLE_FATHER);
 						if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 							// start linking here
 							CandidateList candidatesGroom = indexGroom.searchForCandidate(father, deathEventID, ignoreBlock);
@@ -104,16 +110,16 @@ public class Between_D_M {
 										if(yearDifference < 999) { // if it fits the time line
 											Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);
 											Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);
-											LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, yearDifference);																				
+											LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, yearDifference);
 										}
 									}
 								}
 							}
-						}								
+						}
 						if(cntAll % 10000 == 0) {
 							pb.stepBy(10000);
 						}
-					} pb.stepTo(estNumber); 
+					} pb.stepTo(estNumber);
 				} finally {
 					pb.close();
 				}
@@ -130,11 +136,11 @@ public class Between_D_M {
 
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
-	 * 
+	 *
 	 * @param birthYear
-	 *            year of birth 
+	 *            year of birth
 	 * @param candidateMarriageEvent
-	 *            marriage event URI            
+	 *            marriage event URI
 	 */
 	public int checkTimeConsistency_between_d_m(int deathYearAsParents, String marriageAsCouple) {
 		int marriageAsCoupleYear = myHDT.getEventDate(marriageAsCouple);
@@ -146,6 +152,6 @@ public class Between_D_M {
 		}
 	}
 
-	
-	
+
+
 }

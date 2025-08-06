@@ -21,6 +21,7 @@ import nl.knaw.iisg.burgerlinker.MyHDT;
 import nl.knaw.iisg.burgerlinker.Person;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
 public class Between_B_M {
@@ -43,7 +44,7 @@ public class Between_B_M {
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
-		
+
 		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String resultsFileName = "between-B-M" + options;
 		if(formatCSV == true) {
@@ -69,7 +70,7 @@ public class Between_B_M {
 	public void link_between_B_M() {
 		Dictionary dict = new Dictionary("between-B-M", mainDirectoryPath, maxLev, fixedLev);
 		Boolean success = dict.generateDictionary(myHDT, ROLE_BRIDE, ROLE_GROOM, true);
-		if(success == true) {	
+		if(success == true) {
 			indexBride = dict.indexFemalePartner;
 			indexGroom = dict.indexMalePartner;
 			indexBride.createTransducer();
@@ -80,16 +81,21 @@ public class Between_B_M {
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
 				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking " + processName;
-				ProgressBar pb = null;
+
+                ProgressBar pb = new ProgressBarBuilder()
+                    .setTaskName(taskName)
+                    .setInitialMax(estNumber)
+                    .setUpdateIntervalMillis(linkingUpdateInterval)
+                    .setStyle(ProgressBarStyle.UNICODE_BLOCK)
+                    .build();
 				try {
-					pb = new ProgressBar(taskName, estNumber, linkingUpdateInterval, System.err, ProgressBarStyle.UNICODE_BLOCK, " cert.", 1); 
-					while(it.hasNext()) {	
-						TripleString ts = it.next();	
+					while(it.hasNext()) {
+						TripleString ts = it.next();
 						cntAll++;
-						String birthEvent = ts.getSubject().toString();	
-						String birthEventID = myHDT.getIDofEvent(birthEvent);	
+						String birthEvent = ts.getSubject().toString();
+						String birthEventID = myHDT.getIDofEvent(birthEvent);
 						Person mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
-						Person father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);				
+						Person father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);
 						if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 							// start linking here
 							CandidateList candidatesGroom = indexGroom.searchForCandidate(father, birthEventID, ignoreBlock);
@@ -107,16 +113,16 @@ public class Between_B_M {
 										if(yearDifference < 999) { // if it fits the time line
 											Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);
 											Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);
-											LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, yearDifference);																				
+											LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, yearDifference);
 										}
 									}
 								}
 							}
-						}								
+						}
 						if(cntAll % 10000 == 0) {
 							pb.stepBy(10000);
 						}
-					} pb.stepTo(estNumber); 
+					} pb.stepTo(estNumber);
 				} finally {
 					pb.close();
 				}
@@ -135,11 +141,11 @@ public class Between_B_M {
 
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
-	 * 
+	 *
 	 * @param birthYear
-	 *            year of birth 
+	 *            year of birth
 	 * @param candidateMarriageEvent
-	 *            marriage event URI            
+	 *            marriage event URI
 	 */
 	public int checkTimeConsistency_between_b_m(int birthYearAsParents, String marriageAsCouple) {
 		int marriageAsCoupleYear = myHDT.getEventDate(marriageAsCouple);

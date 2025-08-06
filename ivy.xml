@@ -1,15 +1,16 @@
 <ivy-module version="2.0">
-    <info organisation="iisg.amsterdam" module="burgerLinker"/>
+    <info organisation="nl.knaw.iisg" module="burgerLinker"/>
     <dependencies>
-        <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.20.0"/>
-        <dependency org="org.rdfhdt" name="hdt-java-core" rev="3.0.10"/>
-        <dependency org="com.opencsv" name="opencsv" rev="5.2"/>
-        <dependency org="org.rocksdb" name="rocksdbjni" rev="8.1.1"/>
-        <dependency org="me.tongfei" name="progressbar" rev="0.8.1"/>
-        <dependency org="org.slf4j" name="slf4j-api" rev="2.0.7"/>
-        <dependency org="org.slf4j" name="slf4j-reload4j" rev="2.0.7"/>
-        <dependency org="com.beust" name="jcommander" rev="1.78"/>
-        <dependency org="com.github.universal-automata" name="liblevenshtein" rev="3.0.0"/>
+        <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.25.1"/>  <!-- logging -->
+        <dependency org="org.rdfhdt" name="hdt-java-core" rev="3.0.10"/>  <!-- support RDF HDT -->
+        <dependency org="com.opencsv" name="opencsv" rev="5.12.0"/>  <!-- support CSV -->
+        <dependency org="org.rocksdb" name="rocksdbjni" rev="10.2.1"/>  <!-- key-value database -->
+        <dependency org="me.tongfei" name="progressbar" rev="0.10.1"/>  <!-- progress bar -->
+        <dependency org="org.slf4j" name="slf4j-api" rev="2.0.17"/>  <!-- logging abstraction framework -->
+        <dependency org="org.slf4j" name="slf4j-reload4j" rev="2.0.17"/>  <!-- drop-in replacement for log4j -->
+        <dependency org="org.jcommander" name="jcommander" rev="2.0"/>  <!-- command line parsing -->
+        <dependency org="com.github.universal-automata" name="liblevenshtein" rev="3.0.0"/>  <!-- Levenshtein Automata -->
+        <dependency org="com.google.errorprone" name="error_prone_annotations" rev="2.41.0"/>  <!-- annotations for compile checker -->
     </dependencies>
 </ivy-module>
 
