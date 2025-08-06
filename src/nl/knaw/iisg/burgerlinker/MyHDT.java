@@ -1,6 +1,6 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
-import static iisg.amsterdam.burgerlinker.Properties.*;
+import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,8 +19,8 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import iisg.amsterdam.burgerlinker.utilities.FileUtilities;
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.FileUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 import org.apache.jena.query.ARQ;
 

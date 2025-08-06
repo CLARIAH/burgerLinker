@@ -1,4 +1,4 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
 public final class Properties {
 

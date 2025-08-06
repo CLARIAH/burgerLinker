@@ -1,4 +1,4 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
 
 import org.apache.logging.log4j.LogManager;
@@ -7,7 +7,7 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 

@@ -107,7 +107,7 @@
 //}
 
 
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
 import java.util.ArrayList;
 import java.util.HashMap;

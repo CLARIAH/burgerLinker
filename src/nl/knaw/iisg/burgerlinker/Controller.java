@@ -1,7 +1,7 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
 
-import static iisg.amsterdam.burgerlinker.Properties.*;
+import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -9,8 +9,8 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import iisg.amsterdam.burgerlinker.processes.*;
-import iisg.amsterdam.burgerlinker.utilities.*;
+import nl.knaw.iisg.burgerlinker.processes.*;
+import nl.knaw.iisg.burgerlinker.utilities.*;
 
 public class Controller {
 

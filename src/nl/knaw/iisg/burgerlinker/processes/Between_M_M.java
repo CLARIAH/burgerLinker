@@ -1,7 +1,7 @@
-package iisg.amsterdam.burgerlinker.processes;
+package nl.knaw.iisg.burgerlinker.processes;
 
 
-import static iisg.amsterdam.burgerlinker.Properties.*;
+import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
@@ -9,13 +9,13 @@ import org.apache.logging.log4j.Logger;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import iisg.amsterdam.burgerlinker.CandidateList;
-import iisg.amsterdam.burgerlinker.Dictionary;
-import iisg.amsterdam.burgerlinker.Index;
-import iisg.amsterdam.burgerlinker.LinksCSV;
-import iisg.amsterdam.burgerlinker.MyHDT;
-import iisg.amsterdam.burgerlinker.Person;
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.CandidateList;
+import nl.knaw.iisg.burgerlinker.Dictionary;
+import nl.knaw.iisg.burgerlinker.Index;
+import nl.knaw.iisg.burgerlinker.LinksCSV;
+import nl.knaw.iisg.burgerlinker.MyHDT;
+import nl.knaw.iisg.burgerlinker.Person;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 

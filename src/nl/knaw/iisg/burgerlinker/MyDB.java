@@ -1,4 +1,4 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +16,7 @@ import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 public class MyDB {
 

@@ -1,6 +1,6 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
-import static iisg.amsterdam.burgerlinker.Properties.*;
+import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -17,8 +17,8 @@ import org.rocksdb.RocksDBException;
 
 import com.github.liblevenshtein.transducer.Candidate;
 
-import iisg.amsterdam.burgerlinker.utilities.FileUtilities;
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.FileUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 public class Index {
 

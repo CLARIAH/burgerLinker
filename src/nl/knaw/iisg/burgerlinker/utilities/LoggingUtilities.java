@@ -1,4 +1,4 @@
-package iisg.amsterdam.burgerlinker.utilities;
+package nl.knaw.iisg.burgerlinker.utilities;
 
 import org.apache.logging.log4j.Logger;
 

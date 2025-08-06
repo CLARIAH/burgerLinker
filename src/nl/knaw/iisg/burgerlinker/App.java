@@ -1,4 +1,4 @@
-package iisg.amsterdam.burgerlinker;
+package nl.knaw.iisg.burgerlinker;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 
 

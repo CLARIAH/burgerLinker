@@ -12,7 +12,7 @@
     <property name="build.lib.dir"     value="${build.dir}/lib"/>
 
     <!-- main class specification for jar execution -->
-    <property name="main-class"        value="iisg.amsterdam.burgerlinker.App"/>
+    <property name="main-class"        value="nl.knaw.iisg.burgerlinker.App"/>
 
     <!-- set the classpath - only keep necessary files -->
     <path id="classpath">
@@ -65,7 +65,9 @@
     </target>
 
     <target name="run" depends="jar">
-        <java jar="${dist.dir}/${ant.project.name}-${version}.jar" fork="true"/>
+        <java jar="${dist.dir}/${ant.project.name}-${version}.jar" fork="true">
+            <arg value="--help"/>
+        </java>
     </target>
 
     <target name="clean">

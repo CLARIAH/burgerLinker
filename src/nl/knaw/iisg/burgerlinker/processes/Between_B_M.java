@@ -1,6 +1,10 @@
-package iisg.amsterdam.burgerlinker.processes;
+package nl.knaw.iisg.burgerlinker.processes;
 
-import static iisg.amsterdam.burgerlinker.Properties.*;
+import static nl.knaw.iisg.burgerlinker.Properties.ROLE_BRIDE;
+import static nl.knaw.iisg.burgerlinker.Properties.ROLE_FATHER;
+import static nl.knaw.iisg.burgerlinker.Properties.ROLE_GROOM;
+import static nl.knaw.iisg.burgerlinker.Properties.ROLE_MOTHER;
+import static nl.knaw.iisg.burgerlinker.Properties.ROLE_NEWBORN;
 
 import java.util.Set;
 
@@ -9,31 +13,30 @@ import org.apache.logging.log4j.Logger;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import iisg.amsterdam.burgerlinker.CandidateList;
-import iisg.amsterdam.burgerlinker.Dictionary;
-import iisg.amsterdam.burgerlinker.Index;
-import iisg.amsterdam.burgerlinker.LinksCSV;
-import iisg.amsterdam.burgerlinker.MyHDT;
-import iisg.amsterdam.burgerlinker.Person;
-import iisg.amsterdam.burgerlinker.utilities.LoggingUtilities;
+import nl.knaw.iisg.burgerlinker.CandidateList;
+import nl.knaw.iisg.burgerlinker.Dictionary;
+import nl.knaw.iisg.burgerlinker.Index;
+import nl.knaw.iisg.burgerlinker.LinksCSV;
+import nl.knaw.iisg.burgerlinker.MyHDT;
+import nl.knaw.iisg.burgerlinker.Person;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 
-public class Between_B_D {
+public class Between_B_M {
 
-	private String mainDirectoryPath, processName = "";;
+	private String mainDirectoryPath, processName = "";
 	private MyHDT myHDT;
-	// max year diff = 110 (max living age) - 14 (minimum parenthood age)
-	private final int MIN_YEAR_DIFF = -1, MAX_YEAR_DIFF = 96, linkingUpdateInterval = 10000;
+	private final int MIN_YEAR_DIFF = -5, MAX_YEAR_DIFF = 36, linkingUpdateInterval = 10000;
 	private int maxLev;
 	private Boolean fixedLev, ignoreDate, ignoreBlock;
-	Index indexDeceasedBride, indexDeceasedGroom;
+	Index indexBride, indexGroom;
 
-	public static final Logger lg = LogManager.getLogger(Between_B_D.class);
+	public static final Logger lg = LogManager.getLogger(Between_B_M.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	LinksCSV LINKS;
 
-	public Between_B_D(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, Boolean formatCSV) {
+	public Between_B_M(MyHDT hdt, String directoryPath, Integer maxLevenshtein, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, Boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
@@ -42,41 +45,40 @@ public class Between_B_D {
 		this.myHDT = hdt;
 		
 		String options = LOG.getUserOptions(maxLevenshtein, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String resultsFileName = "between-B-D" + options;
-		
+		String resultsFileName = "between-B-M" + options;
 		if(formatCSV == true) {
 			String header = "id_certificate_newbornParents,"
-					+ "id_certificate_deceased,"
-					+ "levenshtein_total_mother,"
-					+ "levenshtein_max_mother,"
-					+ "levenshtein_total_father,"
-					+ "levenshtein_max_father,"
-					+ "matched_names_mother,"
+					+ "id_certificate_partners,"
+					+ "levenshtein_total_bride,"
+					+ "levenshtein_max_bride,"
+					+ "levenshtein_total_groom,"
+					+ "levenshtein_max_groom,"
+					+ "matched_names_bride,"
 					+ "number_names_mother,"
-					+ "number_names_partner,"
-					+ "matched_names_father,"
+					+ "number_names_bride,"
+					+ "matched_names_groom,"
 					+ "number_names_father,"
-					+ "number_names_partner,"
+					+ "number_names_groom,"
 					+ "year_diff";
 			LINKS = new LinksCSV(resultsFileName, mainDirectoryPath, header);
 		}
-		link_between_B_D();
+		link_between_B_M();
 	}
 
 
-	public void link_between_B_D() {
-		Dictionary dict = new Dictionary("between-B-D", mainDirectoryPath, maxLev, fixedLev);
-		Boolean success = dict.generateDictionary(myHDT, ROLE_DECEASED, ROLE_PARTNER, false);
-		if(success == true) {
-			indexDeceasedBride = dict.indexFemalePartner;
-			indexDeceasedGroom = dict.indexMalePartner;
-			indexDeceasedBride.createTransducer();
-			indexDeceasedGroom.createTransducer();
+	public void link_between_B_M() {
+		Dictionary dict = new Dictionary("between-B-M", mainDirectoryPath, maxLev, fixedLev);
+		Boolean success = dict.generateDictionary(myHDT, ROLE_BRIDE, ROLE_GROOM, true);
+		if(success == true) {	
+			indexBride = dict.indexFemalePartner;
+			indexGroom = dict.indexMalePartner;
+			indexBride.createTransducer();
+			indexGroom.createTransducer();
 			try {
 				int cntAll =0 ;
 				// iterate through the birth certificates to link it to the marriage dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", ROLE_NEWBORN, "");
-				long estNumber = it.estimatedNumResults();	
+				long estNumber = it.estimatedNumResults();
 				String taskName = "Linking " + processName;
 				ProgressBar pb = null;
 				try {
@@ -85,35 +87,28 @@ public class Between_B_D {
 						TripleString ts = it.next();	
 						cntAll++;
 						String birthEvent = ts.getSubject().toString();	
-						String birthEventID = myHDT.getIDofEvent(birthEvent);
+						String birthEventID = myHDT.getIDofEvent(birthEvent);	
 						Person mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
 						Person father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);				
 						if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 							// start linking here
-							CandidateList candidatesGroom = indexDeceasedGroom.searchForCandidate(father, birthEventID, ignoreBlock);
+							CandidateList candidatesGroom = indexGroom.searchForCandidate(father, birthEventID, ignoreBlock);
 							if(candidatesGroom.candidates.isEmpty() == false) {
-								CandidateList candidatesBride = indexDeceasedBride.searchForCandidate(mother, birthEventID, ignoreBlock);
+								CandidateList candidatesBride = indexBride.searchForCandidate(mother, birthEventID, ignoreBlock);
 								if(candidatesBride.candidates.isEmpty() == false) {
 									Set<String> finalCandidatesList = candidatesBride.findIntersectionCandidates(candidatesGroom);
 									for(String finalCandidate: finalCandidatesList) {
-										String deathEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
+										String marriageEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
 										int yearDifference = 0;
 										if(ignoreDate == false) {
 											int birthYear = myHDT.getEventDate(birthEvent);
-											yearDifference = checkTimeConsistency_between_b_d(birthYear, deathEventAsCoupleURI);
-										}									
-										if(yearDifference < 999) { // if it fits the time line
-											Person deceased = myHDT.getPersonInfo(deathEventAsCoupleURI, ROLE_DECEASED);
-											Person partner = myHDT.getPersonInfo(deathEventAsCoupleURI, ROLE_PARTNER);
-											if(deceased.isFemale()) {
-												LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, deceased, partner, yearDifference);
-											} else {
-												LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, partner, deceased, yearDifference);
-											}																				
+											yearDifference = checkTimeConsistency_between_b_m(birthYear, marriageEventAsCoupleURI);
 										}
-
-
-
+										if(yearDifference < 999) { // if it fits the time line
+											Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);
+											Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);
+											LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, yearDifference);																				
+										}
 									}
 								}
 							}
@@ -137,6 +132,7 @@ public class Between_B_D {
 
 
 
+
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
 	 * 
@@ -145,17 +141,15 @@ public class Between_B_D {
 	 * @param candidateMarriageEvent
 	 *            marriage event URI            
 	 */
-	public int checkTimeConsistency_between_b_d(int birthYearAsParents, String deathAsCouple) {
-		int deathAsCoupleYear = myHDT.getEventDate(deathAsCouple);
-		int diff = deathAsCoupleYear - birthYearAsParents;
+	public int checkTimeConsistency_between_b_m(int birthYearAsParents, String marriageAsCouple) {
+		int marriageAsCoupleYear = myHDT.getEventDate(marriageAsCouple);
+		int diff = birthYearAsParents - marriageAsCoupleYear;
 		if(diff >= MIN_YEAR_DIFF && diff <= MAX_YEAR_DIFF) {
 			return diff;
 		} else {
 			return 999;
 		}
 	}
-
-
 
 
 

@@ -1,4 +1,4 @@
-package iisg.amsterdam.burgerlinker.utilities;
+package nl.knaw.iisg.burgerlinker.utilities;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
