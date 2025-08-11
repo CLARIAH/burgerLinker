@@ -46,9 +46,7 @@ import com.github.liblevenshtein.transducer.factory.TransducerBuilder;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 
-
 public class MyTransducer {
-
 	public static final Logger lg = LogManager.getLogger(MyTransducer.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 
@@ -59,21 +57,23 @@ public class MyTransducer {
 	public MyTransducer(String dictionaryPath, int maxLevDistance) {
 		this.dictionaryPath = dictionaryPath;
 		this.maxLevDistance = maxLevDistance;
+
 		transducer = constructTransducer();
 	}
 
 
-	public ITransducer<Candidate> constructTransducer()
-	{
+	public ITransducer<Candidate> constructTransducer() {
 		ClassLoader.getSystemResource("/res/log4j.properties");
 		long startTime = System.currentTimeMillis();
 		LOG.logDebug("constructTransducer", "START: Constructing transducer for dictionary located at: " + dictionaryPath);
+
 		SortedDawg dictionary;
 		ITransducer<Candidate> transducer = null;
 		Path pathDictionary = Paths.get(dictionaryPath);
-		try { 
-			final InputStream stream = Files.newInputStream(pathDictionary); 
+		try {
+			final InputStream stream = Files.newInputStream(pathDictionary);
 			final Serializer serializer = new PlainTextSerializer(false);
+
 			dictionary = serializer.deserialize(SortedDawg.class, stream);
 			transducer = new TransducerBuilder()
 					.dictionary(dictionary)
@@ -86,9 +86,7 @@ public class MyTransducer {
 			e.printStackTrace();
 		}
 		LOG.logDebug("constructTransducer", LOG.outputTotalRuntime("Constructing transducer for dictionary located at: " + dictionaryPath, startTime, false));
+
 		return transducer;
 	}
-	
-	
-
 }

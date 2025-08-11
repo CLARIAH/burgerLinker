@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+
 public class Person {
 	private String URI;
 	private String role;
@@ -24,6 +25,7 @@ public class Person {
 	public Person(CharSequence URI, String role) {
 		this.URI = URI.toString();
 		this.role = role;
+
 		setValid(true);
 	}
 
@@ -51,30 +53,33 @@ public class Person {
 		if(first_name!=null){
 			String modified_first_name = first_name.replace(" ", compound_name_separator);
 			modified_first_name = modified_first_name.replace("-", compound_name_separator);
+
 			return modified_first_name;
 		} else {
 			return null;
-		}		
+		}
 	}
 
 	public String getLastName() {
 		if(last_name!=null) {
 			String modified_last_name = last_name.replace(" ", compound_name_separator);
 			modified_last_name = modified_last_name.replace("-", compound_name_separator);
+
 			return modified_last_name;
 		} else {
 			return null;
-		}	
+		}
 	}
 
 	public String getFullName() {
 		String fullName = getFirstName() + names_separator + getLastName();
+
 		return fullName;
 	}
 
-
 	public HashMap<String, String> getPossibleFullNameCombinations(){
 		HashMap<String,String> fullNames = new HashMap<String,String>();
+
 		String firstName = getFirstName();
 		if(firstName.contains(compound_name_separator)) {
 			String[] firstNames = firstName.split(compound_name_separator);
@@ -82,17 +87,19 @@ public class Person {
 		} else {
 			fullNames.put(getFullName(), "1/1");
 		}
+
 		return fullNames;
 	}
 
-
 	public HashMap<String,String> orderedCombination(String[] firstNames, String lastName) {
 		HashMap<String,String> result = new HashMap<String,String>();
+
 		Integer length = firstNames.length;
 		String[] copiedFirstNames = firstNames.clone();
 		for (int i=0; i< length; i++){
 			String fixed = firstNames[i];
 			int count = 1;
+
 			result.put(fixed + names_separator + lastName, count+ "/" +length);
 			copiedFirstNames = ArrayUtils.removeElement(copiedFirstNames, fixed);
 			for (String fn: copiedFirstNames){
@@ -101,10 +108,9 @@ public class Person {
 				result.put(fixed + names_separator + lastName, count + "/" + length);
 			}
 		}
+
 		return result;
 	}
-
-
 
 	public String getGender() {
 		return gender;
@@ -142,6 +148,7 @@ public class Person {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -149,40 +156,43 @@ public class Person {
 		if(gender.equals("f")){
 			return true;
 		}
+
 		return false;
 	}
-	
+
 	public Boolean isMale() {
 		if(gender.equals("m")){
 			return true;
 		}
+
 		return false;
 	}
-	
+
 	public Boolean hasGender(String gender) {
 		if(this.gender.equals(gender) || this.gender.equals("u")) {
 			return true;
 		}
+
 		return false;
 	}
-	
 
 	public Boolean hasDoubleBarreledFirstName() {
 		if (this.getFirstName() != null) {
 			if(this.getFirstName().contains(compound_name_separator)) {
 				return true;
-			} 
+			}
 		}
+
 		return false;
 	}
-
 
 	public Boolean hasDoubleBarreledLastName() {
 		if (this.getLastName() != null) {
 			if(this.getLastName().contains(compound_name_separator)) {
 				return true;
-			} 
+			}
 		}
+
 		return false;
 	}
 
@@ -194,22 +204,20 @@ public class Person {
 		}
 	}
 
-
 	public Set<String> decomposeFirstnameAddLastName() {
 		Set<String> result = new HashSet<String>();
 		if(this.hasDoubleBarreledFirstName()) {
-			String[] firstNames = this.getFirstName().split(compound_name_separator); 
-			String lastname = this.getLastName(); 
+			String[] firstNames = this.getFirstName().split(compound_name_separator);
+			String lastname = this.getLastName();
 			for(String firstname: firstNames) {
 				result.add(firstname + names_separator + lastname);
 			}
 		} else {
 			result.add(this.getFullName());
 		}
+
 		return result;
 	}
-
-
 
 	public String[] decomposeLastname() {
 		return this.getLastName().split(compound_name_separator);
@@ -225,6 +233,7 @@ public class Person {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -232,14 +241,13 @@ public class Person {
 		this.valid = valid;
 	}
 
-	
 	public int getNumberOfFirstNames() {
 		if(hasFirstName()) {
 			int nb_first_names = StringUtils.countMatches(this.first_name, names_separator);
+
 			return nb_first_names + 1;
 		} else {
 			return -1;
 		}
 	}
-
 }

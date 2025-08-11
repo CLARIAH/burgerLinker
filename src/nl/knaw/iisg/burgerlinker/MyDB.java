@@ -1,5 +1,6 @@
 package nl.knaw.iisg.burgerlinker;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -18,19 +19,17 @@ import org.rocksdb.RocksDBException;
 
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
-public class MyDB {
 
+public class MyDB {
 	public String directory;
 	public RocksDB myDB;
 
 	public static final Logger lg = LogManager.getLogger(MyDB.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 
-
 	public MyDB(String directory) {
 		this.directory = directory;
 	}
-
 
 	public void openMyDB(Boolean deletePrevious) throws RocksDBException {
 		// a static method that loads the RocksDB C++ library.
@@ -38,6 +37,7 @@ public class MyDB {
 		if(deletePrevious == true) {
 			deleteMyDB();
 		}
+
 		try {
 			FileUtils.forceMkdir(new File(directory));
 		} catch (IOException e) {
@@ -45,14 +45,12 @@ public class MyDB {
 		}
 		try (@SuppressWarnings("resource")
 		final Options options = new Options().setCreateIfMissing(true)) {
-			// a factory method that returns a RocksDB instance	
+			// a factory method that returns a RocksDB instance
 			myDB = RocksDB.open(options, directory);
-		} 		
+		}
 	}
 
-
-	public void deleteMyDB()
-	{
+	public void deleteMyDB() {
 		try {
 			FileUtils.deleteDirectory(new File(directory));
 		} catch (IOException e) {
@@ -62,20 +60,24 @@ public class MyDB {
 
 	public byte[] serialize(Object obj)  {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
+
 		ObjectOutputStream os;
 		try {
 			os = new ObjectOutputStream(out);
 			os.writeObject(obj);
+
 			return out.toByteArray();
 		} catch (IOException e) {
 			LOG.logError("serialize", "Error while serialising object");
 			e.printStackTrace();
-		}	
+		}
+
 		return null;
 	}
 
 	public Object deserialize(byte[] data)  {
 		ByteArrayInputStream in = new ByteArrayInputStream(data);
+
 		ObjectInputStream is;
 		try {
 			is = new ObjectInputStream(in);
@@ -89,6 +91,7 @@ public class MyDB {
 			LOG.logError("deserialize", "Error while creating new input stream object");
 			e.printStackTrace();
 		}
+
 		return null;
 	}
 
@@ -99,7 +102,8 @@ public class MyDB {
 			final byte[] result = myDB.get(ser_key);
 			if (result != null) {  // if key does not exist in db.
 				LOG.logWarn("addSingleValueToDB", "Key: " + key + " already exists in DB (but it will be added anyway)");
-			} 
+			}
+
 			byte[] ser_value = serialize(value);
 			myDB.put(ser_key, ser_value);
 		} catch (RocksDBException e) {
@@ -107,18 +111,19 @@ public class MyDB {
 			LOG.logError("addSingleValueToDB", e.getLocalizedMessage());
 		}
 	}
-	
+
 	public void addSingleValueToDB(String key, String value, Boolean forceAdd)  {
 		try {
 			byte[] ser_key = serialize(key);
 			byte[] ser_value = serialize(value);
+
 			myDB.put(ser_key, ser_value);
 		} catch (RocksDBException e) {
 			LOG.logError("addSingleValueToDB", "Error adding key: " + key + " with value: " + value + " to DB" );
 			LOG.logError("addSingleValueToDB", e.getLocalizedMessage());
 		}
 	}
-	
+
 	public void removeEntryFromDB(String key)  {
 		byte[] ser_key = serialize(key);
 		try {
@@ -128,8 +133,7 @@ public class MyDB {
 			LOG.logError("removeEntryFromDB", e.getLocalizedMessage());
 		}
 	}
-	
-	
+
 	@SuppressWarnings("unchecked")
 	public void addListValueToDB(String key, String value) {
 		byte[] ser_key = serialize(key);
@@ -142,6 +146,7 @@ public class MyDB {
 				myList = (ArrayList<String>) deserialize(result);
 			}
 			myList.add(value);
+
 			byte[] ser_value = serialize(myList);
 			myDB.put(ser_key, ser_value);
 		} catch (RocksDBException e) {
@@ -149,7 +154,7 @@ public class MyDB {
 			LOG.logError("addListValueToDB", e.getLocalizedMessage());
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void addSetValueToDB(String key, String value) {
 		byte[] ser_key = serialize(key);
@@ -169,7 +174,7 @@ public class MyDB {
 			LOG.logError("addSetValueToDB", e.getLocalizedMessage());
 		}
 	}
-	
+
 	public void addSetValueToDB(String key, HashSet<String> setValue) {
 		byte[] ser_key = serialize(key);
 		try {
@@ -181,22 +186,22 @@ public class MyDB {
 		}
 	}
 
-	
 	public String getSingleValueFromDB(String key)  {
 		byte[] ser_key = serialize(key);
 		try {
 			final byte[] result = myDB.get(ser_key);
 			if (result != null) {  // result == null if key does not exist in db.
 				String myValue =  (String) deserialize(result);
+
 				return myValue;
 			}
 		} catch (RocksDBException e) {
 			LOG.logError("getSingleValueFromDB", "Error getting value of key: " + key + " from DB" );
 			LOG.logError("getSingleValueFromDB", e.getLocalizedMessage());
 		}
+
 		return null;
 	}
-
 
 	@SuppressWarnings("unchecked")
 	public ArrayList<String> getListFromDB(String key)  {
@@ -205,16 +210,18 @@ public class MyDB {
 			final byte[] result = myDB.get(ser_key);
 			if (result != null) {  // result == null if key does not exist in db.
 				ArrayList<String> myList = (ArrayList<String>) deserialize(result);
+
 				return myList;
 			}
 		} catch (RocksDBException e) {
 			LOG.logError("getListFromDB", "Error getting value of key: " + key + " from DB" );
 			LOG.logError("getListFromDB", e.getLocalizedMessage());
 		}
+
 		return null;
 	}
-	
-	
+
+
 	@SuppressWarnings("unchecked")
 	public HashSet<String> getSetFromDB(String key)  {
 		byte[] ser_key = serialize(key);
@@ -222,18 +229,14 @@ public class MyDB {
 			final byte[] result = myDB.get(ser_key);
 			if (result != null) {  // result == null if key does not exist in db.
 				HashSet<String> myList = (HashSet<String>) deserialize(result);
+
 				return myList;
 			}
 		} catch (RocksDBException e) {
 			LOG.logError("getSetFromDB", "Error getting value of key: " + key + " from DB" );
 			LOG.logError("getSetFromDB", e.getLocalizedMessage());
 		}
+
 		return null;
 	}
-	
-	
-	
-
-	
-
 }

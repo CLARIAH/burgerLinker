@@ -2,32 +2,6 @@ package nl.knaw.iisg.burgerlinker;
 
 public final class Properties {
 
-	// Default Values
-//	public static String NAMESPACE = "https://iisg.amsterdam/id/civ/";
-//	public static String DATASET_NAME = "links/";
-
-
-//	public static String getNamespace() {
-//		return NAMESPACE;
-//	}
-//	public static void setNamespace(String namespace) {
-//		NAMESPACE = namespace;
-//		if(!NAMESPACE.endsWith("/")) {
-//			NAMESPACE = NAMESPACE + "/";
-//		}
-//	}
-//
-//	public static String getDatasetName() {
-//		return DATASET_NAME;
-//	}
-//	public static void setDatasetName(String datasetName) {
-//		DATASET_NAME = datasetName;
-//		if(!DATASET_NAME.endsWith("/")) {
-//			DATASET_NAME = DATASET_NAME + "/";
-//		}
-//	}
-
-
 	// Prefixes
 	public final static String PREFIX_CIV = "https://iisg.amsterdam/id/civ/";
 	public final static String PREFIX_SCHEMA = "http://schema.org/";
@@ -69,10 +43,10 @@ public final class Properties {
 	public final static String GIVEN_NAME_S = PREFIX_SCHEMA_S + "givenName";
 	public final static String FAMILY_NAME = PREFIX_SCHEMA + "familyName";
 	public final static String FAMILY_NAME_S = PREFIX_SCHEMA_S + "familyName";
-	public final static String BIRTH_YEAR = PREFIX_DBO + "birthYear"; 
-	public final static String AGE = PREFIX_CIV + "age"; 
-	// public final static String AGE = PREFIX_IISG_VOCAB + "ageYears"; 
-	
+	public final static String BIRTH_YEAR = PREFIX_DBO + "birthYear";
+	public final static String AGE = PREFIX_CIV + "age";
+	// public final static String AGE = PREFIX_IISG_VOCAB + "ageYears";
+
 	// Gender
 	public final static String GENDER = PREFIX_SCHEMA + "gender";
 	public final static String GENDER_S = PREFIX_SCHEMA_S + "gender";
@@ -82,9 +56,9 @@ public final class Properties {
 	public final static String GENDER_MALE_URI = PREFIX_SCHEMA + "Male";
 	public final static String GENDER_MALE_URI_S = PREFIX_SCHEMA_S + "Male";
 	public final static String GENDER_MALE_LITERAL = "\"m\"^^<http://www.w3.org/2001/XMLSchema#string>";
-	
 
-	// Roles correct 
+
+	// Roles correct
 	public final static String ROLE_NEWBORN = PREFIX_CIV + "newborn";
 	public final static String ROLE_MOTHER = PREFIX_CIV + "mother";
 	public final static String ROLE_FATHER = PREFIX_CIV + "father";
@@ -96,19 +70,6 @@ public final class Properties {
 	public final static String ROLE_GROOM = PREFIX_CIV + "groom";
 	public final static String ROLE_GROOM_MOTHER = PREFIX_CIV + "motherGroom";
 	public final static String ROLE_GROOM_FATHER = PREFIX_CIV + "fatherGroom";
-
-	//	// Roles old
-	//	public final static String ROLE_NEWBORN = PREFIX_IISG_VOCAB + "newborn";
-	//	public final static String ROLE_MOTHER = PREFIX_IISG_VOCAB + "mother";
-	//	public final static String ROLE_FATHER = PREFIX_IISG_VOCAB + "father";
-	//	public final static String ROLE_DECEASED = PREFIX_IISG_VOCAB + "deceased";
-	//	public final static String ROLE_DECEASED_PARTNER = PREFIX_IISG_VOCAB + "deceasedPartner";
-	//	public final static String ROLE_BRIDE = "https://iisg.amsterdam/vocab/bride";
-	//	public final static String ROLE_BRIDE_MOTHER = "https://iisg.amsterdam/vocab/bride_mother";
-	//	public final static String ROLE_BRIDE_FATHER = "https://iisg.amsterdam/vocab/bride_father";
-	//	public final static String ROLE_GROOM = "https://iisg.amsterdam/vocab/groom";
-	//	public final static String ROLE_GROOM_MOTHER = "https://iisg.amsterdam/vocab/groom_mother";
-	//	public final static String ROLE_GROOM_FATHER = "https://iisg.amsterdam/vocab/groom_father";
 
 	// Created Links
 	public final static String LINK_IDENTICAL = OWL_SAMEAS;
@@ -128,6 +89,4 @@ public final class Properties {
 	public final static String DIRECTORY_NAME_DICTIONARY = "dictionaries";
 	public final static String DIRECTORY_NAME_DATABASE = "databases";
 	public final static String DIRECTORY_NAME_RESULTS = "results";
-
-
 }

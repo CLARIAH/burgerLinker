@@ -20,11 +20,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class FileUtilities {
 
+public class FileUtilities {
 	public static final Logger lg = LogManager.getLogger(FileUtilities.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
-
 
 	public Boolean checkIfFileExists(String path) {
 		if(path != null) {
@@ -41,9 +40,9 @@ public class FileUtilities {
 		} else {
 			LOG.logError("checkIfFileExists", "No file path is specified");
 		}
+
 		return false;
 	}
-
 
 	public Boolean checkIfDirectoryExists(String path) {
 		if(path != null) {
@@ -56,10 +55,9 @@ public class FileUtilities {
 		} else {
 			LOG.logError("checkIfDirectoryExists", "No directory path is specified");
 		}
+
 		return false;
 	}
-
-
 
 	public Boolean createDirectory(String path, String directoryName) {
 		try {
@@ -70,13 +68,14 @@ public class FileUtilities {
 				FileUtils.forceMkdir(f); //create directory
 			} else {
 				FileUtils.forceMkdir(f); //create directory
-			}		
+			}
 			return true;
 		} catch (IOException e) {
 			LOG.logError("createDirectory", "Error creating directory " + path + "/" + directoryName);
 			e.printStackTrace();
+
 			return false;
-		} 
+		}
 	}
 
 	public Boolean deleteFile(String filePath) {
@@ -84,52 +83,54 @@ public class FileUtilities {
 			return Files.deleteIfExists(Paths.get(filePath));
 		} catch (IOException e) {
 			e.printStackTrace();
+
 			return null;
 		}
 	}
-
 
 	public BufferedOutputStream createFileStream(String path) throws IOException {
 		try {
 			FileOutputStream file = new FileOutputStream(path);
 			BufferedOutputStream outStream = new BufferedOutputStream(file);
 			LOG.logDebug("createFileStream", "File created successfully at: " + path) ;
+
 			return outStream;
 		} catch (IOException ex) {
 			LOG.logError("createFileStream", "Error creating file stream");
 			ex.printStackTrace();
+
 			return null;
 		}
 	}
-
-
 
 	public Boolean writeToOutputStream(BufferedOutputStream outStream, String message) {
 		try {
 			outStream.write(message.getBytes());
 			outStream.write(System.lineSeparator().getBytes());
+
 			return true;
 		} catch (IOException e) {
 			LOG.logError("writeToOutputStream", "Cannot write following message: " + message + " to stream: " + outStream);
 			e.printStackTrace();
+
 			return false;
 		}
 	}
-
 
 	public int countLines(String filePath) {
 		int countLines = 0;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(filePath));
 			while (reader.readLine() != null) countLines++;
+
 			reader.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		return countLines;
 	}
-
 
 	public ArrayList<String> getAllValidLinksFile(String directory, Boolean output) {
 		ArrayList<String> consideredFiles = new ArrayList<String>();
@@ -140,13 +141,16 @@ public class FileUtilities {
 					consideredFiles.add(fileName);
 				}
 			}
+
 			if (!consideredFiles.isEmpty()) {
 				if (output == true)
 					LOG.outputConsole("Computing the transitive closure for the following files:");
+
 				for (String consideredFile: consideredFiles) {
 					if (output == true)
 						LOG.outputConsole("\t" + consideredFile);
 				}
+
 				return consideredFiles;
 			} else {
 				LOG.logError("getAllValidLinksFile", "Missing a CSV file in the specified directory containing the detected links with the following format:"
@@ -155,25 +159,27 @@ public class FileUtilities {
 		} catch (IOException e) {
 			e.printStackTrace();
 			LOG.logError("getAllValidLinksFile", "Missing a CSV file in the specified directory containing the detected links with the following format:"
-					+ " (within|between)[-_][bmd][-_][bmd]");	
+					+ " (within|between)[-_][bmd][-_][bmd]");
 		}
+
 		return null;
 	}
 
-
 	public String getFileName(String filePath) {
-		Path path = Paths.get(filePath); 
+		Path path = Paths.get(filePath);
 		Path fileName = path.getFileName();
+
 		return FilenameUtils.removeExtension(fileName.toString());
 	}
-
 
 	public Boolean checkIfValidLinksFile(String filePath) {
 		Path fPath = Paths.get(filePath);
 		String fileName = fPath.getFileName().toString();
 		String fileNameLC = fileName.toLowerCase();
+
 		Pattern p = Pattern.compile("(within|between)[-_][bmd][-_][bmd]");
 		Matcher m = p.matcher(fileNameLC);
+
 		return m.find();
 	}
 
@@ -181,42 +187,46 @@ public class FileUtilities {
 		Path fPath = Paths.get(name);
 		String fileName = fPath.getFileName().toString();
 		String fileNameLC = fileName.toLowerCase();
+
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(fileNameLC);
+
 		return m.find();
 	}
 
 	public Boolean check_Within_B_M(String filePath) {
 		String regex = "(within)[-_](b)[-_](m)";
+
 		return checkPattern(filePath, regex);
 	}
-	
+
 	public Boolean check_Within_B_D(String filePath) {
 		String regex = "(within)[-_](b)[-_](d)";
+
 		return checkPattern(filePath, regex);
 	}
 
 	public Boolean check_Between_B_M(String filePath) {
 		String regex = "(between)[-_](b)[-_](m)";
+
 		return checkPattern(filePath, regex);
 	}
-	
+
 	public Boolean check_Between_D_M(String filePath) {
 		String regex = "(between)[-_](d)[-_](m)";
+
 		return checkPattern(filePath, regex);
 	}
-	
+
 	public Boolean check_Between_B_D(String filePath) {
 		String regex = "(between)[-_](b)[-_](d)";
+
 		return checkPattern(filePath, regex);
 	}
 
 	public Boolean check_Between_M_M(String filePath) {
 		String regex = "(between)[-_](m)[-_](m)";
+
 		return checkPattern(filePath, regex);
 	}
-
-
-
-
 }

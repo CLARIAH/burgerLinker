@@ -12,8 +12,7 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 
 
-public class App 
-{
+public class App {
 	@Parameter(names = "--function")
 	String function = null;
 
@@ -72,7 +71,7 @@ public class App
 		// BasicConfigurator.configure();
 		ClassLoader.getSystemResource("/res/log4j.properties");
 
-		// default option is to show only errors 
+		// default option is to show only errors
 		Configurator.setRootLevel(Level.ERROR);
 		Configurator.setAllLevels("com.github.liblevenshtein", Level.OFF);
 		Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
@@ -80,17 +79,17 @@ public class App
 
 		if(help == false) {
 			// show only error and warning logs if user enters: --debug warn
-			if(debug.equals("warn")) { 
+			if(debug.equals("warn")) {
 				Configurator.setRootLevel(Level.ERROR);
 			}
 			// show all type of logs if user enters: --debug all
-			if(debug.equals("all")) { 
+			if(debug.equals("all")) {
 				Configurator.setRootLevel(Level.DEBUG);
 			}
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, inputData, outputDir, format);
 			cntrl.runProgram();
-		} else { 
-			// do not run program and show some help message if user enter: --help	
+		} else {
+			// do not run program and show some help message if user enter: --help
 			String formatting =  "%-18s %15s %n";
 
 			System.out.println("Parameters that can be provided as input to the linking tool:");
@@ -110,9 +109,9 @@ public class App
 			System.out.printf(formatting, "Within_B_D:", "Link newborns in Birth Certificates to deceased individuals in Death Certificates (reconstructs life course)");
 			System.out.printf(formatting, "Between_B_M:", "Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
 			System.out.printf(formatting, "Between_B_D:", "Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates (reconstructs family ties)");
-			System.out.printf(formatting, "Between_M_M:", "Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");	
-			System.out.printf(formatting, "Between_D_M:", "Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");	
-			System.out.printf(formatting, "Closure:", "Compute the transitive closure of all detected links to get a unique identifier per individual");	
+			System.out.printf(formatting, "Between_M_M:", "Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
+			System.out.printf(formatting, "Between_D_M:", "Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
+			System.out.printf(formatting, "Closure:", "Compute the transitive closure of all detected links to get a unique identifier per individual");
 
 			System.out.println("\n");
 			System.out.println("------------------------");
@@ -157,7 +156,7 @@ public class App
 
 			System.out.println("For further details, visit https://github.com/CLARIAH/burgerLinker");
 
-			// Add example of computing the closure			
+			// Add example of computing the closure
 
 		}
 
@@ -167,7 +166,4 @@ public class App
 		LOG.outputConsole("=====================");
 		LOG.outputConsole("");
 	}
-
-
-
 }

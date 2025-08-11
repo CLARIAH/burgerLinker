@@ -12,6 +12,7 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
+
 public class Dictionary {
 	public String processName;
 	public String mainDirectoryPath;
@@ -30,7 +31,7 @@ public class Dictionary {
 		this.fixedLev = fixedLev;
 	}
 
-	public Boolean generateDictionary(MyHDT myHDT, String roleMain, Boolean genderFilter, String gender) { 
+	public Boolean generateDictionary(MyHDT myHDT, String roleMain, Boolean genderFilter, String gender) {
 		indexMain = new Index(getRoleFragment(roleMain)+gender, mainDirectoryPath, maxLev, fixedLev);
 
 		long startTime = System.currentTimeMillis();
@@ -48,7 +49,7 @@ public class Dictionary {
 			indexMain.openIndex();
 
             it = myHDT.dataset.search("", roleMain, "");
-			long estNumber = it.estimatedNumResults();	
+			long estNumber = it.estimatedNumResults();
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -77,7 +78,7 @@ public class Dictionary {
 
                     if(countAll % 10000 == 0) {
                         pb.stepBy(10000);
-                    }					
+                    }
 			    } pb.stepTo(estNumber);
             } finally {
                 pb.close();
@@ -90,25 +91,26 @@ public class Dictionary {
         } finally {
             indexMain.closeStream();
 
-            LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);		
-            int countNonIndexed = countAll - countInserts;	
+            LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);
+            int countNonIndexed = countAll - countInserts;
             LOG.outputConsole("");
             LOG.outputConsole("--------");
             LOG.outputConsole("- Number of Certificates: " +  countAll);
-            LOG.outputConsole("- Number of Indexed Certificates: " +  countInserts); 
+            LOG.outputConsole("- Number of Indexed Certificates: " +  countInserts);
             LOG.outputConsole("- Number of Non-Indexed Certificates: " +  countNonIndexed);
 
             if(count_No_Main > 0) {
-                LOG.outputConsole("-> Includes no Main Individual: " +  count_No_Main);  
+                LOG.outputConsole("-> Includes no Main Individual: " +  count_No_Main);
             }
 
             LOG.outputConsole("--------");
-            LOG.outputConsole("");						
+            LOG.outputConsole("");
         }
+
         return true;
     }
 
-    public Boolean generateDictionary(MyHDT myHDT, String roleFemalePartner, String roleMalePartner, Boolean knownGender) { 
+    public Boolean generateDictionary(MyHDT myHDT, String roleFemalePartner, String roleMalePartner, Boolean knownGender) {
         indexFemalePartner = new Index(getRoleFragment(roleFemalePartner), mainDirectoryPath, maxLev, fixedLev);
         indexMalePartner = new Index(getRoleFragment(roleMalePartner), mainDirectoryPath, maxLev, fixedLev);
 
@@ -138,8 +140,8 @@ public class Dictionary {
 			try {
                 while (it.hasNext()) {
                     TripleString ts = it.next();
-                    
-                    String event = ts.getSubject().toString();	
+
+                    String event = ts.getSubject().toString();
                     Person femalePartner = myHDT.getPersonInfo(event, roleFemalePartner);
 
                     countAll++;
@@ -147,18 +149,18 @@ public class Dictionary {
                         String eventID = myHDT.getIDofEvent(event);
 
                         Person malePartner = myHDT.getPersonInfo(event, roleMalePartner);
-                        if(malePartner.isValidWithFullName()) {	
+                        if(malePartner.isValidWithFullName()) {
                             Boolean insert = addToIndex(femalePartner, malePartner, eventID, knownGender);
 
                             if(insert) {
                                 countInserts++;
                             }
-                        }	
+                        }
                     }
 
                     if(countAll % 10000 == 0) {
                         pb.stepBy(10000);
-                    }						
+                    }
                 } pb.stepTo(estNumber);
             } finally {
                 pb.close();
@@ -174,14 +176,15 @@ public class Dictionary {
 
             LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);
             LOG.outputConsole("- Total Certificates: " +  countAll);
-            LOG.outputConsole("- Total Indexed Certificates: " +  countInserts); 
+            LOG.outputConsole("- Total Indexed Certificates: " +  countInserts);
             String nonIndexed = Integer.toString(countAll - countInserts);
             LOG.outputConsole("- Total Non-Indexed Certificates (missing first/last name): " + nonIndexed);
         }
+
         return true;
     }
 
-    public Boolean generateDictionary(MyHDT myHDT, String roleMain, String roleMother, String roleFather, Boolean genderFilter, String gender) { 
+    public Boolean generateDictionary(MyHDT myHDT, String roleMain, String roleMother, String roleFather, Boolean genderFilter, String gender) {
         indexMain = new Index(getRoleFragment(roleMain)+gender, mainDirectoryPath, maxLev, fixedLev);
         indexMother = new Index(getRoleFragment(roleMother)+gender, mainDirectoryPath, maxLev, fixedLev);
         indexFather = new Index(getRoleFragment(roleFather)+gender, mainDirectoryPath, maxLev, fixedLev);
@@ -232,7 +235,7 @@ public class Dictionary {
 
                             Boolean motherValid = mother.isValidWithFullName();
                             Boolean fatherValid = father.isValidWithFullName();
-                            if(motherValid && fatherValid) {	
+                            if(motherValid && fatherValid) {
                                 indexMain.addPersonToIndex(personMain, eventID, "M-F");
                                 indexMother.addPersonToIndex(mother, eventID, "M-F");
                                 indexFather.addPersonToIndex(father, eventID, "M-F");
@@ -258,11 +261,11 @@ public class Dictionary {
                         } else {
                             count_No_Main++;
                         }
-                    } 
+                    }
 
                     if(countAll % 10000 == 0) {
                         pb.stepBy(10000);
-                    }						
+                    }
                 } pb.stepTo(estNumber);
             } finally {
                 pb.close();
@@ -277,38 +280,38 @@ public class Dictionary {
             indexMother.closeStream();
             indexFather.closeStream();
 
-            LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);	
+            LOG.outputTotalRuntime("Generating Dictionary for " + processName, startTime, true);
 
-            countInserts = count_Main_Mother_Father + count_Main_Mother + count_Main_Father;	
+            countInserts = count_Main_Mother_Father + count_Main_Mother + count_Main_Father;
             int countNonIndexed = countAll - countInserts;
 
             LOG.outputConsole("");
             LOG.outputConsole("--------");
             LOG.outputConsole("- Number of Certificates: " +  countAll);
-            LOG.outputConsole("- Number of Indexed Certificates: " +  countInserts); 
+            LOG.outputConsole("- Number of Indexed Certificates: " +  countInserts);
             if(count_Main_Mother_Father > 0) {
-                LOG.outputConsole("-> Includes 3 Individuals (Main + Mother + Father): " +  count_Main_Mother_Father); 
+                LOG.outputConsole("-> Includes 3 Individuals (Main + Mother + Father): " +  count_Main_Mother_Father);
             }
 
             if(count_Main_Mother > 0) {
-                LOG.outputConsole("-> Includes 2 Individuals (Main + Mother ): " +  count_Main_Mother);  
+                LOG.outputConsole("-> Includes 2 Individuals (Main + Mother ): " +  count_Main_Mother);
             }
 
             if(count_Main_Father > 0) {
-                LOG.outputConsole("-> Includes 2 Individuals (Main + Father): " +  count_Main_Father);  
+                LOG.outputConsole("-> Includes 2 Individuals (Main + Father): " +  count_Main_Father);
             }
 
             LOG.outputConsole("- Number of Non-Indexed Certificates: " +  countNonIndexed);
             if(count_Main > 0) {
-                LOG.outputConsole("-> Includes only Main Individual: " +  count_Main); 
+                LOG.outputConsole("-> Includes only Main Individual: " +  count_Main);
             }
 
             if(count_No_Main > 0) {
-                LOG.outputConsole("-> Includes no Main Individual: " +  count_No_Main);  
-            }	
+                LOG.outputConsole("-> Includes no Main Individual: " +  count_No_Main);
+            }
 
             LOG.outputConsole("--------");
-            LOG.outputConsole("");						
+            LOG.outputConsole("");
         }
 
         return true;
@@ -336,6 +339,7 @@ public class Dictionary {
                 }
             }
         }
+
         return false;
     }
 
