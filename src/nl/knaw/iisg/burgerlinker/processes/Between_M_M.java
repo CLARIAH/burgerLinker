@@ -20,10 +20,9 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
+
 // Between_M_M: link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)
-
 public class Between_M_M {
-
 	// output directory specified by the user + name of the called function
 	private String mainDirectoryPath, processName = "";
 	private MyHDT myHDT;
@@ -68,6 +67,7 @@ public class Between_M_M {
 
 	public void link_between_M_M() {
 		Dictionary dict = new Dictionary("between-M-M", mainDirectoryPath, maxLev, fixedLev);
+
 		Boolean success = dict.generateDictionary(myHDT, ROLE_BRIDE, ROLE_GROOM, true);
 		if(success == true) {
 			indexBride = dict.indexFemalePartner;
@@ -92,8 +92,10 @@ public class Between_M_M {
 					while(it.hasNext()) {
 						TripleString ts = it.next();
 						cntAll++;
+
 						String marriageEvent = ts.getSubject().toString();
 						String marriageEventID = myHDT.getIDofEvent(marriageEvent);
+
 						Person mother, father;
 						for(int i=0; i<2; i++) {
 							mother = null; father = null;
@@ -108,15 +110,20 @@ public class Between_M_M {
 								father = myHDT.getPersonInfo(marriageEvent, ROLE_GROOM_FATHER);;
 								familyCode = "22";
 							}
+
 							if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 								// start linking here
 								CandidateList candidatesGroom = indexGroom.searchForCandidate(father, marriageEventID, ignoreBlock);
+
 								if(candidatesGroom.candidates.isEmpty() == false) {
 									CandidateList candidatesBride = indexBride.searchForCandidate(mother, marriageEventID, ignoreBlock);
+
 									if(candidatesBride.candidates.isEmpty() == false) {
 										Set<String> finalCandidatesList = candidatesBride.findIntersectionCandidates(candidatesGroom);
+
 										for(String finalCandidate: finalCandidatesList) {
 											String marriageEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
+
 											int yearDifference = 0;
 											if(ignoreDate == false) {
 												int marriageEventYear = myHDT.getEventDate(marriageEvent);
@@ -125,6 +132,7 @@ public class Between_M_M {
 											if(yearDifference < 999) { // if it fits the time line
 												Person bride = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_BRIDE);
 												Person groom = myHDT.getPersonInfo(marriageEventAsCoupleURI, ROLE_GROOM);
+
 												LINKS.saveLinks_Between_M_M(candidatesBride, candidatesGroom, finalCandidate, bride, groom, familyCode, yearDifference);
 											}
 										}
@@ -148,7 +156,6 @@ public class Between_M_M {
 		}
 	}
 
-
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
 	 *
@@ -166,6 +173,4 @@ public class Between_M_M {
 			return 999;
 		}
 	}
-
-
 }

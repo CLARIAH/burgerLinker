@@ -1,5 +1,6 @@
 package nl.knaw.iisg.burgerlinker.processes;
 
+
 import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.util.Set;
@@ -20,8 +21,8 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
-public class Between_B_D {
 
+public class Between_B_D {
 	private String mainDirectoryPath, processName = "";;
 	private MyHDT myHDT;
 	// max year diff = 110 (max living age) - 14 (minimum parenthood age)
@@ -64,9 +65,9 @@ public class Between_B_D {
 		link_between_B_D();
 	}
 
-
 	public void link_between_B_D() {
 		Dictionary dict = new Dictionary("between-B-D", mainDirectoryPath, maxLev, fixedLev);
+
 		Boolean success = dict.generateDictionary(myHDT, ROLE_DECEASED, ROLE_PARTNER, false);
 		if(success == true) {
 			indexDeceasedBride = dict.indexFemalePartner;
@@ -90,8 +91,10 @@ public class Between_B_D {
 					while(it.hasNext()) {
 						TripleString ts = it.next();
 						cntAll++;
+
 						String birthEvent = ts.getSubject().toString();
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
+
 						Person mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
 						Person father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);
 						if(mother.isValidWithFullName() && father.isValidWithFullName()) {
@@ -99,10 +102,13 @@ public class Between_B_D {
 							CandidateList candidatesGroom = indexDeceasedGroom.searchForCandidate(father, birthEventID, ignoreBlock);
 							if(candidatesGroom.candidates.isEmpty() == false) {
 								CandidateList candidatesBride = indexDeceasedBride.searchForCandidate(mother, birthEventID, ignoreBlock);
+
 								if(candidatesBride.candidates.isEmpty() == false) {
 									Set<String> finalCandidatesList = candidatesBride.findIntersectionCandidates(candidatesGroom);
+
 									for(String finalCandidate: finalCandidatesList) {
 										String deathEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
+
 										int yearDifference = 0;
 										if(ignoreDate == false) {
 											int birthYear = myHDT.getEventDate(birthEvent);
@@ -111,6 +117,7 @@ public class Between_B_D {
 										if(yearDifference < 999) { // if it fits the time line
 											Person deceased = myHDT.getPersonInfo(deathEventAsCoupleURI, ROLE_DECEASED);
 											Person partner = myHDT.getPersonInfo(deathEventAsCoupleURI, ROLE_PARTNER);
+
 											if(deceased.isFemale()) {
 												LINKS.saveLinks_Between_B_M(candidatesBride, candidatesGroom, finalCandidate, deceased, partner, yearDifference);
 											} else {
@@ -140,9 +147,6 @@ public class Between_B_D {
 		}
 	}
 
-
-
-
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
 	 *
@@ -160,9 +164,4 @@ public class Between_B_D {
 			return 999;
 		}
 	}
-
-
-
-
-
 }

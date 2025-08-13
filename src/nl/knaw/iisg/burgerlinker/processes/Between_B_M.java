@@ -24,8 +24,8 @@ import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
 
-public class Between_B_M {
 
+public class Between_B_M {
 	private String mainDirectoryPath, processName = "";
 	private MyHDT myHDT;
 	private final int MIN_YEAR_DIFF = -5, MAX_YEAR_DIFF = 36, linkingUpdateInterval = 10000;
@@ -66,9 +66,9 @@ public class Between_B_M {
 		link_between_B_M();
 	}
 
-
 	public void link_between_B_M() {
 		Dictionary dict = new Dictionary("between-B-M", mainDirectoryPath, maxLev, fixedLev);
+
 		Boolean success = dict.generateDictionary(myHDT, ROLE_BRIDE, ROLE_GROOM, true);
 		if(success == true) {
 			indexBride = dict.indexFemalePartner;
@@ -92,19 +92,25 @@ public class Between_B_M {
 					while(it.hasNext()) {
 						TripleString ts = it.next();
 						cntAll++;
+
 						String birthEvent = ts.getSubject().toString();
 						String birthEventID = myHDT.getIDofEvent(birthEvent);
+
 						Person mother = myHDT.getPersonInfo(birthEvent, ROLE_MOTHER);
 						Person father = myHDT.getPersonInfo(birthEvent, ROLE_FATHER);
 						if(mother.isValidWithFullName() && father.isValidWithFullName()) {
 							// start linking here
 							CandidateList candidatesGroom = indexGroom.searchForCandidate(father, birthEventID, ignoreBlock);
+
 							if(candidatesGroom.candidates.isEmpty() == false) {
 								CandidateList candidatesBride = indexBride.searchForCandidate(mother, birthEventID, ignoreBlock);
+
 								if(candidatesBride.candidates.isEmpty() == false) {
 									Set<String> finalCandidatesList = candidatesBride.findIntersectionCandidates(candidatesGroom);
+
 									for(String finalCandidate: finalCandidatesList) {
 										String marriageEventAsCoupleURI = myHDT.getEventURIfromID(finalCandidate);
+
 										int yearDifference = 0;
 										if(ignoreDate == false) {
 											int birthYear = myHDT.getEventDate(birthEvent);
@@ -135,10 +141,6 @@ public class Between_B_M {
 		}
 	}
 
-
-
-
-
 	/**
 	 * Given the year of a birth event, check whether this marriage event fits the timeline of a possible match
 	 *
@@ -156,7 +158,4 @@ public class Between_B_M {
 			return 999;
 		}
 	}
-
-
-
 }

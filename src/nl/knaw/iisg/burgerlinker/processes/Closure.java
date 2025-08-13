@@ -30,9 +30,7 @@ import me.tongfei.progressbar.ProgressBarStyle;
 
 
 // Between_M_M: link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)
-
 public class Closure {
-
 	// output directory specified by the user + name of the called function
 	private String inputDirectoryPath, outputDirectoryPath;
 	private MyHDT myHDT;
@@ -42,41 +40,46 @@ public class Closure {
 	public static final Logger lg = LogManager.getLogger(Closure.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
-	//HashMap<String, HashSet<String>> mapClassToIndividuals = new HashMap<String, HashSet<String>>();
-	//HashMap<String,String> mapIndividualToClass = new HashMap<String,String>();
-	LinksCSV LINKS;
+
+    LinksCSV LINKS;
 	String dirClassToIndivs, dirIndivToClass;
-	//MyDB dbClassToIndivs;
-	HashMap<String, HashSet<String>> dbClassToIndivs;
+
+    HashMap<String, HashSet<String>> dbClassToIndivs;
 	HashMap<String, String> dbIndivToClass;
-	String namespacePerson = "<https://iisg.amsterdam/links/person/";
+
+    String namespacePerson = "<https://iisg.amsterdam/links/person/";
 
 	public Closure(MyHDT hdt, String directoryPath, Boolean formatCSV) {
 		this.inputDirectoryPath = directoryPath;
 		this.outputDirectoryPath = directoryPath + "/closure";
 		this.myHDT = hdt;
+
 		String resultsFileName = "links-individuals";
 		if(formatCSV == true) {
 			String header = "";
 			LINKS = new LinksCSV(resultsFileName, outputDirectoryPath, header);
+
 			this.dirClassToIndivs = outputDirectoryPath + "/" + DIRECTORY_NAME_DATABASE + "/ClassToIndivs";
 			this.dirIndivToClass = outputDirectoryPath + "/" + DIRECTORY_NAME_DATABASE + "/IndivToClass";
 		}
+
 		computeClosure();
 	}
 
-
-
 	public void computeClosure() {
 		Boolean success = false;
+
 		try {
 			ArrayList<String> linkFiles = FILE_UTILS.getAllValidLinksFile(inputDirectoryPath, false);
+
 			for (String linkFile : linkFiles) {
 				success = success | saveIndividualLinksToFile(linkFile);
 			}
 			LOG.outputConsole("");
+
 			if(success) {
 				String sortedFile = sortFile(LINKS.getLinksFilePath());
+
 				transitiveClosure(sortedFile);
 				verifyClosure();
 				saveClosureToFile();
@@ -88,15 +91,16 @@ public class Closure {
 		}
 	}
 
-
 	public void reconstructDataset() {
 		try {
+			String taskName = "Reconstructing dataset after transitive closure";
 			int cntAll =0 ;
 			// iterate through the marriage certificates to link it to the marriage dictionaries
 			IteratorTripleString it = myHDT.dataset.search("", "", "");
+
 			long estNumber = it.estimatedNumResults();
 			LOG.outputConsole("Estimated number of certificates to be processed is: " + estNumber);
-			String taskName = "Reconstructing dataset after transitive closure";
+
 			LinksCSV datasetAfterClosure = new LinksCSV("finalDataset", outputDirectoryPath, true);
 
             ProgressBar pb = new ProgressBarBuilder()
@@ -114,9 +118,11 @@ public class Closure {
 						String sbjPersonID = getEqClassOfPerson(ts.getSubject().toString());
 						String predicate = "<" + ts.getPredicate().toString() + ">";
 						String objPersonID = getEqClassOfPerson(ts.getObject().toString());
+
 						if(predicate.contains("age")) {
 							String ageInString = myHDT.getStringValueFromLiteral(objPersonID);
 							int age = Integer.valueOf(ageInString);
+
 							String birthYear = myHDT.getBirthYearFromAge(ts.getSubject().toString(), age);
 							if(birthYear != null) {
 								datasetAfterClosure.addToStream(sbjPersonID + " <" + Properties.BIRTH_YEAR + "> " + birthYear + ".");
@@ -141,11 +147,9 @@ public class Closure {
 		}
 	}
 
-
-
 	public String getEqClassOfPerson(String someURI) {
-
 		String personID = myHDT.getIDofPerson(someURI);
+
 		if(personID != null) {
 			String eqClass = dbIndivToClass.get(personID);
 			if(eqClass != null) {
@@ -164,40 +168,13 @@ public class Closure {
 		}
 	}
 
-
 	public String sortFile(String filePath) {
-		//		LOG.outputConsole("Sorting links file...");
-		//		String sortedFile = outputDirectoryPath + "/sorted-individual-links.csv";
-		//		try {
-		//			String[] args = new String[] {"/bin/sh", "-c", "sort -n -k 1,1 " + filePath + " > " + sortedFile};
-		//			Process sortProcess = new ProcessBuilder(args).start();
-		//			int exitVal = sortProcess.waitFor();
-		//			if (exitVal == 0) {
-		//				LOG.outputConsole("Finished sorting links file!");
-		//			} else {
-		//				LOG.outputConsole("Something gone wrong when sorting file: " + filePath);
-		//			}
-		//		} catch (IOException e) {
-		//			e.printStackTrace();
-		//		} catch (InterruptedException e) {
-		//			e.printStackTrace();
-		//		}
-		//		return sortedFile;
 		return filePath;
 	}
 
 	public void createDB() {
-		//dbClassToIndivs = new MyDB(dirClassToIndivs);
 		dbClassToIndivs = new HashMap<String, HashSet<String>>();
 		dbIndivToClass = new HashMap<String, String>();
-		//dbIndivToClass = new MyDB(dirIndivToClass);
-		//		try {
-		//			//dbClassToIndivs.openMyDB(true);
-		//			//dbIndivToClass.openMyDB(true);
-		//		} catch (RocksDBException e) {
-		//			LOG.logError("createDB", "Error when creating the DB in the following directory " + dirClassToIndivs);
-		//			e.printStackTrace();
-		//		}
 	}
 
 	public void verifyClosure() {
@@ -210,73 +187,42 @@ public class Closure {
 			}
 		}
 
-		//		ReadOptions readOptions = new ReadOptions();
-		//		readOptions.setTailing(true);
-		//		try (RocksIterator rocksIterator = dbClassToIndivs.myDB.newIterator(readOptions)) {
-		//			for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-		//				HashSet<String> values = (HashSet<String>) dbClassToIndivs.deserialize(rocksIterator.value());
-		//				int n = values.size();
-		//				countIndivsClassToIndivs = countIndivsClassToIndivs + n;
-		//				if(n > max) {
-		//					max = n;
-		//				}
-		//			}
-		//		}
-
-
-		//		try (RocksIterator rocksIterator = dbIndivToClass.myDB.newIterator(readOptions)) {
-		//			for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-		//				countIndivsIndivToClass++;
-		//			}
-		//		}
-		//		System.out.println("Number of individuals from Invidual to Class: " + countIndivsIndivToClass);
 		LOG.outputConsole("Number of individuals from Invidual to Class: " + dbIndivToClass.size());
 		LOG.outputConsole("Number of individuals from Class to Individuals: " + countIndivsClassToIndivs);
 		LOG.outputConsole("Number of max individuals in Eq Class: " + max);
 	}
 
-
 	public void saveClosureToFile() {
 		LOG.outputConsole("Saving closure results to file...");
+
 		LinksCSV closureTerms = new LinksCSV("closureTerms", outputDirectoryPath, "");
 		LinksCSV closureDist = new LinksCSV("closureSizeDist", outputDirectoryPath, "");
 		for(Entry<String, HashSet<String>> entry: dbClassToIndivs.entrySet()) {
 			String lineTerms = entry.getKey();
+
 			for(String val : entry.getValue()) {
 				lineTerms = lineTerms + "," + val;
 			}
+
 			closureTerms.addToStream(lineTerms);
 			closureDist.addToStream(Integer.toString(entry.getValue().size()));
 		}
+
 		LOG.outputConsole("Finished saving closure results to file!");
 		closureTerms.closeStream();
 		closureDist.closeStream();
-		//		ReadOptions readOptions = new ReadOptions();
-		//		readOptions.setTailing(true);
-		//		try (RocksIterator rocksIterator = dbClassToIndivs.myDB.newIterator(readOptions)) {
-		//			for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-		//				String key = (String) dbClassToIndivs.deserialize(rocksIterator.key());
-		//				HashSet<String> values = (HashSet<String>) dbClassToIndivs.deserialize(rocksIterator.value());
-		//				String lineTerms = key;
-		//				for(String val : values) {
-		//					lineTerms = lineTerms + "," + val;
-		//				}
-		//				closureTerms.addToStream(lineTerms);
-		//				closureDist.addToStream(Integer.toString(values.size()));
-		//			}
-		//		}
 	}
-
 
 	public void transitiveClosure(String linksFilePath) {
 		try {
-			createDB();
-			String [] nextLine;
 			String taskName = "Closure";
 			LOG.outputConsole("Starting: " + taskName + " of links in file: " + linksFilePath);
 			LOG.outputConsole("");
+
+            createDB();
+
+			String [] nextLine;
 			int nbLines = FILE_UTILS.countLines(linksFilePath) , eqID = 0 ;
-			CSVReader reader = new CSVReader(new FileReader(linksFilePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -284,49 +230,46 @@ public class Closure {
                 .setUpdateIntervalMillis(updateInterval)
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
+
+            CSVReader reader = new CSVReader(new FileReader(linksFilePath));
 			try {
 				reader.readNext(); // skip the column names
+
 				int countProgress = 1;
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					try {
 						String idInvidual1 = nextLine[0];
 						String idInvidual2 = nextLine[1];
+
 						String eqIDIndividual1 = dbIndivToClass.get(idInvidual1);
 						String eqIDIndividual2 = dbIndivToClass.get(idInvidual2);
-						//	String eqIDIndividual1 = dbIndivToClass.getSingleValueFromDB(idInvidual1);
-						//	String eqIDIndividual2 = dbIndivToClass.getSingleValueFromDB(idInvidual2);
 						if(eqIDIndividual1 == null) {
 							if(eqIDIndividual2 == null) {
 								String newEqID = "i-" + eqID;
-								eqID ++;
+								eqID++;
+
 								HashSet<String> eqValues = new HashSet<String>();
+
 								eqValues.add(idInvidual1);
 								eqValues.add(idInvidual2);
+
 								dbClassToIndivs.put(newEqID, eqValues);
-								// dbClassToIndivs.addSetValueToDB(newEqID, eqValues);
 								dbIndivToClass.put(idInvidual1, newEqID);
 								dbIndivToClass.put(idInvidual2, newEqID);
-								//	dbIndivToClass.addSingleValueToDB(idInvidual1, newEqID, true);
-								//	dbIndivToClass.addSingleValueToDB(idInvidual2, newEqID, true);
 							} else {
 								addObjectToExistingSet(dbClassToIndivs, eqIDIndividual2, idInvidual1);
-								// dbClassToIndivs.addSetValueToDB(eqIDIndividual2, idInvidual1);
 								dbIndivToClass.put(idInvidual1, eqIDIndividual2);
-								// dbIndivToClass.addSingleValueToDB(idInvidual1, eqIDIndividual2, true);
 							}
 						} else {
 							if(eqIDIndividual2 == null) {
-								// dbClassToIndivs.addSetValueToDB(eqIDIndividual1, idInvidual2);
 								addObjectToExistingSet(dbClassToIndivs, eqIDIndividual1, idInvidual2);
 								dbIndivToClass.put(idInvidual2, eqIDIndividual1);
-								// dbIndivToClass.addSingleValueToDB(idInvidual2, eqIDIndividual1, true);
 							} else {
 								if(!eqIDIndividual1.equals(eqIDIndividual2)) {
 									HashSet<String> valuesEqIDIndividual1 = dbClassToIndivs.get(eqIDIndividual1);
 									HashSet<String> valuesEqIDIndividual2 = dbClassToIndivs.get(eqIDIndividual2);
-									//	HashSet<String> valuesEqIDIndividual1 = dbClassToIndivs.getSetFromDB(eqIDIndividual1);
-									//	HashSet<String> valuesEqIDIndividual2 = dbClassToIndivs.getSetFromDB(eqIDIndividual2);
 									if(valuesEqIDIndividual1.size() > valuesEqIDIndividual2.size()) {
 										mergeEqSets(eqIDIndividual1, valuesEqIDIndividual1, eqIDIndividual2, valuesEqIDIndividual2);
 									} else {
@@ -358,21 +301,14 @@ public class Closure {
 		db.put(key, X);
 	}
 
-
 	public void mergeEqSets(String eqIDIndividualLarger, HashSet<String> valuesLarger, String eqIDIndividualSmaller, HashSet<String> valuesSmaller) {
 		valuesLarger.addAll(valuesSmaller);
 		dbClassToIndivs.put(eqIDIndividualLarger, valuesLarger);
-		//dbClassToIndivs.addSetValueToDB(eqIDIndividualLarger, valuesLarger);
 		for(String valueEq2: valuesSmaller) {
 			dbIndivToClass.put(valueEq2, eqIDIndividualLarger);
-			//			dbIndivToClass.addSingleValueToDB(valueEq2, eqIDIndividualLarger, true);
-
 		}
 		dbClassToIndivs.remove(eqIDIndividualSmaller);
-		//dbClassToIndivs.removeEntryFromDB(eqIDIndividualSmaller);
 	}
-
-
 
 	public Boolean saveIndividualLinksToFile(String filePath) {
 		Boolean success = true;
@@ -395,19 +331,21 @@ public class Closure {
 			success = success & saveLinksIndividuals_Between_M_M(filePath);
 		}
 		LINKS.flushLinks();
+
 		return success;
 	}
-
 
 	public Boolean saveLinksIndividuals_Within_B_M(String filePath) {
 		Boolean success = false;
 		try {
-			String [] nextLine;
-			String linktype = "sameAs", linkProv = "W_B_M", taskName = "Within_B_M";
+            String taskName = "Within_B_M";
 			LOG.outputConsole("");
 			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+
+			String [] nextLine;
+
+			String linktype = "sameAs", linkProv = "W_B_M";
 			int nbLines = FILE_UTILS.countLines(filePath);
-			CSVReader reader = new CSVReader(new FileReader(filePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -415,13 +353,18 @@ public class Closure {
                 .setUpdateIntervalMillis(updateInterval)
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
+
+            CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
 				reader.readNext(); // skip the column names
 				int countProgress = 1;
+
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					int matchedIndiv = 1;
 					Boolean fatherMatched = false,  motherMatched = false;
+
 					String idBirth = nextLine[0];
 					String idMarriage = nextLine[1];
 					String familyLine = nextLine[2];
@@ -430,10 +373,12 @@ public class Closure {
 					String idFatherNewborn = null, idFatherPartner = null, idMotherNewborn = null, idMotherPartner = null;
 					if(!nextLine[7].equals("N.A")) { // if there is a match for the fathers
 						idFatherNewborn = myHDT.getPersonID(idBirth, ROLE_FATHER);
+
 						if(idFatherNewborn != null) {
 							idFatherPartner = myHDT.getPersonID(idMarriage, ROLE_BRIDE_FATHER, ROLE_GROOM_FATHER, familyLine);
 							if(idFatherPartner != null) {
 								matchedIndiv++;
+
 								fatherMatched = true;
 							}
 						}
@@ -442,6 +387,7 @@ public class Closure {
 						idMotherNewborn = myHDT.getPersonID(idBirth, ROLE_MOTHER);
 						if(idMotherNewborn != null) {
 							idMotherPartner = myHDT.getPersonID(idMarriage, ROLE_BRIDE_MOTHER, ROLE_GROOM_MOTHER, familyLine);
+
 							if(idMotherPartner != null) {
 								matchedIndiv++;
 								motherMatched = true;
@@ -464,7 +410,6 @@ public class Closure {
 						LINKS.saveIndividualLink(idMotherNewborn, idMotherPartner, meta_mothers);
 					}
 
-
 					if(countProgress % 1000 == 0) {
 						pb.stepBy(1000);
 					}
@@ -479,19 +424,20 @@ public class Closure {
 		} catch (IOException | CsvValidationException e) {
 			e.printStackTrace();
 		}
+
 		return success;
 	}
-
 
 	public Boolean saveLinksIndividuals_Within_B_D(String filePath) {
 		Boolean success = false;
 		try {
-			String [] nextLine;
-			String linktype = "sameAs", linkProv = "W_B_D", taskName = "Within_B_D";
+            String taskName = "Within_B_D";
 			LOG.outputConsole("");
 			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+
+			String [] nextLine;
+			String linktype = "sameAs", linkProv = "W_B_D";
 			int nbLines = FILE_UTILS.countLines(filePath);
-			CSVReader reader = new CSVReader(new FileReader(filePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -500,13 +446,17 @@ public class Closure {
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
 
+			CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
 				reader.readNext(); // skip the column names
+
 				int countProgress = 1;
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					int matchedIndiv = 1;
 					Boolean fatherMatched = false,  motherMatched = false;
+
 					String idBirth = nextLine[0];
 					String idDeath = nextLine[1];
 					String familyLine = nextLine[2];
@@ -515,8 +465,10 @@ public class Closure {
 					String idFatherNewborn = null, idFatherDeceased = null, idMotherNewborn = null, idMotherDeceased = null;
 					if(!nextLine[7].equals("N.A")) { // if there is a match for the fathers
 						idFatherNewborn = myHDT.getPersonID(idBirth, ROLE_FATHER);
+
 						if(idFatherNewborn != null) {
 							idFatherDeceased = myHDT.getPersonID(idDeath, ROLE_FATHER);
+
 							if(idFatherDeceased != null) {
 								matchedIndiv++;
 								fatherMatched = true;
@@ -527,6 +479,7 @@ public class Closure {
 						idMotherNewborn = myHDT.getPersonID(idBirth, ROLE_MOTHER);
 						if(idMotherNewborn != null) {
 							idMotherDeceased = myHDT.getPersonID(idDeath, ROLE_MOTHER);
+
 							if(idMotherDeceased != null) {
 								matchedIndiv++;
 								motherMatched = true;
@@ -563,20 +516,20 @@ public class Closure {
 		} catch (IOException | CsvValidationException e) {
 			e.printStackTrace();
 		}
+
 		return success;
 	}
-
-
 
 	public Boolean saveLinksIndividuals_Between_B_M(String filePath) {
 		Boolean success = false;
 		try {
-			String [] nextLine;
-			String linktype = "sameAs", familyLine = "", linkProv = "B_B_M", matchedIndiv = "2", taskName = "Between_B_M";
+            String taskName = "Between_B_M";
 			LOG.outputConsole("");
 			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+
+			String [] nextLine;
+			String linktype = "sameAs", familyLine = "", linkProv = "B_B_M", matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
-			CSVReader reader = new CSVReader(new FileReader(filePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -584,21 +537,27 @@ public class Closure {
                 .setUpdateIntervalMillis(updateInterval)
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
+
+            CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
 				reader.readNext(); // skip the column names
+
 				int countProgress = 1;
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					String idBirth = nextLine[0];
 					String idMarriage = nextLine[1];
 					String idFather = myHDT.getPersonID(idBirth, ROLE_FATHER);
 					String idMother = myHDT.getPersonID(idBirth, ROLE_MOTHER);
 					String idGroom = myHDT.getPersonID(idMarriage, ROLE_GROOM);
 					String idBride = myHDT.getPersonID(idMarriage, ROLE_BRIDE);
+
 					String meta_father_groom = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idMarriage + ","
 							+ nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
 					String meta_mother_bride = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idMarriage + ","
 							+ nextLine[2] + "," + nextLine[3] + "," + nextLine[6] + "," + nextLine[7] + "," + nextLine[8] + "," + nextLine[12];
+
 					LINKS.saveIndividualLink(idFather, idGroom, meta_father_groom);
 					LINKS.saveIndividualLink(idMother, idBride, meta_mother_bride);
 					if(countProgress % 1000 == 0) {
@@ -614,18 +573,20 @@ public class Closure {
 		} catch (IOException | CsvValidationException e) {
 			e.printStackTrace();
 		}
+
 		return success;
 	}
 
 	public Boolean saveLinksIndividuals_Between_B_D(String filePath) {
 		Boolean success = false;
 		try {
-			String [] nextLine;
-			String linktype = "sameAs", familyLine = "", linkProv = "B_B_D", matchedIndiv = "2", taskName = "Between_B_D";
+            String taskName = "Between_B_D";
 			LOG.outputConsole("");
 			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+
+			String [] nextLine;
+			String linktype = "sameAs", familyLine = "", linkProv = "B_B_D", matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
-			CSVReader reader = new CSVReader(new FileReader(filePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -633,17 +594,22 @@ public class Closure {
                 .setUpdateIntervalMillis(updateInterval)
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
+
+            CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
 				reader.readNext(); // skip the column names
+
 				int countProgress = 1;
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					String idBirth = nextLine[0];
 					String idDeath = nextLine[1];
 					String idFather = myHDT.getPersonID(idBirth, ROLE_FATHER);
 					String idMother = myHDT.getPersonID(idBirth, ROLE_MOTHER);
 					String idDeceased = myHDT.getPersonID(idDeath, ROLE_DECEASED);
 					String idPartner = myHDT.getPersonID(idDeath, ROLE_PARTNER);
+
 					String meta_father = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + ","
 							+ nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
 					String meta_mother = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idBirth + "," + idDeath + ","
@@ -671,19 +637,20 @@ public class Closure {
 		} catch (IOException | CsvValidationException e) {
 			e.printStackTrace();
 		}
+
 		return success;
 	}
-
 
 	public Boolean saveLinksIndividuals_Between_D_M(String filePath) {
 		Boolean success = false;
 		try {
-			String [] nextLine;
-			String linktype = "sameAs", familyLine = "", linkProv = "B_D_M", matchedIndiv = "2", taskName = "Between_D_M";
+            String taskName = "Between_D_M";
 			LOG.outputConsole("");
 			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+
+			String [] nextLine;
+			String linktype = "sameAs", familyLine = "", linkProv = "B_D_M", matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
-			CSVReader reader = new CSVReader(new FileReader(filePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -691,21 +658,27 @@ public class Closure {
                 .setUpdateIntervalMillis(updateInterval)
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
+
+            CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
 				reader.readNext(); // skip the column names
+
 				int countProgress = 1;
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					String idDeath = nextLine[0];
 					String idMarriage = nextLine[1];
 					String idFather = myHDT.getPersonID(idDeath, ROLE_FATHER);
 					String idMother = myHDT.getPersonID(idDeath, ROLE_MOTHER);
 					String idGroom = myHDT.getPersonID(idMarriage, ROLE_GROOM);
 					String idBride = myHDT.getPersonID(idMarriage, ROLE_BRIDE);
+
 					String meta_father_groom = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idDeath + "," + idMarriage + ","
 							+ nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
 					String meta_mother_bride = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idDeath + "," + idMarriage + ","
 							+ nextLine[2] + "," + nextLine[3] + "," + nextLine[6] + "," + nextLine[7] + "," + nextLine[8] + "," + nextLine[12];
+
 					LINKS.saveIndividualLink(idFather, idGroom, meta_father_groom);
 					LINKS.saveIndividualLink(idMother, idBride, meta_mother_bride);
 					if(countProgress % 1000 == 0) {
@@ -721,21 +694,20 @@ public class Closure {
 		} catch (IOException | CsvValidationException e) {
 			e.printStackTrace();
 		}
+
 		return success;
 	}
-
-
-
 
 	public Boolean saveLinksIndividuals_Between_M_M(String filePath) {
 		Boolean success = false;
 		try {
-			String [] nextLine;
-			String linktype = "sameAs", linkProv = "B_M_M", matchedIndiv = "2", taskName = "Between_M_M";
+            String taskName = "Between_M_M";
 			LOG.outputConsole("");
 			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
+
+			String [] nextLine;
+			String linktype = "sameAs", linkProv = "B_M_M", matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
-			CSVReader reader = new CSVReader(new FileReader(filePath));
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -743,11 +715,14 @@ public class Closure {
                 .setUpdateIntervalMillis(updateInterval)
                 .setStyle(ProgressBarStyle.UNICODE_BLOCK)
                 .build();
+
+            CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
 				reader.readNext(); // skip the column names
 				int countProgress = 1;
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
+
 					String idMarriageParents = nextLine[0];
 					String idMarriageCouple = nextLine[1];
 					String familyLine = nextLine[2];
@@ -755,10 +730,12 @@ public class Closure {
 					String idMother = myHDT.getPersonID(idMarriageParents, ROLE_BRIDE_MOTHER, ROLE_GROOM_MOTHER, familyLine);
 					String idGroom = myHDT.getPersonID(idMarriageCouple, ROLE_GROOM);
 					String idBride = myHDT.getPersonID(idMarriageCouple, ROLE_BRIDE);
+
 					String meta_father_groom = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idMarriageParents + "," + idMarriageCouple + ","
 							+ nextLine[5] + "," + nextLine[6] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[12] + "," + nextLine[13];
 					String meta_mother_bride = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + "," + idMarriageParents + "," + idMarriageCouple + ","
 							+ nextLine[3] + "," + nextLine[4] + "," + nextLine[7] + "," + nextLine[8] + "," + nextLine[9] + "," + nextLine[13];
+
 					LINKS.saveIndividualLink(idFather, idGroom, meta_father_groom);
 					LINKS.saveIndividualLink(idMother, idBride, meta_mother_bride);
 					if(countProgress % 1000 == 0) {
@@ -774,10 +751,7 @@ public class Closure {
 		} catch (IOException | CsvValidationException e) {
 			e.printStackTrace();
 		}
+
 		return success;
 	}
-
-
-
-
 }

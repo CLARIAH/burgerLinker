@@ -27,7 +27,6 @@ import org.apache.jena.query.ARQ;
 
 
 public class MyHDT implements ProgressListener {
-
 	public HDT dataset;
 	public HDT targetDataset;
 	public Boolean doubleInputs = false;
@@ -35,9 +34,6 @@ public class MyHDT implements ProgressListener {
 	public static final Logger lg = LogManager.getLogger(MyHDT.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
-
-
-
 
 	/**
 	 * Constructor
@@ -49,8 +45,10 @@ public class MyHDT implements ProgressListener {
 		try {
 			ARQ.init();
 			LOG.outputConsole("START: Loading HDT dataset...");
+
 			long startTime = System.currentTimeMillis();
 			dataset = HDTManager.loadIndexedHDT(hdtPath, null);
+
 			LOG.outputTotalRuntime("Loading HDT dataset", startTime, true);
 			LOG.outputConsole("");
 			LOG.outputConsole("--------");
@@ -67,15 +65,17 @@ public class MyHDT implements ProgressListener {
 		}
 	}
 
-
 	public MyHDT(String hdtPath1, String hdtPath2, Boolean doubleInputs) {  // Two HDT files with their index are given as inputs
 		try {
 			doubleInputs = true;
+
 			ARQ.init();
 			LOG.outputConsole("START: Loading HDT datasets...");
+
 			long startTime = System.currentTimeMillis();
 			dataset = HDTManager.loadIndexedHDT(hdtPath1, null);
 			targetDataset = HDTManager.loadIndexedHDT(hdtPath2, null);
+
 			LOG.outputTotalRuntime("Loading HDT dataset", startTime, true);
 			LOG.outputConsole("");
 			LOG.outputConsole("Dataset 1: " + hdtPath1);
@@ -102,14 +102,14 @@ public class MyHDT implements ProgressListener {
 		}
 	}
 
-
-
 	public MyHDT(String inputRDF, String outputDir) { // One RDF file is given as input to be converted to HDT
 		ARQ.init();
 		long startTime = System.currentTimeMillis();
+
 		String baseURI = "file://" + inputRDF;
 		String fileName = FILE_UTILS.getFileName(inputRDF);
 		String outputHDT = outputDir + "/" + fileName + ".hdt";
+
 		RDFNotation notation = null;
 		try {
 			notation =  RDFNotation.guess(inputRDF);
@@ -117,16 +117,22 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("MyHDT Constructor", "Could not guess notation for "+inputRDF+" - Trying NTriples...");
 			notation = RDFNotation.NTRIPLES;
 		}
+
 		HDT hdt;
 		try {
 			LOG.outputConsole("START: Generating HDT dataset...");
+
 			hdt = HDTManager.generateHDT(inputRDF, baseURI, notation, new HDTSpecification(), null);
 			hdt.saveToHDT(outputHDT, null);
+
 			LOG.outputTotalRuntime("HDT generated and saved at "+ outputHDT, startTime, true);
+
 			startTime = System.currentTimeMillis();
 			LOG.outputConsole("START: Generating HDT index...");
+
 			hdt = HDTManager.indexedHDT(hdt, null);
 			LOG.outputTotalRuntime("Index generated and saved at: "+ outputHDT+".index", startTime, true);
+
 			hdt.close();
 		} catch (IOException | ParserException e) {
 			LOG.logError("MyHDT Constructor", "Problem generating HDT file");
@@ -134,36 +140,44 @@ public class MyHDT implements ProgressListener {
 		}
 	}
 
-
 	public MyHDT(String inputHDT1, String inputHDT2, String outputDir) { // Two HDT files given as input to be merged
 		ARQ.init();
+
 		long startTime = System.currentTimeMillis();
-		String outputHDT = outputDir + "/merged-dataset.hdt";
+
+        String outputHDT = outputDir + "/merged-dataset.hdt";
 		File file = new File(outputHDT);
 		File theDir = new File(file.getAbsolutePath()+"_tmp");
-		theDir.mkdirs();
+
+        theDir.mkdirs();
 		String location = theDir.getAbsolutePath()+"/";
-		HDT hdt;
+
+        HDT hdt;
 		try {
 			LOG.outputConsole("START: Merging HDT datasets...");
+
 			hdt = HDTManager.catHDT(location, inputHDT1, inputHDT2, new HDTSpecification(), null);
 			hdt.saveToHDT(outputHDT, null);
+
 			LOG.outputTotalRuntime("HDT merged and saved at "+ outputHDT, startTime, true);
+
 			Files.delete(Paths.get(location+"dictionary"));
 			Files.delete(Paths.get(location+"triples"));
+
 			theDir.delete();
+
 			startTime = System.currentTimeMillis();
 			LOG.outputConsole("START: Generating HDT index...");
+
 			hdt = HDTManager.indexedHDT(hdt, null);
 			LOG.outputTotalRuntime("Index generated and saved at: "+ outputHDT+".index", startTime, true);
+
 			hdt.close();
 		} catch (IOException e) {
 			LOG.logError("MyHDT Constructor", "Problem generating HDT file");
 			LOG.logError("MyHDT Constructor", e.getLocalizedMessage());
 		}
 	}
-
-
 
 	// ===== Statistics =====
 
@@ -178,16 +192,16 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search("", "", "");
 			while(it.hasNext()) {
 				it.next();
+
 				counterTriples++;
 			}
 		} catch (NotFoundException e) {
 			LOG.logError("getExactNumberOfTriples", "Error counting triples in HDT dataset");
 			e.printStackTrace();
 		}
+
 		return counterTriples;
 	}
-
-
 
 	/**
 	 * Returns the number of registrations
@@ -199,21 +213,21 @@ public class MyHDT implements ProgressListener {
 	 */
 	public int getNumberOfSubjects(String object){
 		int counterRegistrations = 0;
+
 		try {
 			IteratorTripleString it = dataset.search("", RDF_TYPE, object);
 			while(it.hasNext()) {
 				it.next();
+
 				counterRegistrations++;
 			}
 		} catch (NotFoundException e) {
 			LOG.logError("getNumberOfSubjects", "Error counting subjects of object '" + object + "' in HDT dataset");
 			e.printStackTrace();
 		}
+
 		return counterRegistrations;
 	}
-
-
-
 
 	// ===== RDF Utility Functions =====
 
@@ -233,6 +247,7 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("getStringValueFromLiteral", "Error in converting Literal to String for input string: " + typed_literal);
 			LOG.logError("getStringValueFromLiteral", e.getLocalizedMessage());
 		}
+
 		return typed_literal;
 	}
 
@@ -270,9 +285,9 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("convertStringToTypedInteger", "Error in converting String to Integer for input string: " + literal);
 			LOG.logError("convertStringToTypedInteger", e.getLocalizedMessage());
 		}
+
 		return literal;
 	}
-
 
 	public String convertStringToTypedInt(String literal) {
 		try {
@@ -283,9 +298,9 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("convertStringToTypedInteger", "Error in converting String to Integer for input string: " + literal);
 			LOG.logError("convertStringToTypedInteger", e.getLocalizedMessage());
 		}
+
 		return literal;
 	}
-
 
 	public void closeDataset() {
 		try {
@@ -295,7 +310,6 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("closeDataset", e.getLocalizedMessage());
 		}
 	}
-
 
 	// ===== Dataset Specific Functions =====
 
@@ -318,26 +332,28 @@ public class MyHDT implements ProgressListener {
 			it = dataset.search(eventURI, REGISTRATION_ID, "");
 			if(it.hasNext()) {
 				TripleString ts = it.next();
+
 				String eventID = ts.getObject().toString();
 				if (eventID != null) {
-					return getStringValueFromLiteral(eventID);
+
+                    return getStringValueFromLiteral(eventID);
 				} else {
 					LOG.logError("getIDofEvent", "The ID for the following event URI is not found in the dataset: " + eventURI);
 				}
 			} else {
 				if(eventURI.contains("e-")) {
 					String test = eventURI.substring(eventURI.lastIndexOf("-") + 1);
-					return test;
+
+                    return test;
 				}
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
 		LOG.logError("getIDofEvent", "The ID for the following event URI is not found in the dataset: " + eventURI);
+
 		return null;
 	}
-
-
 
 	//	public String getIDofPerson(String personURI) {
 	//		// Of course the more correct way would be to query the HDT file and get the registration ID from the event URI
@@ -345,12 +361,12 @@ public class MyHDT implements ProgressListener {
 	//		return bits[bits.length-1];
 	//	}
 
-
 	public String getIDofPerson(String personURI) {
 		try {
 			IteratorTripleString it = dataset.search(personURI, PERSON_ID, "");
 			if(it.hasNext()) {
 				TripleString ts = it.next();
+
 				String personID = ts.getObject().toString();
 				if (personID != null) {
 					return getStringValueFromLiteral(personID);
@@ -363,10 +379,9 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("getIDofPerson", "The ID for the following person URI is not found in the dataset: " + personURI);
 			e.printStackTrace();
 		}
+
 		return null;
 	}
-
-
 
 	/**
 	 * Returns an Object of the Java Class Person with their personal details (first name, last name, and gender) extracted from the HDT
@@ -381,18 +396,21 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search(eventURI, role, "");
 			while(it.hasNext()) {
 				TripleString ts = it.next();
+
 				Person p = new Person(ts.getObject(), role);
+
 				p.setFirstName(getFirstNameFromHDT(ts.getObject()));
 				p.setLastName(getLastNameFromHDT(ts.getObject()));
 				p.setGender(getGenderFromHDT(ts.getObject()));
+
 				return p;
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return new Person();
 	}
-
 
 	public int getAgeFromHDT(String personURI) {
 		int age = 999;
@@ -400,15 +418,15 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search(personURI, AGE, "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
+
 				age = Integer.parseInt(getStringValueFromLiteral(ts.getObject().toString()));
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return age;
-
 	}
-
 
 	/**
 	 * Returns the object (?o) of the statement (URI, foaf:firstName, ?o)
@@ -416,19 +434,20 @@ public class MyHDT implements ProgressListener {
 	 * @param URI
 	 * 		URI referring to a certain person
 	 */
-	public String getFirstNameFromHDT(CharSequence URI)
-	{
+	public String getFirstNameFromHDT(CharSequence URI) {
 		String first_name = null;
 		try {
 			IteratorTripleString it = dataset.search(URI, GIVEN_NAME, "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
+
 				first_name = ts.getObject().toString();
 				first_name = getStringValueFromLiteral(first_name);
 			} else {
 				it = dataset.search(URI, GIVEN_NAME_S, "");
 				if(it.hasNext()){
 					TripleString ts = it.next();
+
 					first_name = ts.getObject().toString();
 					first_name = getStringValueFromLiteral(first_name);
 				}
@@ -436,6 +455,7 @@ public class MyHDT implements ProgressListener {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return first_name;
 	}
 
@@ -445,19 +465,20 @@ public class MyHDT implements ProgressListener {
 	 * @param URI
 	 * 		URI referring to a certain person
 	 */
-	public String getLastNameFromHDT(CharSequence URI)
-	{
+	public String getLastNameFromHDT(CharSequence URI) {
 		String last_name = null;
 		try {
 			IteratorTripleString it = dataset.search(URI, FAMILY_NAME, "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
+
 				last_name = ts.getObject().toString();
 				last_name = getStringValueFromLiteral(last_name);
 			} else {
 				it = dataset.search(URI, FAMILY_NAME_S, "");
 				if(it.hasNext()){
 					TripleString ts = it.next();
+
 					last_name = ts.getObject().toString();
 					last_name = getStringValueFromLiteral(last_name);
 				}
@@ -465,6 +486,7 @@ public class MyHDT implements ProgressListener {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return last_name;
 	}
 
@@ -474,13 +496,13 @@ public class MyHDT implements ProgressListener {
 	 * @param URI
 	 * 		URI referring to a certain person
 	 */
-	public String getGenderFromHDT(CharSequence URI)
-	{
+	public String getGenderFromHDT(CharSequence URI) {
 		String gender = "u";
 		try {
 			IteratorTripleString it = dataset.search(URI, GENDER, "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
+
 				gender = ts.getObject().toString();
 				if(gender.equals("f") || gender.equals(GENDER_FEMALE_URI) || gender.equals(GENDER_FEMALE_URI_S) || gender.equals("\"f\"")) {
 					return "f";
@@ -494,9 +516,9 @@ public class MyHDT implements ProgressListener {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return gender;
 	}
-
 
 	public int countNewbornsByGender(String gender) {
 		int result = 0;
@@ -504,6 +526,7 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search("", ROLE_NEWBORN, "");
 			while(it.hasNext()){
 				TripleString ts = it.next();
+
 				String newborn = ts.getObject().toString();
 				if(getGenderFromHDT(newborn).equals(gender)) {
 					result++;
@@ -512,9 +535,9 @@ public class MyHDT implements ProgressListener {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return result;
 	}
-
 
 	/**
 	 * Returns the object (?o) of the statement (URI, iisg-vocab:event_date, ?o)
@@ -527,9 +550,11 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search(eventURI, EVENT_DATE, "");
 			while(it.hasNext()) {
 				TripleString ts = it.next();
+
 				String[] bits = ts.getObject().toString().split("-");
 				try {
 					int returnedDate = Integer.parseInt(bits[0].replace("\"", ""));
+
 					return returnedDate;
 				} catch (Exception e) {
 					return 0;
@@ -538,41 +563,11 @@ public class MyHDT implements ProgressListener {
 		} catch (NotFoundException e) {
 			//e.printStackTrace();
 		}
+
 		return 0;
 	}
 
-	//
-	//	/**
-	//	 * Returns the event URI from its ID provided in the original CSV file
-	//	 * @param eventID
-	//	 * 		the ID of this event
-	//	 */
-	//	public String getEventURIfromID(String eventID) {
-	//		try {
-	//			String typedEventID = convertStringToTypedInteger(eventID);
-	//			IteratorTripleString it = dataset.search("", REGISTRATION_ID, typedEventID);
-	//			while(it.hasNext()) {
-	//				TripleString ts = it.next();
-	//				String certificateURI = ts.getSubject().toString();
-	//				if (certificateURI != null) {
-	//					IteratorTripleString it2 = dataset.search(certificateURI, REGISTER_EVENT, "");
-	//					while(it2.hasNext()) {
-	//						TripleString ts2 = it2.next();
-	//						String eventURI = ts2.getObject().toString();
-	//						return eventURI;
-	//					}
-	//				} else {
-	//					LOG.logError("getEventURIfromID", "The following eventID is not found in the dataset: " + eventID);
-	//				}
-	//			}
-	//		} catch (NotFoundException e) {
-	//			LOG.logError("getEventURIfromID", "The following eventID is not found in the dataset: " + eventID);
-	//			e.printStackTrace();
-	//		}
-	//		return null;
-	//	}
-
-	/**
+    /**
 	 * Returns the event URI from its ID provided in the original CSV file
 	 * @param eventID
 	 * 		the ID of this event
@@ -580,9 +575,11 @@ public class MyHDT implements ProgressListener {
 	public String getEventURIfromID(String eventID, String type) {
 		try {
 			String typedEventID = convertStringToTypedInteger(eventID, type);
+
 			IteratorTripleString it = dataset.search("", REGISTRATION_ID, typedEventID);
 			if(it.hasNext()) {
 				TripleString ts = it.next();
+
 				String eventURI = ts.getSubject().toString();
 				if (eventURI != null) {
 					return eventURI;
@@ -595,9 +592,9 @@ public class MyHDT implements ProgressListener {
 			LOG.logError("getEventURIfromID", "The following eventID is not found in the dataset: " + eventID);
 			e.printStackTrace();
 		}
+
 		return null;
 	}
-
 
 	public String getEventURIfromID(String eventID) {
 		String result = getEventURIfromID(eventID, "integer");
@@ -607,22 +604,9 @@ public class MyHDT implements ProgressListener {
 				LOG.logError("getEventURIfromID", "The following eventID is not found in the dataset: " + eventID);
 			}
 		}
+
 		return result;
 	}
-
-
-
-	//	public String getEventURIfromID(String eventID, String prov) {
-	//		// Of course the more correct way would be to query the HDT file and get the event URI from the registration ID
-	//		return PREFIX_IISG  + "event/" + eventID;
-	//	}
-	//
-	//
-	//	public String getPersonURIfromID(String personID, String prov) {
-	//		// Of course the more correct way would be to query the HDT file and get the event URI from the person ID
-	//		return PREFIX_IISG  + "person/" + personID;
-	//	}
-
 
 	public String getPersonID(String eventID, String role) {
 		String eventURI = getEventURIfromID(eventID);
@@ -630,15 +614,17 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search(eventURI, role, "");
 			while(it.hasNext()) {
 				TripleString ts = it.next();
+
 				String personURI = ts.getObject().toString();
+
 				return getIDofPerson(personURI);
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return null;
 	}
-
 
 	public String getPersonID(String eventID, String role1, String role2, String familyLine) {
 		String role = getPropertyFromFamilyLine(role1, role2, familyLine);
@@ -647,16 +633,17 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search(eventURI, role, "");
 			while(it.hasNext()) {
 				TripleString ts = it.next();
+
 				String personURI = ts.getObject().toString();
+
 				return getIDofPerson(personURI);
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return null;
 	}
-
-
 
 	public String getPropertyFromFamilyLine(String role1, String role2, String familyLine) {
 		String role;
@@ -673,9 +660,10 @@ public class MyHDT implements ProgressListener {
 				role = role2 ;
 			}
 		}
+
+
 		return role;
 	}
-
 
 	public String removeBrackets(String someURI) {
 		if(someURI.startsWith("<")) {
@@ -689,7 +677,6 @@ public class MyHDT implements ProgressListener {
 		return "\"" + Integer.toString(age) + "\"^^<http://www.w3.org/2001/XMLSchema#gYear>";
 	}
 
-
 	public String getBirthYearFromAge(String personURI, int age) {
 		String sbj = null;
 		String person = removeBrackets(personURI);
@@ -697,6 +684,7 @@ public class MyHDT implements ProgressListener {
 			IteratorTripleString it = dataset.search("", "", person);
 			if(it.hasNext()){
 				TripleString ts = it.next();
+
 				sbj = ts.getSubject().toString();
 				int eventYear = getEventDate(sbj) ;
 				if(eventYear != 0) {
@@ -707,42 +695,13 @@ public class MyHDT implements ProgressListener {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
+
 		return null;
 	}
-
-
-
-
 
 	@Override
 	public void notifyProgress(float level, String message) {
 		// TODO Auto-generated method stub
 
 	}
-
-
-
-
-	/**
-	 * Returns an Object of the Java Class Person with their personal details (first name, last name, and gender) extracted from the HDT
-	 *
-	 * @param event_uri
-	 * 		URI referring to the event in which this individual is part of
-	 * @param role
-	 * 		role of this person in this event with its acronym (e.g. {"N", "https://iisg.amsterdam/links_zeeland/vocab/newborn"})
-	 */
-	//	public Person getPersonFromEvent(String event_uri, String[] role) {
-	//		Person p = null;
-	//		try {
-	//			IteratorTripleString it = dataset.search(event_uri, role[1], "");
-	//			while(it.hasNext()) {
-	//				TripleString ts = it.next();
-	//				p = new Person(ts.getObject(), role[0]);
-	//			}
-	//		} catch (NotFoundException e) {
-	//			e.printStackTrace();
-	//		}
-	//		return p;
-	//	}
-
 }
