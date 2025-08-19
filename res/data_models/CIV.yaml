@@ -1,0 +1,138 @@
+---
+# === Namespaces =========
+
+# Civil Registry namespace
+namespace: &civ
+  uri: https://iisg.amsterdam/id/civ/
+
+# Schema.org namespace
+namespace: &schema
+  uri: https://schema.org/
+
+# === Classes =========
+
+# Events
+birth_event:
+  <<: *civ
+  name: Birth
+
+mariage_event:
+  <<: *civ
+  name: Marriage
+
+death_event:
+  <<: *civ
+  name: Death
+
+divorce_event:
+  <<: *civ
+  name: Divorse
+
+# Event related
+person:
+  <<: *schema
+  name: Person
+
+location:
+  <<: *schema
+  name: Place
+
+# Geography
+location_municipality:
+  <<: *civ
+  name: Municipality
+
+location_region:
+  <<: *civ
+  name: Region
+
+location_province:
+  <<: *civ
+  name: Province
+
+location_country:
+  <<: *civ
+  name: Country
+
+# === Properties =========
+
+# Event properties
+event_location:
+  <<: *civ
+  name: event_location
+
+event_registration_location:
+  <<: *civ
+  name: registrationLocation
+
+event_registration_data:
+  <<: *civ
+  name: registrationDate
+
+event_registration_identifier:
+  <<: *civ
+  name: registrationID
+
+# Person properties
+person_identifier:
+  <<: *civ
+  name: personID
+
+person_given_name:
+  <<: *schema
+  name: givenName
+
+person_family_name:
+  <<: *schema
+  name: familyName
+
+person_gender:
+  <<: *schema
+  name: gender
+
+# Event role properties
+role_newborn:
+  <<: *civ
+  name: newborn
+
+role_father:
+  <<: *civ
+  name: father
+
+role_mother:
+  <<: *civ
+  name: mother
+
+role_deceased:
+  <<: *civ
+  name: deceased
+
+role_partner:
+  <<: *civ
+  name: partner
+
+role_bride:
+  <<: *civ
+  name: bride
+
+role_bride_father:
+  <<: *civ
+  name: fatherBride
+
+role_bride_mother:
+  <<: *civ
+  name: motherBride
+
+role_groom:
+  <<: *civ
+  name: groom
+
+role_groom_father:
+  <<: *civ
+  name: fatherGroom
+
+role_groom_mother:
+  <<: *civ
+  name: motherGroom
+
+...

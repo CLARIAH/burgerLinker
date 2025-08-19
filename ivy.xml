@@ -11,6 +11,7 @@
         <dependency org="org.jcommander" name="jcommander" rev="2.0"/>  <!-- command line parsing -->
         <dependency org="com.github.universal-automata" name="liblevenshtein" rev="3.0.0"/>  <!-- Levenshtein Automata -->
         <dependency org="com.google.errorprone" name="error_prone_annotations" rev="2.41.0"/>  <!-- annotations for compile checker -->
+        <dependency org="org.yaml" name="snakeyaml" rev="2.4"/>  <!-- pasing YAML -->
     </dependencies>
 </ivy-module>
 

@@ -3,11 +3,20 @@ package nl.knaw.iisg.burgerlinker;
 
 import static nl.knaw.iisg.burgerlinker.Properties.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import org.yaml.snakeyaml.Yaml;
 
 import nl.knaw.iisg.burgerlinker.processes.*;
 import nl.knaw.iisg.burgerlinker.utilities.*;
@@ -15,10 +24,27 @@ import nl.knaw.iisg.burgerlinker.utilities.*;
 
 public class Controller {
 	@SuppressWarnings("unused")
-	final private String[] FUNCTIONS_not_implemented = {"within_m_d", "within_b_b", "within_m_m", "within_d_d"};
-	final private String[] FUNCTIONS = {"showDatasetStats", "convertToHDT", "closure", "within_b_m", "within_b_d",
-			"between_b_m", "between_m_m", "between_d_m", "between_b_d"};
-	private String function, inputDataset, outputDirectory;
+    final private Set<String> PROCESSES = Set.of("closure", "within_b_m", "within_b_d",
+			                                     "between_b_m", "between_m_m", "between_d_m",
+                                                 "between_b_d");
+	final private Set<String> FUNCTIONS = Set.of("closure", "within_b_m", "within_b_d",
+			                                     "between_b_m", "between_m_m", "between_d_m",
+                                                 "between_b_d", "showDatasetStats", "convertToHDT");
+    final private Set<String> DATA_MODEL_KEYS = Set.of("birth_event", "role_groom_mother", "location_country",
+                                                       "event_location", "person_gender", "role_mother",
+                                                       "role_groom", "role_bride_mother", "person_identifier",
+                                                       "mariage_event", "role_bride_father", "divorce_event",
+                                                       "location_region", "person_family_name", "location_municipality",
+                                                       "role_deceased", "person_given_name", "event_registration_location",
+                                                       "role_newborn", "role_partner", "location_province",
+                                                       "role_father", "person", "role_groom_father",
+                                                       "location", "role_bride", "event_registration_data",
+                                                       "death_event", "event_registration_identifier");
+
+    private String dataModelDir = "./res/data_models/";
+    private String dataModelExt = "yaml";
+
+	private String dataModel, function, inputDataset, outputDirectory;
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, singleInd = false, outputFormatCSV = true, doubleInputs = false;
 
@@ -26,7 +52,8 @@ public class Controller {
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public Controller(String function, int maxlev, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd, String inputDataset, String outputDirectory, String outputFormat) {
+	public Controller(String function, int maxlev, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd,
+                      String inputDataset, String outputDirectory, String outputFormat, String dataModel) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -36,6 +63,12 @@ public class Controller {
 		this.inputDataset = inputDataset;
 		this.outputDirectory = outputDirectory;
 
+        this.dataModel = dataModel;
+        if (!this.dataModel.endsWith('.' + dataModelExt)) {
+            // assume shorthand format
+            this.dataModel = dataModelDir + this.dataModel + '.' + dataModelExt;
+        }
+
 		if(!outputFormat.equals("CSV")) {
 			outputFormatCSV = false;
 		}
@@ -43,19 +76,42 @@ public class Controller {
 
 	public void runProgram() {
 		if(checkInputFunction() == true) {
-			switch (function) {
-			case "showdatasetstats":
-				if(checkInputDataset()) {
-					outputDatasetStatistics();
-				}
+            if (PROCESSES.contains(this.function)) {
+                execProcess();
+            } else {
+                switch (this.function) {
+                case "showdatasetstats":
+                    if(checkInputDataset()) {
+                        outputDatasetStatistics();
+                    }
 
-				break;
-			case "converttohdt":
-				if(checkInputDirectory()) {
-					convertToHDT(inputDataset);
-				}
+                    break;
+                case "converttohdt":
+                    if(checkInputDirectory()) {
+                        convertToHDT(inputDataset);
+                    }
 
-				break;
+                    break;
+                }
+            }
+		}
+	}
+
+    public void execProcess() {
+        // read data model specification from file
+        Map<String, Map<String, String>> dataModelRaw = loadYamlFromFile(this.dataModel);
+        if (dataModelRaw == null) {
+            LOG.logError("execProcess", "Error reading data model");
+            return;
+        }
+
+        // build and validate data model
+        Map<String, String> dataModel = buildDataModel(dataModelRaw);
+        if (!validateDataModel(dataModel)) {
+            return;
+        }
+
+        switch (this.function) {
 			case "within_b_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
@@ -119,13 +175,78 @@ public class Controller {
 				}
 
 				break;
-			default:
-				LOG.logError("runProgram", "User input is correct, but no corresponding function exists (error in code)");
+        }
+    }
 
-				break;
-			}
-		}
-	}
+    // ============= Data Model functions ===========
+
+    public Map<String, Map<String, String>> loadYamlFromFile(String path) {
+        /**
+         * Read YAML-encoded data from the provided file. Expects all  (nested)
+         * keys and values to be of type String.
+         */
+        Map<String, Map<String, String>> data = null;
+
+        if (!FILE_UTILS.checkIfFileExists(path)) {
+            return data;
+        }
+
+        Yaml yaml = new Yaml();
+        try {
+            InputStream is = new FileInputStream(new File(path));
+            data = yaml.load(is);
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
+    public Map<String, String> buildDataModel(Map<String, Map<String, String>> dataModelRaw) {
+        /**
+         * Build a data model from the given input, by combining namespaces and
+         * node names (fragments or path components) to form valid URIs.
+         * Returns a map between internal entity names and their URIs.
+         */
+        Map<String, String> dataModel = new HashMap<>();
+        for (String k: dataModelRaw.keySet()) {
+            if (k.equals("namespace")) {
+                // omit YAML anchors
+                continue;
+            }
+
+            Map<String, String> valueMap = dataModelRaw.get(k);
+            if (!(valueMap.containsKey("uri") && valueMap.containsKey("name"))) {
+                LOG.logError("buildDataModel", "Data model misses required keys for entry" + k);
+            }
+            if (!(valueMap.get("uri").endsWith("/") || valueMap.get("uri").endsWith("#"))) {
+                LOG.logError("buildDataModel", "Data model namespace URIs not well formed");
+            }
+            // add complete URI
+            dataModel.put(k, valueMap.get("uri") + valueMap.get("name"));
+        }
+
+        return dataModel;
+    }
+
+    public boolean validateDataModel(Map<String, String> dataModel) {
+        /**
+         * Validate the data model by checking whether all required keys have
+         * been defined.
+         */
+        boolean valid = true;
+        for (String k: DATA_MODEL_KEYS) {
+            if (!dataModel.containsKey(k)) {
+                LOG.logError("validateDataModel", "Missing required data model entry: " + k);
+                valid = false;
+
+                break;
+            }
+        }
+
+        return valid;
+    }
 
 	// ========= input checks =========
 
@@ -145,7 +266,7 @@ public class Controller {
 		if(function == null) {
 			LOG.logError("checkInputFunction",
 					"Missing user input for parameter: --function",
-					"Choose one of the following options: " + Arrays.toString(FUNCTIONS));
+					"Choose one of the following options: " + FUNCTIONS.toString());
 		} else {
 			function = function.toLowerCase();
 			for (String f: FUNCTIONS) {
@@ -158,7 +279,7 @@ public class Controller {
 
 			LOG.logError("checkInputFunction",
 					"Incorrect user input for parameter: --function",
-					"Choose one of the following options: " + Arrays.toString(FUNCTIONS));
+					"Choose one of the following options: " + FUNCTIONS.toString());
 		}
 
 		return false;

@@ -44,7 +44,7 @@
     </target>
 
     <target name="resolve" depends="init-ivy">
-        <ivy:retrieve pattern="${build.lib.dir}/[artifact].[ext]" sync="true" type="jar"/>
+        <ivy:retrieve pattern="${build.lib.dir}/[artifact].[ext]" sync="true" type="jar,bundle"/>
     </target>
 
     <!-- core targets -->
