@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 import nl.knaw.iisg.burgerlinker.processes.*;
+import nl.knaw.iisg.burgerlinker.processes.Process;
 import nl.knaw.iisg.burgerlinker.utilities.*;
 
 
@@ -111,12 +112,17 @@ public class Controller {
             return;
         }
 
+        Process process;
         switch (this.function) {
 			case "within_b_m":
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
-					Within_B_M();
+
+                    process = new Process(Process.ProcessType.BIRTH_MARIAGE,
+                                          Process.RelationType.WITHIN,
+                                          dataModel);
+					Within(process);
 					LOG.outputTotalRuntime("Within Births-Marriages (newborn -> bride/groom)", startTime, true);
 				}
 
@@ -125,7 +131,11 @@ public class Controller {
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Deaths (newborn -> deceased)");
-					Within_B_D();
+
+                    process = new Process(Process.ProcessType.BIRTH_DECEASED,
+                                          Process.RelationType.WITHIN,
+                                          dataModel);
+					Within(process);
 					LOG.outputTotalRuntime("Within Births-Deaths (newborn -> deceased)", startTime, true);
 				}
 
@@ -134,7 +144,11 @@ public class Controller {
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Marriages (newborn parents -> bride + groom)");
-					Between_B_M();
+
+                    process = new Process(Process.ProcessType.BIRTH_MARIAGE,
+                                          Process.RelationType.BETWEEN,
+                                          dataModel);
+					Between(process);
 					LOG.outputTotalRuntime("Between Births-Marriages (newborn parents -> bride + groom)", startTime, true);
 				}
 
@@ -143,7 +157,11 @@ public class Controller {
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Deaths (parents of newborn -> deceased + partner)");
-					Between_B_D();
+
+                    process = new Process(Process.ProcessType.BIRTH_DECEASED,
+                                          Process.RelationType.BETWEEN,
+                                          dataModel);
+					Between(process);
 					LOG.outputTotalRuntime("Between Births-Deaths (parents of newborn -> deceased + partner)", startTime, true);
 				}
 
@@ -152,7 +170,11 @@ public class Controller {
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Deaths-Marriages (parents of deceased -> bride + groom)");
-					Between_D_M();
+
+                    process = new Process(Process.ProcessType.DECEASED_MARIAGE,
+                                          Process.RelationType.BETWEEN,
+                                          dataModel);
+					Between(process);
 					LOG.outputTotalRuntime("Between Deaths-Marriages (parents of deceased -> bride + groom)", startTime, true);
 				}
 
@@ -161,7 +183,11 @@ public class Controller {
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
-					Between_M_M();
+
+                    process = new Process(Process.ProcessType.MARIAGE_MARIAGE,
+                                          Process.RelationType.BETWEEN,
+                                          dataModel);
+                    Between(process);
 					LOG.outputTotalRuntime("Between Marriages-Marriages (parents of bride/groom -> bride + groom)", startTime, true);
 				}
 
@@ -170,7 +196,9 @@ public class Controller {
 				if(checkInputDataset() && checkInputDirectoryContents()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Computing the transitive closure");
-					computeClosure();
+
+                    process = new Process(dataModel);
+					computeClosure(process);
 					LOG.outputTotalRuntime("Computing the transitive closure", startTime, true);
 				}
 
@@ -403,170 +431,74 @@ public class Controller {
 		myHDT.closeDataset();
 	}
 
-	public void Within_B_M() {
+	public void Within(Process process) {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
+		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
 
-			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
+			boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory,
+                                                                      DIRECTORY_NAME_DICTIONARY);
+			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory,
+                                                                    DIRECTORY_NAME_DATABASE);
+			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory,
+                                                                   DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);
 
-				new Within_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
+				new Within(myHDT, process, mainDirectory, maxLev, fixedLev,
+                           ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
 				myHDT.closeDataset();
 			} else {
-				LOG.logError("Within_B_M", "Error in creating the three sub output directories");
+				LOG.logError(process.toString(), "Error in creating the three sub output directories");
 			}
 		} else {
-			LOG.logError("Within_B_M", "Error in creating the main output directory");
+			LOG.logError(process.toString(), "Error in creating the main output directory");
 		}
 	}
 
-	public void Within_B_D() {
+	public void Between(Process process) {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
+		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
 
-			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
+			boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
+			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
+			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);
 
-				new Within_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
+				new Between(myHDT, process, mainDirectory, maxLev, fixedLev,
+                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
 				myHDT.closeDataset();
 			} else {
-				LOG.logError("Within_B_D", "Error in creating the three sub output directories");
+				LOG.logError(process.toString(), "Error in creating the three sub output directories");
 			}
 		} else {
-			LOG.logError("Within_B_D", "Error in creating the main output directory");
+			LOG.logError(process.toString(), "Error in creating the main output directory");
 		}
 	}
 
-	public void Between_B_M() {
-		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String dirName = function + options;
-
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
-
-			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
-			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
-
-				new Between_B_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
-
-				myHDT.closeDataset();
-			} else {
-				LOG.logError("Between_B_M", "Error in creating the three sub output directories");
-			}
-		} else {
-			LOG.logError("Between_B_M", "Error in creating the main output directory");
-		}
-	}
-
-	public void Between_B_D() {
-		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String dirName = function + options;
-
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
-
-			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
-			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
-
-				new Between_B_D(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
-
-				myHDT.closeDataset();
-			} else {
-				LOG.logError("Between_B_D", "Error in creating the three sub output directories");
-			}
-		} else {
-			LOG.logError("Between_B_D", "Error in creating the main output directory");
-		}
-	}
-
-
-	public void Between_D_M() {
-		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String dirName = function + options;
-
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
-
-			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
-			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
-
-				new Between_D_M(myHDT, mainDirectory, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
-
-				myHDT.closeDataset();
-			} else {
-				LOG.logError("Between_D_M", "Error in creating the three sub output directories");
-			}
-		} else {
-			LOG.logError("Between_D_M", "Error in creating the main output directory");
-		}
-	}
-
-	public void Between_M_M() {
-		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String dirName = function + options;
-
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
-
-			Boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
-			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
-
-				new Between_M_M(myHDT, mainDirectory,  maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
-
-				myHDT.closeDataset();
-			} else {
-				LOG.logError("Between_M_M", "Error in creating the three sub output directories");
-			}
-		} else {
-			LOG.logError("Between_M_M", "Error in creating the main output directory");
-		}
-	}
-
-	public void computeClosure() {
+	public void computeClosure(Process process) {
 		String dirName = function;
 
-		Boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
+		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
 		if(processDirCreated == true) {
 			String mainDirectory = outputDirectory + "/" + dirName;
 
-			Boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			Boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
+			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
+			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset);
 
-				new Closure(myHDT, outputDirectory, outputFormatCSV);
+				new Closure(myHDT, process, outputDirectory, outputFormatCSV);
 
 				myHDT.closeDataset();
 			} else {

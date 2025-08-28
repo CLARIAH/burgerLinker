@@ -5,18 +5,20 @@ import java.util.Map;
 
 
 public class Process {
-    enum ProcessType {
+    public enum ProcessType {
         BIRTH_DECEASED,
         BIRTH_MARIAGE,
         DECEASED_MARIAGE,
         MARIAGE_MARIAGE;
     }
-    enum RelationType{
+    public enum RelationType{
         WITHIN,
         BETWEEN;
     }
 
     public ProcessType type;
+    public RelationType rtype;
+    private Map<String, String> dataModel;
     public int minYearDiff, maxYeardiff;
     public String roleASubject,
                   roleASubjectFather,
@@ -28,6 +30,7 @@ public class Process {
                   roleBSubjectPartnerFather,
                   roleBSubjectPartnerMother;
     public final String csvHeader = "id_certificate_subject_A,"
+                                  + "id_certificate_subject_A_parent"
                                   + "id_certificate_subject_B,"
                                   + "family_line,"
                                   + "levenshtein_total_subject_A,"
@@ -38,23 +41,40 @@ public class Process {
                                   + "levenshtein_max_subject_A_father,"
                                   + "matched_names_subject_A,"
                                   + "number_names_subject_A,"
+                                  + "number_names_subject_A_partner,"
                                   + "matched_names_subject_A_mother,"
                                   + "number_names_subject_A_mother,"
+                                  + "number_names_subject_A_mother_partner,"
                                   + "matched_names_subject_A_father,"
                                   + "number_names_subject_A_father,"
-                                  + "matched_names_subject_B,"
-                                  + "number_names_subject_B,"
-                                  + "matched_names_subject_B_mother,"
-                                  + "number_names_subject_B_mother,"
-                                  + "matched_names_subject_B_father,"
-                                  + "number_names_subject_B_father,"
-                                  + "matched_names_subject_B_partner,"
-                                  + "number_names_subject_B_partner,"
+                                  + "number_names_subject_A_father_partner,"
                                   + "year_diff";
 
-    public Process(ProcessType type, Map<String, String> dataModel, RelationType rtype) {
+    public Process(Map<String, String> dataModel) {
+        this.dataModel = dataModel;
+    }
+
+    public Process(ProcessType type, RelationType rtype, Map<String, String> dataModel) {
+        this.dataModel = dataModel;
+        this.type = type;
+        this.rtype = rtype;
+
+        _setValues();
+    }
+
+    public void setProcessType(ProcessType type) {
         this.type = type;
 
+        _setValues();
+    }
+
+     public void setRelationType(RelationType rtype) {
+        this.rtype = rtype;
+
+        _setValues();
+    }
+
+   public void _setValues() {
         switch(this.type) {
             case BIRTH_DECEASED:
                 this.roleASubject = dataModel.get("role_newborn");
@@ -67,7 +87,7 @@ public class Process {
                 this.roleBSubjectPartnerFather = null;
                 this.roleBSubjectPartnerMother = null;
 
-                if (rtype == Process.RelationType.WITHIN) {
+                if (this.rtype == Process.RelationType.WITHIN) {
                     this.minYearDiff = 0;
                     this.maxYeardiff = 110;
                 } else {
@@ -87,7 +107,7 @@ public class Process {
                 this.roleBSubjectPartnerFather = dataModel.get("role_groom_father");
                 this.roleBSubjectPartnerMother = dataModel.get("role_groom_mother");
 
-                if (rtype == Process.RelationType.WITHIN) {
+                if (this.rtype == Process.RelationType.WITHIN) {
                     this.minYearDiff = 14;
                     this.maxYeardiff = 80;
                 } else {
@@ -129,23 +149,71 @@ public class Process {
         }
     }
 
-    public String toString() {
+    public String abbr() {
         String processName = "";
+        switch (this.rtype) {
+            case WITHIN:
+                processName += "W";
+
+                break;
+            case BETWEEN:
+                processName += "B";
+
+                break;
+        }
+
+        processName += "_";
         switch (this.type) {
             case BIRTH_DECEASED:
-                processName = "B-D";
+                processName += "B-D";
 
                 break;
             case BIRTH_MARIAGE:
-                processName = "B-M";
+                processName += "B-M";
 
                 break;
             case DECEASED_MARIAGE:
-                processName = "D-M";
+                processName += "D-M";
 
                 break;
             case MARIAGE_MARIAGE:
-                processName = "M-M";
+                processName += "M-M";
+
+                break;
+        }
+
+        return processName;
+    }
+
+    public String toString() {
+        String processName = "";
+        switch (this.rtype) {
+            case WITHIN:
+                processName += "Within";
+
+                break;
+            case BETWEEN:
+                processName += "Between";
+
+                break;
+        }
+
+        processName += "_";
+        switch (this.type) {
+            case BIRTH_DECEASED:
+                processName += "B-D";
+
+                break;
+            case BIRTH_MARIAGE:
+                processName += "B-M";
+
+                break;
+            case DECEASED_MARIAGE:
+                processName += "D-M";
+
+                break;
+            case MARIAGE_MARIAGE:
+                processName += "M-M";
 
                 break;
         }

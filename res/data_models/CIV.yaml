@@ -9,6 +9,10 @@ namespace: &civ
 namespace: &schema
   uri: https://schema.org/
 
+# DBpedia ontology namespace
+namespace: &dbo
+  uri: https://dbpedia.org/ontology/
+
 # === Classes =========
 
 # Events
@@ -134,5 +138,11 @@ role_groom_father:
 role_groom_mother:
   <<: *civ
   name: motherGroom
+
+# === output ======
+
+person_birth_year:
+  <<: *dbo
+  name: birthYear
 
 ...

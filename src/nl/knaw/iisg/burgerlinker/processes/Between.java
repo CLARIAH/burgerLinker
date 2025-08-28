@@ -46,7 +46,7 @@ public class Between {
 		this.ignoreBlock = ignoreBlock;
 		this.myHDT = hdt;
         this.process = process;
-        this.processName = "between_" + this.process.toString();
+        this.processName = this.process.toString();
 
         // setup output format
 		String options = LOG.getUserOptions(this.maxLev, this.fixedLev, singleInd,
@@ -98,14 +98,14 @@ public class Between {
                             Couple otherCouple = new Couple(myHDT.getPersonInfo(event, process.roleBSubjectPartnerMother),
                                                             myHDT.getPersonInfo(event, process.roleBSubjectPartnerFather),
                                                             "22");
-                            couples.put(otherCouple);
+                            couples.add(otherCouple);
                         }
 
                         // default couple
                         Couple couple = new Couple(myHDT.getPersonInfo(event, process.roleASubjectMother),
                                                    myHDT.getPersonInfo(event, process.roleASubjectFather),
                                                    "21");
-                        couples.put(couple);
+                        couples.add(couple);
 
 						Person mother, father;
                         for (Couple c: couples) {
@@ -145,16 +145,14 @@ public class Between {
                                                     subjectBMale = subjectB;
                                                 }
 
+                                                String familyCode = "N.A.";
                                                 if (process.type == Process.ProcessType.MARIAGE_MARIAGE) {
-                                                    String familyCode = c.familyCode;
-                                                    LINKS.saveLinks_Between_M_M(candidatesFemale, candidatesMale, finalCandidate,
-                                                                                subjectBFemale, subjectBMale, familyCode,
-                                                                                yearDifference);
-                                                } else {
-                                                    LINKS.saveLinks_Between_B_M(candidatesFemale, candidatesMale, finalCandidate,
-                                                                                subjectBFemale, subjectBMale,
-                                                                                yearDifference);
+                                                    familyCode = c.familyCode;
                                                 }
+
+                                                LINKS.saveLinks_Between(candidatesFemale, candidatesMale, finalCandidate,
+                                                                        subjectBFemale, subjectBMale, familyCode,
+                                                                        yearDifference);
                                             }
                                         }
                                     }

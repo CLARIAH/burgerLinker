@@ -23,6 +23,7 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Within {
 	private String mainDirectoryPath, processName;
 	private MyHDT myHDT;
+    private Process process;
 	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
 	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
@@ -44,7 +45,7 @@ public class Within {
 		this.singleInd = singleInd;
 		this.myHDT = hdt;
         this.process = process;
-        this.processName = "within_" + this.process.toString();
+        this.processName = this.process.toString();
 
 		String options = LOG.getUserOptions(this.maxLev, this.fixedLev, singleInd,
                                             this.ignoreDate, this.ignoreBlock);
@@ -64,18 +65,18 @@ public class Within {
 
 	public void link_within(String gender, Boolean closeStream) {
         String familyCode;
-        String roleBSubject = process.roleBSubject;
-        String roleBSubjectMother = process.roleBSubjectMother;
-        String roleBSubjectFather = process.roleBSubjectFather;
-        boolean genderFilter = (process.type == Process.ProcessType.BIRTH_DECEASED);
+        String roleBSubject = this.process.roleBSubject;
+        String roleBSubjectMother = this.process.roleBSubjectMother;
+        String roleBSubjectFather = this.process.roleBSubjectFather;
+        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED);
         if(gender == "f") {
             familyCode = "21";
         } else if (gender == "m") {
             familyCode = "22";
-            if (process.type == Process.ProcessType.BIRTH_MARIAGE) {
-                roleBSubject = process.roleBSubjectPartner;
-                roleBSubjectMother = process.roleBSubjectPartnerMother;
-                roleBSubjectFather = process.roleBSubjectPartnerFather;
+            if (this.process.type == Process.ProcessType.BIRTH_MARIAGE) {
+                roleBSubject = this.process.roleBSubjectPartner;
+                roleBSubjectMother = this.process.roleBSubjectPartnerMother;
+                roleBSubjectFather = this.process.roleBSubjectPartnerFather;
             }
         } else {
             LOG.logError("link_within", "Found gender '" + gender + "'. Excpect value in ['m', 'f']");
@@ -95,7 +96,7 @@ public class Within {
 				// iterate through the birth certificates to link it to the death dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", this.process.roleASubject, "");
 				long estNumber = it.estimatedNumResults();
-				String taskName = "Linking " + process.roleASubject + " to " + roleBSubject;
+				String taskName = "Linking " + this.process.roleASubject + " to " + roleBSubject;
 
                 ProgressBar pb = new ProgressBarBuilder()
                     .setTaskName(taskName)
@@ -151,15 +152,15 @@ public class Within {
 															Person subjectBMother = myHDT.getPersonInfo(subjectBEventURI,
                                                                                                         roleBSubjectMother);
 
-															if(process.type == Process.ProcessType.BIRTH_DECEASED) {
+															if(this.process.type == Process.ProcessType.BIRTH_DECEASED) {
                                                                 if (checkTimeConsistencyWithAge(yearDifference, subjectB) &&
 															        checkTimeConsistencyWithAge(yearDifference, subjectBMother)) {
-                                                                    LINKS.saveLinks_Within_B_M_mother(candidatesSubjectB, candidatesMother, finalCandidate,
-                                                                                                      subjectB, subjectBMother, familyCode, yearDifference);
+                                                                    LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
+                                                                                                  subjectB, subjectBMother, familyCode, yearDifference);
                                                                     }
                                                             } else {
-                                                                LINKS.saveLinks_Within_B_M_mother(candidatesSubjectB, candidatesMother, finalCandidate,
-                                                                                                  subjectB, subjectBMother, familyCode, yearDifference);
+                                                                LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
+                                                                                              subjectB, subjectBMother, familyCode, yearDifference);
                                                             }
 														}
 													}
@@ -192,15 +193,15 @@ public class Within {
 															Person subjectB = myHDT.getPersonInfo(subjectBEventURI, roleBSubject);
 															Person subjectBFather = myHDT.getPersonInfo(subjectBEventURI, roleBSubjectFather);
 
-															if(process.type == Process.ProcessType.BIRTH_DECEASED) {
+															if(this.process.type == Process.ProcessType.BIRTH_DECEASED) {
                                                                 if (checkTimeConsistencyWithAge(yearDifference, subjectB) &&
 																    checkTimeConsistencyWithAge(yearDifference, subjectBFather)) {
-																	LINKS.saveLinks_Within_B_M_father(candidatesSubjectB, candidatesFather, finalCandidate,
-                                                                                                      subjectB, subjectBFather, familyCode, yearDifference);
+																	LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
+                                                                                                  subjectB, subjectBFather, familyCode, yearDifference);
 																}
                                                             } else {
-                                                                LINKS.saveLinks_Within_B_M_father(candidatesSubjectB, candidatesFather, finalCandidate,
-                                                                                                  subjectB, subjectBFather, familyCode, yearDifference);
+                                                                LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
+                                                                                              subjectB, subjectBFather, familyCode, yearDifference);
                                                             }
 														}
 													}
@@ -225,18 +226,18 @@ public class Within {
 														Person subjectBMother = myHDT.getPersonInfo(subjectBEventURI, roleBSubjectMother);
 														Person subjectBFather = myHDT.getPersonInfo(subjectBEventURI, roleBSubjectFather);
 
-                                                        if(process.type == Process.ProcessType.BIRTH_DECEASED) {
+                                                        if(this.process.type == Process.ProcessType.BIRTH_DECEASED) {
                                                             if(checkTimeConsistencyWithAge(yearDifference, subjectB) &&
                                                                checkTimeConsistencyWithAge(yearDifference, subjectBMother) &&
                                                                checkTimeConsistencyWithAge(yearDifference, subjectBFather)) {
-                                                                    LINKS.saveLinks_Within_B_M(candidatesSubjectB, candidatesMother, candidatesFather,
-                                                                                               finalCandidate, subjectB, subjectBMother, subjectBFather,
-                                                                                               familyCode, yearDifference);
+                                                                    LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather,
+                                                                                           finalCandidate, subjectB, subjectBMother, subjectBFather,
+                                                                                           familyCode, yearDifference);
                                                             }
                                                         } else {
-                                                            LINKS.saveLinks_Within_B_M(candidatesSubjectB, candidatesMother, candidatesFather,
-                                                                                       finalCandidate, subjectB, subjectBMother, subjectBFather,
-                                                                                       familyCode, yearDifference);
+                                                            LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather,
+                                                                                   finalCandidate, subjectB, subjectBMother, subjectBFather,
+                                                                                   familyCode, yearDifference);
                                                         }
 													}
 												}
@@ -265,15 +266,15 @@ public class Within {
 	}
 
 	public void link_within_single(String gender, Boolean closeStream) {
-        boolean genderFilter = (process.type == Process.ProcessType.BIRTH_DECEASED);
+        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED);
         String familyCode;
-        String roleBsubject = process.roleBSubject;
+        String roleBSubject = this.process.roleBSubject;
         if (gender == "f") {
 			familyCode = "21";
         } else if (gender == "m") {
 			familyCode = "22";
-            if (process.type == Process.ProcessType.BIRTH_MARIAGE) {
-                roleBSubject = process.roleBSubjectPartner;
+            if (this.process.type == Process.ProcessType.BIRTH_MARIAGE) {
+                roleBSubject = this.process.roleBSubjectPartner;
             }
         } else {
             LOG.logError("link_within_single", "Found gender '" + gender + "'. Excpect value in ['m', 'f']");
@@ -286,7 +287,7 @@ public class Within {
 		if(success == true) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
 			try {
-				String taskName = "Linking " + process.roleASubject + " to " + roleBSubject;
+				String taskName = "Linking " + this.process.roleASubject + " to " + roleBSubject;
 				int cntAll = 0;
 
 				// iterate through the birth certificates to link it to the death dictionaries
@@ -325,14 +326,14 @@ public class Within {
 										if(yearDifference < 999) { // if it fits the time line
 											Person subjectB = myHDT.getPersonInfo(subjectBEventURI, roleBSubject);
 
-                                            if (process.type == Process.ProcessType.BIRTH_DECEASED) {
+                                            if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
                                                 if(checkTimeConsistencyWithAge(yearDifference, subjectB)) {
-                                                    LINKS.saveLinks_Within_B_M_single(candidatesSubjectB, finalCandidate, subjectB,
-                                                                                      familyCode, yearDifference);
+                                                    LINKS.saveLinks_Within_single(candidatesSubjectB, finalCandidate, subjectB,
+                                                                                  familyCode, yearDifference);
                                                 }
                                             } else {
-                                                LINKS.saveLinks_Within_B_M_single(candidatesSubjectB, finalCandidate, subjectB,
-                                                                                  familyCode, yearDifference);
+                                                LINKS.saveLinks_Within_single(candidatesSubjectB, finalCandidate, subjectB,
+                                                                              familyCode, yearDifference);
                                             }
 										}
 									}
