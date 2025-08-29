@@ -1,4 +1,4 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.data;
 
 
 import static nl.knaw.iisg.burgerlinker.Properties.*;
@@ -20,6 +20,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.FileUtilities;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 

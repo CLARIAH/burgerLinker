@@ -1,4 +1,4 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.structs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import com.github.liblevenshtein.transducer.Candidate;
 
 
-public class CandidateCertificate {
+public class Certificate {
 	public String certificateID = "";
 	public int numberNames = -1;
 	public int numberMatchedNames = 0;
@@ -20,7 +20,8 @@ public class CandidateCertificate {
 	public String individualsInCertificate = "";
 	public HashMap<String, ArrayList<Candidate>> levenshteinPerFirstName;
 
-	public CandidateCertificate(String certificate_ID, String number_names, String individualsInCert, String sourceFirstName, Candidate candidateFirstName, Candidate candidateLastName, String separator) {
+	public Certificate(String certificate_ID, String number_names, String individualsInCert, String sourceFirstName,
+                       Candidate candidateFirstName, Candidate candidateLastName, String separator) {
 		certificateID = certificate_ID;
 		numberNames = Integer.valueOf(number_names);
 		individualsInCertificate  = individualsInCert;

@@ -1,4 +1,4 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.data;
 
 
 import java.io.ByteArrayInputStream;

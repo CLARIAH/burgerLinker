@@ -8,12 +8,12 @@ import org.apache.logging.log4j.Logger;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import nl.knaw.iisg.burgerlinker.CandidateList;
-import nl.knaw.iisg.burgerlinker.Dictionary;
-import nl.knaw.iisg.burgerlinker.Index;
-import nl.knaw.iisg.burgerlinker.LinksCSV;
-import nl.knaw.iisg.burgerlinker.MyHDT;
-import nl.knaw.iisg.burgerlinker.Person;
+import nl.knaw.iisg.burgerlinker.core.CandidateList;
+import nl.knaw.iisg.burgerlinker.core.Dictionary;
+import nl.knaw.iisg.burgerlinker.core.Index;
+import nl.knaw.iisg.burgerlinker.data.LinksCSV;
+import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;

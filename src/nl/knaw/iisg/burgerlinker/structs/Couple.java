@@ -1,4 +1,6 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.structs;
+
+import nl.knaw.iisg.burgerlinker.structs.Person;
 
 
 public class Couple {

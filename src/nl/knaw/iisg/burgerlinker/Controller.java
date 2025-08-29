@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.yaml.snakeyaml.Yaml;
 
+import nl.knaw.iisg.burgerlinker.data.MyHDT;
 import nl.knaw.iisg.burgerlinker.processes.Between;
 import nl.knaw.iisg.burgerlinker.processes.Closure;
 import nl.knaw.iisg.burgerlinker.processes.Process;

@@ -1,4 +1,4 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.core;
 
 
 import static nl.knaw.iisg.burgerlinker.Properties.*;
@@ -17,6 +17,9 @@ import org.rocksdb.RocksDBException;
 
 import com.github.liblevenshtein.transducer.Candidate;
 
+import nl.knaw.iisg.burgerlinker.data.MyDB;
+import nl.knaw.iisg.burgerlinker.core.MyTransducer;
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.FileUtilities;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 

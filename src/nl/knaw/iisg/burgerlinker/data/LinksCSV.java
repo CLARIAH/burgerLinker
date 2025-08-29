@@ -1,4 +1,4 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.data;
 
 
 import static nl.knaw.iisg.burgerlinker.Properties.DIRECTORY_NAME_RESULTS;
@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.github.liblevenshtein.transducer.Candidate;
 
+import nl.knaw.iisg.burgerlinker.core.CandidateList;
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.FileUtilities;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 

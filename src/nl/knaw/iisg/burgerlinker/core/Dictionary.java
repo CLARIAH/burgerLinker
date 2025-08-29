@@ -1,4 +1,4 @@
-package nl.knaw.iisg.burgerlinker;
+package nl.knaw.iisg.burgerlinker.core;
 
 
 import org.apache.logging.log4j.LogManager;
@@ -11,6 +11,9 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
+
+import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.structs.Person;
 
 
 public class Dictionary {

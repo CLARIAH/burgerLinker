@@ -16,10 +16,10 @@ import org.rdfhdt.hdt.triples.TripleString;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
-import nl.knaw.iisg.burgerlinker.Index;
-import nl.knaw.iisg.burgerlinker.LinksCSV;
-import nl.knaw.iisg.burgerlinker.MyHDT;
-import nl.knaw.iisg.burgerlinker.Person;
+import nl.knaw.iisg.burgerlinker.core.Index;
+import nl.knaw.iisg.burgerlinker.data.LinksCSV;
+import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.Properties;  // TODO: rmv after birthYear change
 import nl.knaw.iisg.burgerlinker.utilities.*;
 import me.tongfei.progressbar.ProgressBar;
