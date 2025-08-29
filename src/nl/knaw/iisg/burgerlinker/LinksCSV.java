@@ -123,8 +123,7 @@ public class LinksCSV {
 		if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
 			if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
 
-				String link = "N.A." + ","  // id_certificate_subject_A
-                    + motherList.sourceCertificateID + ","  // id_certificate_subject_A_parent
+				String link = motherList.sourceCertificateID + ","  // id_certificate_subject_A_parent
 					+ targetCertificateID + "," // id_certificate_subject_B
                     + familyCode + ","  // family_line
                     + "N.A." + ","  // levenshtein_total_subject_A
@@ -160,7 +159,6 @@ public class LinksCSV {
 			if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
 				if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
 					String link =  partnerList.sourceCertificateID + "," // id_certificate_subject_A
-                        + "N.A" + ","  // id_certificate_subject_A_parent
 						+ targetCertificateID + "," // id_certificate_subject_B
 						+ familyLine + ","  // family line (21:bride, 22:groom)
                         + partnerList.candidates.get(targetCertificateID).levenshteinTotal + ","  // levenshtein total newborn
@@ -194,7 +192,6 @@ public class LinksCSV {
 		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
 			if(checkMinimumMatchedNames(motherPairedNames, motherList, targetCertificateID)) {
 				String link =  partnerList.sourceCertificateID + ","  // id_certificate_subject_A
-				    + "N.A" + ","  // id_certificate_subject_A_parent
 					+ targetCertificateID + ","  // id_certificate_subject_B
 					+ familyLine + ","   // family line (21:bride, 22:groom)
 				    + partnerList.candidates.get(targetCertificateID).levenshteinTotal + ","  // levenshtein total newborn
@@ -227,7 +224,6 @@ public class LinksCSV {
 		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
 			if(checkMinimumMatchedNames(fatherPairedNames, fatherList, targetCertificateID)) {
 				String link =  partnerList.sourceCertificateID + ","  // id_certificate_subject_A
-				    + "N.A" + ","  // id_certificate_subject_A_parent
 					+ targetCertificateID + ","  // id_certificate_subject_B
 					+ familyLine + ","   // family line (21:bride, 22:groom)
 				    + partnerList.candidates.get(targetCertificateID).levenshteinTotal + ","  // levenshtein total newborn
@@ -257,7 +253,6 @@ public class LinksCSV {
 		HashMap<String, Candidate> partnerPairedNames = partnerList.candidates.get(targetCertificateID).organiseMetadata();
 		if(checkMinimumMatchedNames(partnerPairedNames, partnerList, targetCertificateID)) {
 			String link =  partnerList.sourceCertificateID + "," // id_certificate_subject_A
-                + "N.A" + ","  // id_certificate_subject_A_parent
                 + targetCertificateID + "," // id_certificate_subject_B
                 + familyLine + ","  // family line (21:bride, 22:groom)
 				+ partnerList.candidates.get(targetCertificateID).levenshteinTotal + "," // levenshtein total newborn

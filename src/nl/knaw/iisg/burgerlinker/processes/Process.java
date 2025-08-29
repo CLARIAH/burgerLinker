@@ -29,25 +29,24 @@ public class Process {
                   roleBSubjectPartner,
                   roleBSubjectPartnerFather,
                   roleBSubjectPartnerMother;
-    public final String csvHeader = "id_certificate_subject_A,"
-                                  + "id_certificate_subject_A_parent"
-                                  + "id_certificate_subject_B,"
+    public final String csvHeader = "id_certificate_A,"
+                                  + "id_certificate_B,"
                                   + "family_line,"
-                                  + "levenshtein_total_subject_A,"
-                                  + "levenshtein_max_subject_A,"
-                                  + "levenshtein_total_subject_A_mother,"
-                                  + "levenshtein_max_subject_A_mother,"
-                                  + "levenshtein_total_subject_A_father,"
-                                  + "levenshtein_max_subject_A_father,"
-                                  + "matched_names_subject_A,"
-                                  + "number_names_subject_A,"
-                                  + "number_names_subject_A_partner,"
-                                  + "matched_names_subject_A_mother,"
-                                  + "number_names_subject_A_mother,"
-                                  + "number_names_subject_A_mother_partner,"
-                                  + "matched_names_subject_A_father,"
-                                  + "number_names_subject_A_father,"
-                                  + "number_names_subject_A_father_partner,"
+                                  + "levenshtein_total_AB,"
+                                  + "levenshtein_max_AB,"
+                                  + "levenshtein_total_AB_female_relative,"
+                                  + "levenshtein_max_AB_female_relative,"
+                                  + "levenshtein_total_AB_male_relative,"
+                                  + "levenshtein_max_AB_male_relative,"
+                                  + "matched_names_AB,"
+                                  + "number_names_A,"
+                                  + "number_names_B,"
+                                  + "matched_names_AB_female_relative,"
+                                  + "number_names_A_female_relative,"
+                                  + "number_names_B_female_relative,"
+                                  + "matched_names_subject_AB_male_relative,"
+                                  + "number_names_subject_A_male_relative,"
+                                  + "number_names_subject_B_male_relative,"
                                   + "year_diff";
 
     public Process(Map<String, String> dataModel) {
@@ -59,23 +58,22 @@ public class Process {
         this.type = type;
         this.rtype = rtype;
 
-        _setValues();
+        setValues(this.type, this.rtype);
     }
 
     public void setProcessType(ProcessType type) {
         this.type = type;
-
-        _setValues();
     }
 
      public void setRelationType(RelationType rtype) {
         this.rtype = rtype;
-
-        _setValues();
     }
 
-   public void _setValues() {
-        switch(this.type) {
+   public void setValues(ProcessType type, RelationType rtype) {
+        setProcessType(type);
+        setRelationType(rtype);
+
+        switch(type) {
             case BIRTH_DECEASED:
                 this.roleASubject = dataModel.get("role_newborn");
                 this.roleASubjectFather = dataModel.get("role_father");
@@ -87,7 +85,7 @@ public class Process {
                 this.roleBSubjectPartnerFather = null;
                 this.roleBSubjectPartnerMother = null;
 
-                if (this.rtype == Process.RelationType.WITHIN) {
+                if (rtype == Process.RelationType.WITHIN) {
                     this.minYearDiff = 0;
                     this.maxYeardiff = 110;
                 } else {
@@ -107,7 +105,7 @@ public class Process {
                 this.roleBSubjectPartnerFather = dataModel.get("role_groom_father");
                 this.roleBSubjectPartnerMother = dataModel.get("role_groom_mother");
 
-                if (this.rtype == Process.RelationType.WITHIN) {
+                if (rtype == Process.RelationType.WITHIN) {
                     this.minYearDiff = 14;
                     this.maxYeardiff = 80;
                 } else {

@@ -18,8 +18,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.yaml.snakeyaml.Yaml;
 
-import nl.knaw.iisg.burgerlinker.processes.*;
+import nl.knaw.iisg.burgerlinker.processes.Between;
+import nl.knaw.iisg.burgerlinker.processes.Closure;
 import nl.knaw.iisg.burgerlinker.processes.Process;
+import nl.knaw.iisg.burgerlinker.processes.Within;
 import nl.knaw.iisg.burgerlinker.utilities.*;
 
 

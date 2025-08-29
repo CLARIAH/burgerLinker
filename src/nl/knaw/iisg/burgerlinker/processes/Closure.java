@@ -312,41 +312,41 @@ public class Closure {
 		dbClassToIndivs.remove(eqIDIndividualSmaller);
 	}
 
-	public Boolean saveIndividualLinksToFile(String filePath) {
+	public boolean saveIndividualLinksToFile(String filePath) {
 		boolean success = true;
 		if(FILE_UTILS.check_Within_B_M(filePath)) {
-            this.process.setProcessType(Process.ProcessType.BIRTH_MARIAGE);
-            this.process.setRelationType(Process.RelationType.WITHIN);
+            this.process.setValues(Process.ProcessType.BIRTH_MARIAGE,
+                                   Process.RelationType.WITHIN);
 
 			success = success & saveLinksIndividuals_Within(filePath);
 		}
 		if(FILE_UTILS.check_Within_B_D(filePath)) {
-            this.process.setProcessType(Process.ProcessType.BIRTH_DECEASED);
-            this.process.setRelationType(Process.RelationType.WITHIN);
+            this.process.setValues(Process.ProcessType.BIRTH_DECEASED,
+                                   Process.RelationType.WITHIN);
 
 			success = success & saveLinksIndividuals_Within(filePath);
 		}
 		if(FILE_UTILS.check_Between_B_M(filePath)) {
-            this.process.setProcessType(Process.ProcessType.BIRTH_MARIAGE);
-            this.process.setRelationType(Process.RelationType.BETWEEN);
+            this.process.setValues(Process.ProcessType.BIRTH_MARIAGE,
+                                   Process.RelationType.BETWEEN);
 
 			success = success & saveLinksIndividuals_Between(filePath);
 		}
 		if(FILE_UTILS.check_Between_D_M(filePath)) {
-            this.process.setProcessType(Process.ProcessType.DECEASED_MARIAGE);
-            this.process.setRelationType(Process.RelationType.BETWEEN);
+            this.process.setValues(Process.ProcessType.DECEASED_MARIAGE,
+                                   Process.RelationType.BETWEEN);
 
 			success = success & saveLinksIndividuals_Between(filePath);
 		}
 		if(FILE_UTILS.check_Between_B_D(filePath)) {
-            this.process.setProcessType(Process.ProcessType.BIRTH_DECEASED);
-            this.process.setRelationType(Process.RelationType.BETWEEN);
+            this.process.setValues(Process.ProcessType.BIRTH_DECEASED,
+                                   Process.RelationType.BETWEEN);
 
 			success = success & saveLinksIndividuals_Between(filePath);
 		}
 		if(FILE_UTILS.check_Between_M_M(filePath)) {
-            this.process.setProcessType(Process.ProcessType.MARIAGE_MARIAGE);
-            this.process.setRelationType(Process.RelationType.BETWEEN);
+            this.process.setValues(Process.ProcessType.MARIAGE_MARIAGE,
+                                   Process.RelationType.BETWEEN);
 
 			success = success & saveLinksIndividuals_Between(filePath);
 		}
@@ -356,7 +356,7 @@ public class Closure {
 		return success;
 	}
 
-	public Boolean saveLinksIndividuals_Within(String filePath) {
+	public boolean saveLinksIndividuals_Within(String filePath) {
 		boolean success = false;
 		try {
             String taskName = this.process.toString();
@@ -442,14 +442,14 @@ public class Closure {
 					if(fatherMatched) {
 						String meta_fathers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
                                               + idEventA + "," + idEventB + "," + nextLine[7] + "," + nextLine[8] + ","
-                                              + nextLine[13] + "," + nextLine[14] + "," + nextLine[15] + "," + nextLine[18];
+                                              + nextLine[15] + "," + nextLine[16] + "," + nextLine[17] + "," + nextLine[18];
 						LINKS.saveIndividualLink(idFatherSubjectA, idFatherSubjectB, meta_fathers);
 					}
 
 					if(motherMatched) {
 						String meta_mothers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
                                               + idEventA + "," + idEventB + "," + nextLine[5] + "," + nextLine[6] + ","
-                                              + nextLine[11] + "," + nextLine[12] + "," + nextLine[13] + "," + nextLine[18];
+                                              + nextLine[12] + "," + nextLine[13] + "," + nextLine[14] + "," + nextLine[18];
 						LINKS.saveIndividualLink(idMotherSubjectA, idMotherSubjectB, meta_mothers);
 					}
 
@@ -471,7 +471,7 @@ public class Closure {
 		return success;
 	}
 
-	public Boolean saveLinksIndividuals_Between(String filePath) {
+	public boolean saveLinksIndividuals_Between(String filePath) {
 		Boolean success = false;
 		try {
             String taskName = this.process.toString();
@@ -511,25 +511,17 @@ public class Closure {
                                                      this.process.roleBSubjectPartnerFather, familyLine);
                         idMother = myHDT.getPersonID(idEventA, this.process.roleASubjectMother,
                                                      this.process.roleBSubjectPartnerMother, familyLine);
-
-                        meta_father = meta + ","
-                                      + nextLine[5] + "," + nextLine[6] + "," + nextLine[10] + ","
-                                      + nextLine[11] + "," + nextLine[12] + "," + nextLine[13];
-                        meta_mother = meta + ","
-                                      + nextLine[3] + "," + nextLine[4] + "," + nextLine[7] + ","
-                                      + nextLine[8] + "," + nextLine[9] + "," + nextLine[13];
                     } else {
                         idFather = myHDT.getPersonID(idEventA, this.process.roleASubjectFather);
     					idMother = myHDT.getPersonID(idEventA, this.process.roleASubjectMother);
-
-                        meta_father = meta + ","
-                                      + nextLine[4] + "," + nextLine[5] + "," + nextLine[9] + ","
-                                      + nextLine[10] + "," + nextLine[11] + "," + nextLine[12];
-                        meta_mother = meta + ","
-                                      + nextLine[2] + "," + nextLine[3] + "," + nextLine[6] + ","
-                                      + nextLine[7] + "," + nextLine[8] + "," + nextLine[12];
                     }
 
+                    meta_father = meta + ","
+                                  + nextLine[7] + "," + nextLine[8] + "," + nextLine[15] + ","
+                                  + nextLine[16] + "," + nextLine[17] + "," + nextLine[18];
+                    meta_mother = meta + ","
+                                  + nextLine[5] + "," + nextLine[6] + "," + nextLine[12] + ","
+                                  + nextLine[13] + "," + nextLine[14] + "," + nextLine[18];
 
                     String idSubjectFemale = idSubjectB;
                     String idSubjectMale = idSubjectBPartner;
