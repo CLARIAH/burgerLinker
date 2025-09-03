@@ -45,7 +45,7 @@ public class Controller {
     private String dataModelDir = "./res/data_models/";
     private String dataModelExt = "yaml";
 
-	private String dataModelPath, function, inputDataset, outputDirectory;
+	private String dataModelPath, function, inputDataset, namespace, outputDirectory;
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
                     singleInd = false, outputFormatCSV = true, doubleInputs = false;
@@ -58,7 +58,7 @@ public class Controller {
 	public Controller(String function, int maxlev, boolean fixedLev,
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
                       String inputDataset, String outputDirectory, String outputFormat,
-                      String dataModel) {
+                      String dataModel, String namespace) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -67,6 +67,14 @@ public class Controller {
 		this.singleInd = singleInd;
 		this.inputDataset = inputDataset;
 		this.outputDirectory = outputDirectory;
+
+        this.namespace = namespace;
+        if (!(this.namespace.endsWith("#")
+              || this.namespace.endsWith("/")
+              || this.namespace.equals("_:"))) {
+            LOG.logWarn("Controller", "Provided base namespace possibly malformed: '"
+                        + this.namespace + "'");
+        }
 
         this.dataModelPath = dataModel;
         if (!this.dataModelPath.endsWith('.' + dataModelExt)) {
@@ -202,7 +210,7 @@ public class Controller {
 					LOG.outputConsole("START: Computing the transitive closure");
 
                     process = new Process(this.dataModel);
-					computeClosure(process);
+					computeClosure(process, this.namespace);
 					LOG.outputTotalRuntime("Computing the transitive closure", startTime, true);
 				}
 
@@ -495,7 +503,7 @@ public class Controller {
 		}
 	}
 
-	public void computeClosure(Process process) {
+	public void computeClosure(Process process, String namespace) {
 		String dirName = function;
 
 		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
@@ -507,7 +515,7 @@ public class Controller {
 			if(databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
-				new Closure(myHDT, process, outputDirectory, outputFormatCSV);
+				new Closure(myHDT, process, namespace, outputDirectory, outputFormatCSV);
 
 				myHDT.closeDataset();
 			} else {

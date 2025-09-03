@@ -13,7 +13,9 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 public class App {
     // default arguments
-    private String dataModelDefault = "CIV";  // use shorthand
+    private String dataModelDefault = "CIV",  // use shorthand
+                   namespaceDefault = "_:";
+
 
 	@Parameter(names = "--function")
 	String function = null;
@@ -26,6 +28,9 @@ public class App {
 
     @Parameter(names = "--dataModel")
     String dataModel = dataModelDefault;
+
+    @Parameter(names = "--namespace")
+    String namespace = namespaceDefault;
 
 	@Parameter(names = "--maxLev")
 	int maxLev = 4;
@@ -91,7 +96,9 @@ public class App {
 			if(debug.equals("all")) {
 				Configurator.setRootLevel(Level.DEBUG);
 			}
-			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate, ignoreBlock, singleInd, inputData, outputDir, format, dataModel);
+			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
+                                              ignoreBlock, singleInd, inputData, outputDir,
+                                              format, dataModel, namespace);
 			cntrl.runProgram();
 		} else {
 			// do not run program and show some help message if user enter: --help
@@ -102,6 +109,7 @@ public class App {
 			System.out.printf(formatting, "--inputData:", "(required) Path of the HDT dataset");
 			System.out.printf(formatting, "--outputDir:", "(required) Path of the directory for saving the indices and the detected links");
 			System.out.printf(formatting, "--dataModel:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
+			System.out.printf(formatting, "--namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
 			System.out.printf(formatting, "--maxLev:", "(optional, default = 4) Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link");
 			System.out.printf(formatting, "--fixedLev:", "(optional, default = False) Add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths");
 			System.out.printf(formatting, "--format:", "(optional, default = CSV) One of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates");

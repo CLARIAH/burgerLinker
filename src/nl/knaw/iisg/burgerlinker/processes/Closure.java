@@ -31,7 +31,7 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Closure {
 	// output directory specified by the user + name of the called function
 	public final static String DIRECTORY_NAME_DATABASE = "databases";
-	private String inputDirectoryPath, outputDirectoryPath;
+	private String inputDirectoryPath, namespace, outputDirectoryPath;
 	private MyHDT myHDT;
     private Process process;
 	private final int updateInterval = 5000;
@@ -47,9 +47,7 @@ public class Closure {
     HashMap<String, HashSet<String>> dbClassToIndivs;
 	HashMap<String, String> dbIndivToClass;
 
-    String namespacePerson = "<https://iisg.amsterdam/links/person/";  // FIXME: allow custom
-
-	public Closure(MyHDT hdt, Process process, String directoryPath, boolean formatCSV) {
+	public Closure(MyHDT hdt, Process process, String namespace, String directoryPath, boolean formatCSV) {
 		this.inputDirectoryPath = directoryPath;
 		this.outputDirectoryPath = directoryPath + "/closure";
 		this.myHDT = hdt;
@@ -84,7 +82,7 @@ public class Closure {
 				transitiveClosure(filepath);
 				verifyClosure();
 				saveClosureToFile();
-				reconstructDataset();
+				reconstructDataset(this.namespace);
 		//		FILE_UTILS.deleteFile(sortedFile);
 			}
 		} catch (Exception ex) {
@@ -92,7 +90,7 @@ public class Closure {
 		}
 	}
 
-	public void reconstructDataset() {
+	public void reconstructDataset(String namespace) {
 		try {
 			String taskName = "Reconstructing dataset after transitive closure";
 			int cntAll = 0;
@@ -118,9 +116,9 @@ public class Closure {
 
 					// skip blank nodes
 					if(!ts.getSubject().toString().startsWith("_")) {
-						String sbjPersonID = getEqClassOfPerson(ts.getSubject().toString());
+						String sbjPersonID = getEqClassOfPerson(ts.getSubject().toString(), namespace);
 						String predicate = "<" + ts.getPredicate().toString() + ">";
-						String objPersonID = getEqClassOfPerson(ts.getObject().toString());
+						String objPersonID = getEqClassOfPerson(ts.getObject().toString(), namespace);
 
 						if(predicate.contains("age")) {
 							String ageInString = myHDT.getStringValueFromLiteral(objPersonID);
@@ -150,13 +148,13 @@ public class Closure {
 		}
 	}
 
-	public String getEqClassOfPerson(String someURI) {
+	public String getEqClassOfPerson(String someURI, String namespace) {
 		String personID = myHDT.getIDofPerson(someURI);
 
 		if(personID != null) {
 			String eqClass = dbIndivToClass.get(personID);
 			if(eqClass != null) {
-				eqClass = namespacePerson + eqClass + ">";
+				eqClass = "<" + namespace + eqClass + ">";
 				// linked person
 				return eqClass;
 			}
