@@ -1,148 +1,173 @@
 ---
-# === Namespaces =========
+# ********************************************* #
+#                                               #
+#  -------------------------------------------  #
+#  KNAW BurgerLinker Civil Registry Data Model  #
+#  -------------------------------------------  #
+#                                               #
+#  This file specifies the data model used by   #
+#  the input data to BurgerLinker. All classes  #
+#  and properties in this file must be defined. #
+#                                               #
+#  The data model specified in this files is    #
+#  based upon the Civil Registry Schema, and is #
+#  backwards compatible with past versions of   #
+#  BurgerLinker.                                #
+#                                               #
+#  Version: AUG 2025                            #
+#                                               #
+# ********************************************* #
 
-# Civil Registry namespace
+# ==============================================#
+#                                               #
+# Namespaces to model events, roles, and people #
+#                                               #
+# ==============================================#
+
 namespace: &civ
+  # Civil Registry namespace
   uri: https://iisg.amsterdam/id/civ/
 
-# Schema.org namespace
 namespace: &schema
+  # Schema.org namespace
   uri: https://schema.org/
 
-# DBpedia ontology namespace
-namespace: &dbo
-  uri: https://dbpedia.org/ontology/
+# ==============================================#
+#                                               #
+#   Classes and properties to model events      #
+#                                               #
+# ==============================================#
 
-# === Classes =========
-
-# Events
 birth_event:
+  # Class of all birth events
   <<: *civ
   name: Birth
 
-mariage_event:
+marriage_event:
+  # Class of all marriage events
   <<: *civ
   name: Marriage
 
 death_event:
+  # Class of all death events
   <<: *civ
   name: Death
 
-divorce_event:
+event_date:
+  # Property to date of event
   <<: *civ
-  name: Divorse
-
-# Event related
-person:
-  <<: *schema
-  name: Person
-
-location:
-  <<: *schema
-  name: Place
-
-# Geography
-location_municipality:
-  <<: *civ
-  name: Municipality
-
-location_region:
-  <<: *civ
-  name: Region
-
-location_province:
-  <<: *civ
-  name: Province
-
-location_country:
-  <<: *civ
-  name: Country
-
-# === Properties =========
-
-# Event properties
-event_location:
-  <<: *civ
-  name: event_location
-
-event_registration_location:
-  <<: *civ
-  name: registrationLocation
-
-event_registration_data:
-  <<: *civ
-  name: registrationDate
+  name: eventDate
 
 event_registration_identifier:
+  # Property to registration identifier of event
   <<: *civ
   name: registrationID
 
-# Person properties
+# ==============================================#
+#                                               #
+#   Classes and properties to model people      #
+#                                               #
+# ==============================================#
+
+person:
+  # Class of all people
+  <<: *schema
+  name: Person
+
 person_identifier:
+  # Property to person identifier
   <<: *civ
   name: personID
 
 person_given_name:
+  # Property to person given name
   <<: *schema
   name: givenName
 
 person_family_name:
+  # Property to person family name
   <<: *schema
   name: familyName
 
+person_age:
+  # Property to person age
+  <<: *civ
+  name: age
+
 person_gender:
+  # Property to person gender
   <<: *schema
   name: gender
 
-# Event role properties
+person_gender_male:
+  # Class of all males
+  <<: *schema
+  name: Male
+
+person_gender_female:
+  # Class of all females
+  <<: *schema
+  name: Female
+
+# ==============================================#
+#                                               #
+#   Properties to model event roles             #
+#                                               #
+# ==============================================#
+
 role_newborn:
+  # Property to role newborn (gender agnostic)
   <<: *civ
   name: newborn
 
 role_father:
+  # Property to role father of main role (event agnostic)
   <<: *civ
   name: father
 
 role_mother:
+  # Property to role mother of main role (event agnostic)
   <<: *civ
   name: mother
 
 role_deceased:
+  # Property to role deceased (gender agnostic)
   <<: *civ
   name: deceased
 
 role_partner:
+  # Property to role parter of deceased (gender agnostic)
   <<: *civ
   name: partner
 
 role_bride:
+  # Property to role bride
   <<: *civ
   name: bride
 
 role_bride_father:
+  # Property to role father of bride
   <<: *civ
   name: fatherBride
 
 role_bride_mother:
+  # Property to role mother of bride
   <<: *civ
   name: motherBride
 
 role_groom:
+  # Property to role groom
   <<: *civ
   name: groom
 
 role_groom_father:
+  # Property to role father of groom
   <<: *civ
   name: fatherGroom
 
 role_groom_mother:
+  # Property to role mother of groom
   <<: *civ
   name: motherGroom
 
-# === output ======
-
-person_birth_year:
-  <<: *dbo
-  name: birthYear
-
-...
+...  # EOF

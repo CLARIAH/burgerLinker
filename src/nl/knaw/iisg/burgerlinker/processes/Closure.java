@@ -20,7 +20,7 @@ import nl.knaw.iisg.burgerlinker.core.Index;
 import nl.knaw.iisg.burgerlinker.data.LinksCSV;
 import nl.knaw.iisg.burgerlinker.data.MyHDT;
 import nl.knaw.iisg.burgerlinker.structs.Person;
-import nl.knaw.iisg.burgerlinker.Properties;  // TODO: rmv after birthYear change
+import nl.knaw.iisg.burgerlinker.Properties;
 import nl.knaw.iisg.burgerlinker.utilities.*;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
@@ -127,7 +127,7 @@ public class Closure {
 							int age = Integer.valueOf(ageInString);
 
 							String birthYear = myHDT.getBirthYearFromAge(ts.getSubject().toString(), age);
-							if(birthYear != null) {  // FIXME
+							if(birthYear != null) {
 								datasetAfterClosure.addToStream(sbjPersonID + " <" + Properties.BIRTH_YEAR + "> " + birthYear + ".");
 							}
 						} else {

@@ -18,7 +18,7 @@ public class Process {
 
     public ProcessType type;
     public RelationType rtype;
-    private Map<String, String> dataModel;
+    public Map<String, String> dataModel;
     public int minYearDiff, maxYeardiff;
     public String roleASubject,
                   roleASubjectFather,

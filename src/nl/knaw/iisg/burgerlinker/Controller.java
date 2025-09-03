@@ -34,30 +34,31 @@ public class Controller {
 	final private Set<String> FUNCTIONS = Set.of("closure", "within_b_m", "within_b_d",
 			                                     "between_b_m", "between_m_m", "between_d_m",
                                                  "between_b_d", "showDatasetStats", "convertToHDT");
-    final private Set<String> DATA_MODEL_KEYS = Set.of("birth_event", "role_groom_mother", "location_country",
-                                                       "event_location", "person_gender", "role_mother",
-                                                       "role_groom", "role_bride_mother", "person_identifier",
-                                                       "mariage_event", "role_bride_father", "divorce_event",
-                                                       "location_region", "person_family_name", "location_municipality",
-                                                       "role_deceased", "person_given_name", "event_registration_location",
-                                                       "role_newborn", "role_partner", "location_province",
-                                                       "role_father", "person", "role_groom_father",
-                                                       "location", "role_bride", "event_registration_data",
+    final private Set<String> DATA_MODEL_KEYS = Set.of("birth_event", "role_groom_mother", "person_gender",
+                                                       "role_mother", "role_groom", "role_bride_mother",
+                                                       "person_identifier", "marriage_event", "role_bride_father",
+                                                       "person_family_name", "role_deceased", "person_given_name",
+                                                       "role_newborn", "role_partner", "role_father",
+                                                       "person", "role_groom_father","role_bride",
                                                        "death_event", "event_registration_identifier");
 
     private String dataModelDir = "./res/data_models/";
     private String dataModelExt = "yaml";
 
-	private String dataModel, function, inputDataset, outputDirectory;
+	private String dataModelPath, function, inputDataset, outputDirectory;
 	private int maxLev;
-	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false, singleInd = false, outputFormatCSV = true, doubleInputs = false;
+	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
+                    singleInd = false, outputFormatCSV = true, doubleInputs = false;
+    private Map<String, String> dataModel;
 
 	public static final Logger lg = LogManager.getLogger(Controller.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public Controller(String function, int maxlev, Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock, Boolean singleInd,
-                      String inputDataset, String outputDirectory, String outputFormat, String dataModel) {
+	public Controller(String function, int maxlev, boolean fixedLev,
+                      boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
+                      String inputDataset, String outputDirectory, String outputFormat,
+                      String dataModel) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -67,10 +68,10 @@ public class Controller {
 		this.inputDataset = inputDataset;
 		this.outputDirectory = outputDirectory;
 
-        this.dataModel = dataModel;
-        if (!this.dataModel.endsWith('.' + dataModelExt)) {
+        this.dataModelPath = dataModel;
+        if (!this.dataModelPath.endsWith('.' + dataModelExt)) {
             // assume shorthand format
-            this.dataModel = dataModelDir + this.dataModel + '.' + dataModelExt;
+            this.dataModelPath = dataModelDir + this.dataModelPath + '.' + dataModelExt;
         }
 
 		if(!outputFormat.equals("CSV")) {
@@ -86,7 +87,7 @@ public class Controller {
                 switch (this.function) {
                 case "showdatasetstats":
                     if(checkInputDataset()) {
-                        outputDatasetStatistics();
+                        outputDatasetStatistics(this.dataModel);
                     }
 
                     break;
@@ -103,15 +104,15 @@ public class Controller {
 
     public void execProcess() {
         // read data model specification from file
-        Map<String, Map<String, String>> dataModelRaw = loadYamlFromFile(this.dataModel);
+        Map<String, Map<String, String>> dataModelRaw = loadYamlFromFile(this.dataModelPath);
         if (dataModelRaw == null) {
             LOG.logError("execProcess", "Error reading data model");
             return;
         }
 
         // build and validate data model
-        Map<String, String> dataModel = buildDataModel(dataModelRaw);
-        if (!validateDataModel(dataModel)) {
+        this.dataModel = buildDataModel(dataModelRaw);
+        if (!validateDataModel(this.dataModel)) {
             return;
         }
 
@@ -124,7 +125,7 @@ public class Controller {
 
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.WITHIN,
-                                          dataModel);
+                                          this.dataModel);
 					Within(process);
 					LOG.outputTotalRuntime("Within Births-Marriages (newborn -> bride/groom)", startTime, true);
 				}
@@ -137,7 +138,7 @@ public class Controller {
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.WITHIN,
-                                          dataModel);
+                                          this.dataModel);
 					Within(process);
 					LOG.outputTotalRuntime("Within Births-Deaths (newborn -> deceased)", startTime, true);
 				}
@@ -150,7 +151,7 @@ public class Controller {
 
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.BETWEEN,
-                                          dataModel);
+                                          this.dataModel);
 					Between(process);
 					LOG.outputTotalRuntime("Between Births-Marriages (newborn parents -> bride + groom)", startTime, true);
 				}
@@ -163,7 +164,7 @@ public class Controller {
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.BETWEEN,
-                                          dataModel);
+                                          this.dataModel);
 					Between(process);
 					LOG.outputTotalRuntime("Between Births-Deaths (parents of newborn -> deceased + partner)", startTime, true);
 				}
@@ -176,7 +177,7 @@ public class Controller {
 
                     process = new Process(Process.ProcessType.DECEASED_MARIAGE,
                                           Process.RelationType.BETWEEN,
-                                          dataModel);
+                                          this.dataModel);
 					Between(process);
 					LOG.outputTotalRuntime("Between Deaths-Marriages (parents of deceased -> bride + groom)", startTime, true);
 				}
@@ -189,7 +190,7 @@ public class Controller {
 
                     process = new Process(Process.ProcessType.MARIAGE_MARIAGE,
                                           Process.RelationType.BETWEEN,
-                                          dataModel);
+                                          this.dataModel);
                     Between(process);
 					LOG.outputTotalRuntime("Between Marriages-Marriages (parents of bride/groom -> bride + groom)", startTime, true);
 				}
@@ -200,7 +201,7 @@ public class Controller {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Computing the transitive closure");
 
-                    process = new Process(dataModel);
+                    process = new Process(this.dataModel);
 					computeClosure(process);
 					LOG.outputTotalRuntime("Computing the transitive closure", startTime, true);
 				}
@@ -281,8 +282,8 @@ public class Controller {
 
 	// ========= input checks =========
 
-	public Boolean checkAllUserInputs() {
-		Boolean validInputs = true;
+	public boolean checkAllUserInputs() {
+		boolean validInputs = true;
 
 		validInputs = validInputs & checkInputDataset();
 		validInputs = validInputs & checkInputDirectory();
@@ -293,7 +294,7 @@ public class Controller {
 		return validInputs;
 	}
 
-	public Boolean checkInputFunction() {
+	public boolean checkInputFunction() {
 		if(function == null) {
 			LOG.logError("checkInputFunction",
 					"Missing user input for parameter: --function",
@@ -316,7 +317,7 @@ public class Controller {
 		return false;
 	}
 
-	public Boolean checkInputMaxLevenshtein() {
+	public boolean checkInputMaxLevenshtein() {
 		if(maxLev >= 0 && maxLev <= 4) {
 			LOG.logDebug("checkInputMaxLevenshtein",
 					"User have chosen max Levenshtein distance: " + maxLev);
@@ -331,10 +332,10 @@ public class Controller {
 		}
 	}
 
-	public Boolean checkInputDataset() {
+	public boolean checkInputDataset() {
 		if(inputDataset.contains(",")){
 			String[] inputs = inputDataset.split(",");
-			Boolean check = checkInputDataset(inputs[0]);
+			boolean check = checkInputDataset(inputs[0]);
 			check = check & checkInputDataset(inputs[1]);
 			doubleInputs = true;
 
@@ -344,32 +345,38 @@ public class Controller {
 		}
 	}
 
-	public Boolean checkInputDataset(String fileURL) {
+	public boolean checkInputDataset(String fileURL) {
 		if(FILE_UTILS.checkIfFileExists(fileURL) == true) {
-			LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: " + inputDataset);
+			LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: "
+                                                 + inputDataset);
 
 			return true;
 		} else {
-			String suggestedFix = "A valid HDT file, or two valid HDT files separated only by a comma (without a space) are required as input after parameter: --inputData " ;
-			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData", suggestedFix);
+			String suggestedFix = "A valid HDT file, or two valid HDT files separated only by a comma "
+                                  + "(without a space) are required as input after parameter: --inputData ";
+			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData",
+                         suggestedFix);
 
 			return false;
 		}
 	}
 
-	public Boolean checkInputDirectory() {
+	public boolean checkInputDirectory() {
 		if(FILE_UTILS.checkIfDirectoryExists(outputDirectory)) {
-			LOG.logDebug("checkInputDirectoryOutput", "The following directory is set to store results: " + outputDirectory);
+			LOG.logDebug("checkInputDirectoryOutput", "The following directory is set to store results: "
+                                                      + outputDirectory);
 
 			return true;
 		} else {
-			LOG.logError("checkInputDirectoryOutput", "Invalid or Missing user input for parameter: --outputDir", "A valid directory for storing links is required as input after parameter: --outputDir");
+			LOG.logError("checkInputDirectoryOutput", "Invalid or Missing user input for parameter: "
+                         + "--outputDir", "A valid directory for storing links is required as input "
+                         + "after parameter: --outputDir");
 
 			return false;
 		}
 	}
 
-	public Boolean checkInputDirectoryContents() {
+	public boolean checkInputDirectoryContents() {
 		if(checkInputDirectory()) {
 			if(FILE_UTILS.getAllValidLinksFile(outputDirectory, false) != null) {
 				return true;
@@ -379,8 +386,7 @@ public class Controller {
 		return false;
 	}
 
-
-	public Boolean checkOutputFormatRDF() {
+	public boolean checkOutputFormatRDF() {
 		if(outputFormatCSV == true) {
 			LOG.logDebug("checkOutputFormatCSV", "Output format is set as CSV");
 
@@ -411,24 +417,24 @@ public class Controller {
 
 	// ========= functions =========
 
-	public void outputDatasetStatistics() {
+	public void outputDatasetStatistics(Map<String, String> dataModel) {
 		MyHDT myHDT;
 		DecimalFormat formatter = new DecimalFormat("#,###");
 
 		if(doubleInputs == true) {
 			String[] inputs = inputDataset.split(",");
-			myHDT = new MyHDT(inputs[0], inputs[1], doubleInputs);
+			myHDT = new MyHDT(inputs[0], inputs[1], doubleInputs, dataModel);
 		} else {
-			myHDT = new MyHDT(inputDataset);
+			myHDT = new MyHDT(inputDataset, dataModel);
 		}
 
-		int numberOfBirthEvents = myHDT.getNumberOfSubjects(TYPE_BIRTH_EVENT);
+		int numberOfBirthEvents = myHDT.getNumberOfSubjects(dataModel.get("birth_event"));
 		LOG.outputConsole("--- 	# Birth Events: " + formatter.format(numberOfBirthEvents) + " ---");
-		int numberOfMarriageEvents = myHDT.getNumberOfSubjects(TYPE_MARRIAGE_EVENT);
+		int numberOfMarriageEvents = myHDT.getNumberOfSubjects(dataModel.get("marriage_event"));
 		LOG.outputConsole("--- 	# Marriage Events: " + formatter.format(numberOfMarriageEvents) + " ---");
-		int numberOfDeathEvents = myHDT.getNumberOfSubjects(TYPE_DEATH_EVENT);
+		int numberOfDeathEvents = myHDT.getNumberOfSubjects(dataModel.get("death_event"));
 		LOG.outputConsole("--- 	# Death Events: " + formatter.format(numberOfDeathEvents) + " ---");
-		int numberOfIndividuals = myHDT.getNumberOfSubjects(TYPE_PERSON);
+		int numberOfIndividuals = myHDT.getNumberOfSubjects(dataModel.get("person"));
 		LOG.outputConsole("--- 	# Individuals: " + formatter.format(numberOfIndividuals) + " ---");
 
 		myHDT.closeDataset();
@@ -449,7 +455,7 @@ public class Controller {
 			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory,
                                                                    DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
+				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
 				new Within(myHDT, process, mainDirectory, maxLev, fixedLev,
                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
@@ -475,7 +481,7 @@ public class Controller {
 			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
 			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
+				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
 				new Between(myHDT, process, mainDirectory, maxLev, fixedLev,
                             ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
@@ -499,7 +505,7 @@ public class Controller {
 			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
 			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
 			if(databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset);
+				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
 				new Closure(myHDT, process, outputDirectory, outputFormatCSV);
 

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +31,10 @@ import org.apache.jena.query.ARQ;
 public class MyHDT implements ProgressListener {
 	public HDT dataset;
 	public HDT targetDataset;
-	public Boolean doubleInputs = false;
+	public boolean doubleInputs = false;
+    private Map<String, String> dataModel;
+    private String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+
 
 	public static final Logger lg = LogManager.getLogger(MyHDT.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -42,12 +46,13 @@ public class MyHDT implements ProgressListener {
 	 * @param hdt_file_path
 	 *            Path of the HDT file
 	 */
-	public MyHDT(String hdtPath) {  // One HDT file with its index are given as input
+	public MyHDT(String hdtPath, Map<String, String> dataModel) {  // One HDT file with its index are given as input
 		try {
 			ARQ.init();
 			LOG.outputConsole("START: Loading HDT dataset...");
 
 			long startTime = System.currentTimeMillis();
+            this.dataModel = dataModel;
 			dataset = HDTManager.loadIndexedHDT(hdtPath, null);
 
 			LOG.outputTotalRuntime("Loading HDT dataset", startTime, true);
@@ -66,7 +71,8 @@ public class MyHDT implements ProgressListener {
 		}
 	}
 
-	public MyHDT(String hdtPath1, String hdtPath2, Boolean doubleInputs) {  // Two HDT files with their index are given as inputs
+	public MyHDT(String hdtPath1, String hdtPath2, Boolean doubleInputs,
+                 Map<String, String> dataModel) {  // Two HDT files with their index are given as inputs
 		try {
 			doubleInputs = true;
 
@@ -74,6 +80,7 @@ public class MyHDT implements ProgressListener {
 			LOG.outputConsole("START: Loading HDT datasets...");
 
 			long startTime = System.currentTimeMillis();
+            this.dataModel = dataModel;
 			dataset = HDTManager.loadIndexedHDT(hdtPath1, null);
 			targetDataset = HDTManager.loadIndexedHDT(hdtPath2, null);
 
@@ -330,7 +337,7 @@ public class MyHDT implements ProgressListener {
 		//		try {
 		IteratorTripleString it;
 		try {
-			it = dataset.search(eventURI, REGISTRATION_ID, "");
+			it = dataset.search(eventURI, this.dataModel.get("event_registration_identifier"), "");
 			if(it.hasNext()) {
 				TripleString ts = it.next();
 
@@ -364,7 +371,7 @@ public class MyHDT implements ProgressListener {
 
 	public String getIDofPerson(String personURI) {
 		try {
-			IteratorTripleString it = dataset.search(personURI, PERSON_ID, "");
+			IteratorTripleString it = dataset.search(personURI, this.dataModel.get("person_identifier"), "");
 			if(it.hasNext()) {
 				TripleString ts = it.next();
 
@@ -416,7 +423,7 @@ public class MyHDT implements ProgressListener {
 	public int getAgeFromHDT(String personURI) {
 		int age = 999;
 		try {
-			IteratorTripleString it = dataset.search(personURI, AGE, "");
+			IteratorTripleString it = dataset.search(personURI, this.dataModel.get("person_age"), "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
 
@@ -438,20 +445,12 @@ public class MyHDT implements ProgressListener {
 	public String getFirstNameFromHDT(CharSequence URI) {
 		String first_name = null;
 		try {
-			IteratorTripleString it = dataset.search(URI, GIVEN_NAME, "");
+			IteratorTripleString it = dataset.search(URI, this.dataModel.get("person_given_name"), "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
 
 				first_name = ts.getObject().toString();
 				first_name = getStringValueFromLiteral(first_name);
-			} else {
-				it = dataset.search(URI, GIVEN_NAME_S, "");
-				if(it.hasNext()){
-					TripleString ts = it.next();
-
-					first_name = ts.getObject().toString();
-					first_name = getStringValueFromLiteral(first_name);
-				}
 			}
 		} catch (NotFoundException e) {
 			e.printStackTrace();
@@ -469,22 +468,14 @@ public class MyHDT implements ProgressListener {
 	public String getLastNameFromHDT(CharSequence URI) {
 		String last_name = null;
 		try {
-			IteratorTripleString it = dataset.search(URI, FAMILY_NAME, "");
+			IteratorTripleString it = dataset.search(URI, this.dataModel.get("person_family_name"), "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
 
 				last_name = ts.getObject().toString();
 				last_name = getStringValueFromLiteral(last_name);
-			} else {
-				it = dataset.search(URI, FAMILY_NAME_S, "");
-				if(it.hasNext()){
-					TripleString ts = it.next();
-
-					last_name = ts.getObject().toString();
-					last_name = getStringValueFromLiteral(last_name);
-				}
 			}
-		} catch (NotFoundException e) {
+        } catch (NotFoundException e) {
 			e.printStackTrace();
 		}
 
@@ -500,15 +491,19 @@ public class MyHDT implements ProgressListener {
 	public String getGenderFromHDT(CharSequence URI) {
 		String gender = "u";
 		try {
-			IteratorTripleString it = dataset.search(URI, GENDER, "");
+			IteratorTripleString it = dataset.search(URI, this.dataModel.get("person_gender"), "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
 
 				gender = ts.getObject().toString();
-				if(gender.equals("f") || gender.equals(GENDER_FEMALE_URI) || gender.equals(GENDER_FEMALE_URI_S) || gender.equals("\"f\"")) {
+				if(gender.equals("f")
+                   || gender.equals(this.dataModel.get("person_gender_female"))
+                   || gender.equals("\"f\"")) {
 					return "f";
 				} else {
-					if(gender.equals("m") || gender.equals(GENDER_MALE_URI) || gender.equals(GENDER_MALE_URI_S) || gender.equals("\"m\"")) {
+					if(gender.equals("m")
+                       || gender.equals(this.dataModel.get("person_gender_male"))
+                       || gender.equals("\"m\"")) {
 						return "m";
 					}
 				}
@@ -524,7 +519,7 @@ public class MyHDT implements ProgressListener {
 	public int countNewbornsByGender(String gender) {
 		int result = 0;
 		try {
-			IteratorTripleString it = dataset.search("", ROLE_NEWBORN, "");
+			IteratorTripleString it = dataset.search("", this.dataModel.get("role_newborn"), "");
 			while(it.hasNext()){
 				TripleString ts = it.next();
 
@@ -548,7 +543,7 @@ public class MyHDT implements ProgressListener {
 	 */
 	public int getEventDate(String eventURI) {
 		try {
-			IteratorTripleString it = dataset.search(eventURI, EVENT_DATE, "");
+			IteratorTripleString it = dataset.search(eventURI, this.dataModel.get("event_date"), "");
 			while(it.hasNext()) {
 				TripleString ts = it.next();
 
@@ -577,7 +572,7 @@ public class MyHDT implements ProgressListener {
 		try {
 			String typedEventID = convertStringToTypedInteger(eventID, type);
 
-			IteratorTripleString it = dataset.search("", REGISTRATION_ID, typedEventID);
+			IteratorTripleString it = dataset.search("", this.dataModel.get("event_registration_identifier"), typedEventID);
 			if(it.hasNext()) {
 				TripleString ts = it.next();
 

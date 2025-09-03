@@ -8,6 +8,9 @@ public class Couple {
     public final String familyCode;
 
     public Couple(Person wife, Person husband, String familyCode) {
+        /**
+         * A simple class to model a married couple
+         **/
         this.wife = wife;
         this.husband = husband;
         this.familyCode = familyCode;
