@@ -181,7 +181,7 @@ public class Between {
 	public int checkTimeConsistency(int eventYear, String referenceEventName) {
 		int referenceYear = myHDT.getEventDate(referenceEventName);
 		int diff = referenceYear - eventYear;
-		if(diff >= this.process.minYearDiff && diff <= this.process.minYearDiff) {
+		if(diff >= this.process.minYearDiff && diff < this.process.maxYearDiff) {
 			return diff;
 		} else {
 			return 999;

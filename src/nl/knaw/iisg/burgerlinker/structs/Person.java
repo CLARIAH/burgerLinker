@@ -29,6 +29,10 @@ public class Person {
 		setValid(true);
 	}
 
+    public String toString() {
+        return gender + ": " + last_name + ", " + first_name + "; " + URI.toString();
+    }
+
 	public void setFirstName(String first_name){
 		this.first_name = first_name;
 	}

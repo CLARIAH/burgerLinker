@@ -8,7 +8,7 @@ public final class Properties {
 
 	// Output Prefixes
 	public final static String PREFIX_CIV = "https://iisg.amsterdam/id/civ/";
-	public final static String PREFIX_SCHEMA = "http://schema.org/";
+	public final static String PREFIX_SCHEMA = "https://schema.org/";
 	public final static String PREFIX_DC = "http://purl.org/dc/terms/";
 	public final static String PREFIX_DBO = "http://dbpedia.org/ontology/";
 

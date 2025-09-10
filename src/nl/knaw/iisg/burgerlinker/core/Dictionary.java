@@ -187,7 +187,8 @@ public class Dictionary {
         return true;
     }
 
-    public Boolean generateDictionary(MyHDT myHDT, String roleMain, String roleMother, String roleFather, Boolean genderFilter, String gender) {
+    public Boolean generateDictionary(MyHDT myHDT, String roleMain, String roleMother, String roleFather,
+                                      boolean genderFilter, String gender) {
         indexMain = new Index(getRoleFragment(roleMain)+gender, mainDirectoryPath, maxLev, fixedLev);
         indexMother = new Index(getRoleFragment(roleMother)+gender, mainDirectoryPath, maxLev, fixedLev);
         indexFather = new Index(getRoleFragment(roleFather)+gender, mainDirectoryPath, maxLev, fixedLev);
@@ -236,8 +237,8 @@ public class Dictionary {
                             Person mother = myHDT.getPersonInfo(event, roleMother);
                             Person father = myHDT.getPersonInfo(event, roleFather);
 
-                            Boolean motherValid = mother.isValidWithFullName();
-                            Boolean fatherValid = father.isValidWithFullName();
+                            boolean motherValid = mother.isValidWithFullName();
+                            boolean fatherValid = father.isValidWithFullName();
                             if(motherValid && fatherValid) {
                                 indexMain.addPersonToIndex(personMain, eventID, "M-F");
                                 indexMother.addPersonToIndex(mother, eventID, "M-F");

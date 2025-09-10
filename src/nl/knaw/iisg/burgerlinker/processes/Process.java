@@ -19,7 +19,7 @@ public class Process {
     public ProcessType type;
     public RelationType rtype;
     public Map<String, String> dataModel;
-    public int minYearDiff, maxYeardiff;
+    public int minYearDiff, maxYearDiff;
     public String roleASubject,
                   roleASubjectFather,
                   roleASubjectMother,
@@ -87,10 +87,10 @@ public class Process {
 
                 if (rtype == Process.RelationType.WITHIN) {
                     this.minYearDiff = 0;
-                    this.maxYeardiff = 110;
+                    this.maxYearDiff = 110;
                 } else {
                     this.minYearDiff = -1;
-                    this.maxYeardiff = 96;
+                    this.maxYearDiff = 96;
                 }
 
                 break;
@@ -107,10 +107,10 @@ public class Process {
 
                 if (rtype == Process.RelationType.WITHIN) {
                     this.minYearDiff = 14;
-                    this.maxYeardiff = 80;
+                    this.maxYearDiff = 80;
                 } else {
                     this.minYearDiff = -5;
-                    this.maxYeardiff = 36;
+                    this.maxYearDiff = 36;
                 }
 
                 break;
@@ -126,7 +126,7 @@ public class Process {
                 this.roleBSubjectPartnerMother = null;
 
                 this.minYearDiff = -5;
-                this.maxYeardiff = 146;
+                this.maxYearDiff = 146;
 
                 break;
             case MARIAGE_MARIAGE:
@@ -141,7 +141,7 @@ public class Process {
                 this.roleBSubjectPartnerMother = dataModel.get("role_groom_mother");
 
                 this.minYearDiff = 14;
-                this.maxYeardiff = 100;
+                this.maxYearDiff = 100;
 
                 break;
         }

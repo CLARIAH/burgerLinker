@@ -1,6 +1,6 @@
 package nl.knaw.iisg.burgerlinker.processes;
 
-
+import java.lang.Math;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -85,7 +85,7 @@ public class Within {
         }
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath, this.maxLev, this.fixedLev);
-		Boolean success = dict.generateDictionary(this.myHDT, roleBSubject, roleBSubjectMother, roleBSubjectFather,
+		boolean success = dict.generateDictionary(this.myHDT, roleBSubject, roleBSubjectMother, roleBSubjectFather,
                                                   genderFilter, gender);
 		if(success == true) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
@@ -96,7 +96,8 @@ public class Within {
 				// iterate through the birth certificates to link it to the death dictionaries
 				IteratorTripleString it = myHDT.dataset.search("", this.process.roleASubject, "");
 				long estNumber = it.estimatedNumResults();
-				String taskName = "Linking " + this.process.roleASubject + " to " + roleBSubject;
+				String taskName = "Linking " + this.process.roleASubject + " to " + roleBSubject
+                                  + " (" + gender + ")";
 
                 ProgressBar pb = new ProgressBarBuilder()
                     .setTaskName(taskName)
@@ -174,7 +175,7 @@ public class Within {
 												Set<String> finalCandidatesFather = candidatesSubjectB.findIntersectionCandidates(candidatesFather);
 
 												for(String finalCandidate: finalCandidatesFather) {
-													Boolean link = true;
+													boolean link = true;
 													if(mother.isValidWithFullName()){
 														if(candidatesSubjectB.candidates.get(finalCandidate).individualsInCertificate.contains("M")) {
 															link = false; // if both have mothers, but their names did not match
@@ -287,7 +288,8 @@ public class Within {
 		if(success == true) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
 			try {
-				String taskName = "Linking " + this.process.roleASubject + " to " + roleBSubject;
+				String taskName = "Linking Single " + this.process.roleASubject + " to " + roleBSubject
+                                  + " (" + gender + ")";
 				int cntAll = 0;
 
 				// iterate through the birth certificates to link it to the death dictionaries
@@ -364,7 +366,8 @@ public class Within {
 	public int checkTimeConsistency(int eventYear, String referenceEventName) {
 		int referenceYear = myHDT.getEventDate(referenceEventName);
 		int diff = referenceYear - eventYear;
-		if(diff >= this.process.minYearDiff && diff <= this.process.minYearDiff) {
+		if(diff >= this.process.minYearDiff && diff < this.process.maxYearDiff) {
+        System.out.println("True");
 			return diff;
 		} else {
 			return 999;

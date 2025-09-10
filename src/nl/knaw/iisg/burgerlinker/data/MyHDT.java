@@ -489,23 +489,21 @@ public class MyHDT implements ProgressListener {
 	 * 		URI referring to a certain person
 	 */
 	public String getGenderFromHDT(CharSequence URI) {
-		String gender = "u";
+		String out = "u";
 		try {
 			IteratorTripleString it = dataset.search(URI, this.dataModel.get("person_gender"), "");
 			if(it.hasNext()){
 				TripleString ts = it.next();
 
-				gender = ts.getObject().toString();
+				String gender = ts.getObject().toString();
 				if(gender.equals("f")
                    || gender.equals(this.dataModel.get("person_gender_female"))
                    || gender.equals("\"f\"")) {
-					return "f";
-				} else {
-					if(gender.equals("m")
-                       || gender.equals(this.dataModel.get("person_gender_male"))
-                       || gender.equals("\"m\"")) {
-						return "m";
-					}
+					out = "f";
+				} else if(gender.equals("m")
+                   || gender.equals(this.dataModel.get("person_gender_male"))
+                   || gender.equals("\"m\"")) {
+                    out = "m";
 				}
 				//gender = getStringValueFromLiteral(gender);
 			}
@@ -513,7 +511,7 @@ public class MyHDT implements ProgressListener {
 			e.printStackTrace();
 		}
 
-		return gender;
+		return out;
 	}
 
 	public int countNewbornsByGender(String gender) {

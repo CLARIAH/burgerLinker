@@ -17,7 +17,7 @@ DATASET_NAME = "zeeland"
 
 PREFIX_CIV_VOCAB = "https://iisg.amsterdam/id/civ/"
 PREFIX_DATASET = "https://iisg.amsterdam/id/" + DATASET_NAME + "/"
-PREFIX_SCHEMA = "http://schema.org/"
+PREFIX_SCHEMA = "https://schema.org/"
 PREFIX_BIO = "http://purl.org/vocab/bio/0.1/"
 PREFIX_DCT = "http://purl.org/dc/terms/"
 
