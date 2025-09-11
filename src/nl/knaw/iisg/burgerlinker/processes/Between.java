@@ -63,9 +63,9 @@ public class Between {
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
 
-        boolean genderUnknown = (process.type == Process.ProcessType.BIRTH_DECEASED);
+        boolean genderKnown = !(process.type == Process.ProcessType.BIRTH_DECEASED);
         boolean success = dict.generateDictionary(this.myHDT, process.roleBSubject, process.roleBSubjectPartner,
-                                                  genderUnknown);
+                                                  genderKnown);
 		if(success == true) {
 			indexMale = dict.indexMalePartner;
 			indexFemale = dict.indexFemalePartner;
@@ -109,8 +109,8 @@ public class Between {
 
 						Person mother, father;
                         for (Couple c: couples) {
-                            mother = c.husband;
-                            father = c.wife;
+                            mother = c.partnerA;
+                            father = c.partnerB;
 
                             if(mother.isValidWithFullName() && father.isValidWithFullName()) {
                                 // start linking here
@@ -137,12 +137,14 @@ public class Between {
 
                                                 // determine order
                                                 Person subjectBFemale, subjectBMale;
-                                                if(subjectB.isFemale()) {
+                                                if (subjectB.isFemale()) {
                                                     subjectBFemale = subjectB;
                                                     subjectBMale = subjectBPartner;
-                                                } else {
+                                                } else if (subjectB.isMale()) {
                                                     subjectBFemale = subjectBPartner;
                                                     subjectBMale = subjectB;
+                                                } else {
+                                                    continue;
                                                 }
 
                                                 String familyCode = "N.A.";
@@ -180,8 +182,15 @@ public class Between {
 	 */
 	public int checkTimeConsistency(int eventYear, String referenceEventName) {
 		int referenceYear = myHDT.getEventDate(referenceEventName);
-		int diff = referenceYear - eventYear;
-		if(diff >= this.process.minYearDiff && diff < this.process.maxYearDiff) {
+
+        int diff;
+        if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
+            diff = referenceYear - eventYear;
+        } else {
+            diff = eventYear - referenceYear;
+        }
+
+		if(diff >= this.process.minYearDiff && diff <= this.process.maxYearDiff) {
 			return diff;
 		} else {
 			return 999;

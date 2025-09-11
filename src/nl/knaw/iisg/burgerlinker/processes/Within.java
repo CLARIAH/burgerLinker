@@ -366,7 +366,7 @@ public class Within {
 	public int checkTimeConsistency(int eventYear, String referenceEventName) {
 		int referenceYear = myHDT.getEventDate(referenceEventName);
 		int diff = referenceYear - eventYear;
-		if(diff >= this.process.minYearDiff && diff < this.process.maxYearDiff) {
+		if(diff >= this.process.minYearDiff && diff <= this.process.maxYearDiff) {
         System.out.println("True");
 			return diff;
 		} else {
