@@ -1,0 +1,18 @@
+2025-MM-DD Xander Wilcke
+
+    * Bumped dependencies to latest version and updated code to match.
+    * Refactored project structure to make source file hierarchy more sensible.
+    * Cleaned up (parts of) code for readability purposes.
+    * Improved variable naming to reflect actual purpose.
+    * Reduced repetition: the different Within, Between, and Closure classes
+      and functions have been generalized to fit all modi.
+    * Changed unsecure Schema.org namespace to secure variant.
+    * Fixed bug in age check that excluded the maximum value.
+    * Fixed bug with incorrect metadata in closure function output of Within
+      data.
+    * Added feature to provide custom data model for input graphs.
+    * Added feature to provide custom base namespace for reconstructed
+      individuals.
+    * Changed intermediate CSV result structure to ensure consistency between
+      different modi.
+    * Moved from Maven to Ant build tool (incl Ivy) to simplify compiling.

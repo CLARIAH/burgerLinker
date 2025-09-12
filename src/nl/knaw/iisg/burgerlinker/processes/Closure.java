@@ -1,5 +1,6 @@
 package nl.knaw.iisg.burgerlinker.processes;
 
+import static iisg.amsterdam.burgerlinker.Properties.*;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -30,7 +31,6 @@ import me.tongfei.progressbar.ProgressBarStyle;
 // Between_M_M: link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)
 public class Closure {
 	// output directory specified by the user + name of the called function
-	public final static String DIRECTORY_NAME_DATABASE = "databases";
 	private String inputDirectoryPath, namespace, outputDirectoryPath;
 	private MyHDT myHDT;
     private Process process;
@@ -83,7 +83,6 @@ public class Closure {
 				verifyClosure();
 				saveClosureToFile();
 				reconstructDataset(this.namespace);
-		//		FILE_UTILS.deleteFile(sortedFile);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -427,6 +426,7 @@ public class Closure {
 
 							if(idMotherSubjectB != null) {
 								matchedIndiv++;
+
 								motherMatched = true;
 							}
 						}
