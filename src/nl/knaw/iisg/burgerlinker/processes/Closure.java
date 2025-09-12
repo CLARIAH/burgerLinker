@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,6 +53,7 @@ public class Closure {
 		this.outputDirectoryPath = directoryPath + "/closure";
 		this.myHDT = hdt;
         this.process = process;
+        this.namespace = namespace;
 
 		String resultsFileName = "links-individuals";
 		if(formatCSV == true) {
@@ -218,7 +220,7 @@ public class Closure {
             createDB();
 
 			String [] nextLine;
-			int nbLines = FILE_UTILS.countLines(linksFilePath), eqID = 0 ;
+			int nbLines = FILE_UTILS.countLines(linksFilePath);
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -243,8 +245,8 @@ public class Closure {
 						String eqIDIndividual2 = dbIndivToClass.get(idInvidual2);
 						if(eqIDIndividual1 == null) {
 							if(eqIDIndividual2 == null) {
+                                int eqID = Objects.hash(idInvidual1, idInvidual2);  //TODO
 								String newEqID = "i-" + eqID;
-								eqID++;
 
 								HashSet<String> eqValues = new HashSet<String>();
 
