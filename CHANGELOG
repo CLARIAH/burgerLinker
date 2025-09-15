@@ -16,5 +16,7 @@
     * Changed intermediate CSV result structure to ensure consistency between
       different modi.
     * Change generation of reconstructed person identifiers to be based on
-      person IDs, ensuring consistency between runs.
+      person IDs, ensuring consistency between runs. URIs starting with 'I-'
+      pertain between runs; those starting with 'U-' can change.
+    * Split reconstruction output in linked and unlinked individuals.
     * Moved from Maven to Ant build tool (incl Ivy) to simplify compiling.

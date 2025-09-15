@@ -1,6 +1,6 @@
 package nl.knaw.iisg.burgerlinker.processes;
 
-import static iisg.amsterdam.burgerlinker.Properties.*;
+import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,7 +102,8 @@ public class Closure {
 
 			LOG.outputConsole("Estimated number of certificates to be processed is: " + estNumber);
 
-			LinksCSV datasetAfterClosure = new LinksCSV("finalDataset", outputDirectoryPath, true);
+			LinksCSV reconstruction = new LinksCSV("dataset_reconstructed", outputDirectoryPath, true);
+			LinksCSV singletons = new LinksCSV("dataset_singletons", outputDirectoryPath, true);
 
             ProgressBar pb = new ProgressBarBuilder()
                 .setTaskName(taskName)
@@ -113,24 +114,53 @@ public class Closure {
 			try {
 				while(it.hasNext()) {
 					TripleString ts = it.next();
+                    LinksCSV stream = reconstruction;
 					cntAll++;
 
 					// skip blank nodes
-					if(!ts.getSubject().toString().startsWith("_")) {
-						String sbjPersonID = getEqClassOfPerson(ts.getSubject().toString(), namespace);
-						String predicate = "<" + ts.getPredicate().toString() + ">";
-						String objPersonID = getEqClassOfPerson(ts.getObject().toString(), namespace);
+					if(!ts.getSubject().toString().startsWith("_:")) {
+                        String obj = ts.getObject().toString();
+						String objPersonID = getEqClassOfPerson(obj, namespace);
+                        if (objPersonID == null) {
+                            if (obj.startsWith("http")) {
+                                // URI of unlinked individual
+                                objPersonID = "<" + obj + ">";
+                            } else {
+                                // literal
+                                objPersonID = obj;
+                            }
+                        }
 
+                        String sbj = ts.getSubject().toString();
+						String sbjPersonID = getEqClassOfPerson(sbj, namespace);
+                        if (sbjPersonID == null) {
+                            stream = singletons;
+
+                            if (sbj.startsWith("http")) {
+                                // URI of unlinked individual
+                                UUID uuid = UUID.nameUUIDFromBytes((sbj.getBytes()));
+                                if (namespace.equals("_:")) {
+                                    sbjPersonID = namespace + "U-" + uuid;
+                                } else {
+                                    sbjPersonID = "<" + namespace + "U-" + uuid + ">";
+                                }
+                            } else {
+                                // literal
+                                sbjPersonID = sbj;
+                            }
+                        }
+
+                        String predicate = "<" + ts.getPredicate().toString() + ">";
 						if(predicate.contains("age")) {
 							String ageInString = myHDT.getStringValueFromLiteral(objPersonID);
 							int age = Integer.valueOf(ageInString);
 
 							String birthYear = myHDT.getBirthYearFromAge(ts.getSubject().toString(), age);
 							if(birthYear != null) {
-								datasetAfterClosure.addToStream(sbjPersonID + " <" + Properties.BIRTH_YEAR + "> " + birthYear + ".");
+								stream.addToStream(sbjPersonID + " <" + BIRTH_YEAR + "> " + birthYear + " .");
 							}
 						} else {
-							datasetAfterClosure.addToStream(sbjPersonID + " " + predicate + " " + objPersonID + ".");
+							stream.addToStream(sbjPersonID + " " + predicate + " " + objPersonID + " .");
 						}
 					}
 					if(cntAll % 10000 == 0) {
@@ -139,7 +169,8 @@ public class Closure {
 				} pb.stepTo(estNumber);
 			} finally {
 				pb.close();
-				datasetAfterClosure.closeStream();
+				reconstruction.closeStream();
+                singletons.closeStream();
 			}
 		} catch (Exception e) {
 			LOG.logError("reconstructDataset", "Error in reconstructing the dataset after transitive closure");
@@ -155,20 +186,19 @@ public class Closure {
 		if(personID != null) {
 			String eqClass = dbIndivToClass.get(personID);
 			if(eqClass != null) {
-				eqClass = "<" + namespace + eqClass + ">";
+                if (namespace.equals("_:")) {
+                    eqClass = namespace + eqClass;
+                } else {
+                    eqClass = "<" + namespace + eqClass + ">";
+                }
+
 				// linked person
 				return eqClass;
 			}
 		}
-		// not linked
-		if(someURI.startsWith("http")) {
-			// URI but not person
-			return "<" + someURI + ">";
-		} else {
-			// literal
-			return someURI;
-		}
-	}
+
+        return null;
+    }
 
 	public void createDB() {
 		dbClassToIndivs = new HashMap<String, HashSet<String>>();
@@ -238,16 +268,19 @@ public class Closure {
 					countProgress++;
 
 					try {
+                        String newEqID;
 						String idInvidual1 = nextLine[0];
 						String idInvidual2 = nextLine[1];
+
+                        // ensure deterministic ID from birth event (if available)
+                        UUID uuid = UUID.nameUUIDFromBytes((idInvidual1.getBytes()));
+                        String linkProv = nextLine[3];
+                        newEqID = linkProv.charAt(2) == 'B' ? "I-" + uuid : "U-" + uuid;
 
 						String eqIDIndividual1 = dbIndivToClass.get(idInvidual1);
 						String eqIDIndividual2 = dbIndivToClass.get(idInvidual2);
 						if(eqIDIndividual1 == null) {
 							if(eqIDIndividual2 == null) {
-                                int eqID = Objects.hash(idInvidual1, idInvidual2);  //TODO
-								String newEqID = "i-" + eqID;
-
 								HashSet<String> eqValues = new HashSet<String>();
 
 								eqValues.add(idInvidual1);
@@ -257,24 +290,59 @@ public class Closure {
 								dbIndivToClass.put(idInvidual1, newEqID);
 								dbIndivToClass.put(idInvidual2, newEqID);
 							} else {
-								addObjectToExistingSet(dbClassToIndivs, eqIDIndividual2, idInvidual1);
-								dbIndivToClass.put(idInvidual1, eqIDIndividual2);
+                                HashSet<String> members = dbClassToIndivs.get(eqIDIndividual2);
+                                members.add(idInvidual1);
+
+                                if (newEqID.startsWith("i-")) {
+                                    // primary ID found; replace in map
+                                    dbClassToIndivs.remove(eqIDIndividual2);
+                                    dbClassToIndivs.put(newEqID, members);
+
+                                    for (String individual:members) {
+                                        dbIndivToClass.put(individual, newEqID);
+                                    }
+                                } else {
+                                    dbClassToIndivs.put(eqIDIndividual2, members);
+                                    dbIndivToClass.put(idInvidual1, eqIDIndividual2);
+                                }
 							}
 						} else {
 							if(eqIDIndividual2 == null) {
-								addObjectToExistingSet(dbClassToIndivs, eqIDIndividual1, idInvidual2);
-								dbIndivToClass.put(idInvidual2, eqIDIndividual1);
+                                HashSet<String> members = dbClassToIndivs.get(eqIDIndividual1);
+                                members.add(idInvidual2);
+
+                                if (newEqID.startsWith("i-")) {
+                                    // primary ID found; replace in map
+                                    dbClassToIndivs.remove(eqIDIndividual1);
+                                    dbClassToIndivs.put(newEqID, members);
+
+                                    for (String individual:members) {
+                                        dbIndivToClass.put(individual, newEqID);
+                                    }
+                                } else {
+                                    dbClassToIndivs.put(eqIDIndividual1, members);
+                                    dbIndivToClass.put(idInvidual2, eqIDIndividual1);
+                                }
 							} else {
 								if(!eqIDIndividual1.equals(eqIDIndividual2)) {
 									HashSet<String> valuesEqIDIndividual1 = dbClassToIndivs.get(eqIDIndividual1);
 									HashSet<String> valuesEqIDIndividual2 = dbClassToIndivs.get(eqIDIndividual2);
-									if(valuesEqIDIndividual1.size() > valuesEqIDIndividual2.size()) {
+
+                                    if (eqIDIndividual1.startsWith("i-")) {
 										mergeEqSets(eqIDIndividual1, valuesEqIDIndividual1,
                                                     eqIDIndividual2, valuesEqIDIndividual2);
-									} else {
+                                    } else if (eqIDIndividual2.startsWith("i-")) {
 										mergeEqSets(eqIDIndividual2, valuesEqIDIndividual2,
                                                     eqIDIndividual1, valuesEqIDIndividual1);
-									}
+                                    } else {  // merge on size as fallback
+                                        if(valuesEqIDIndividual1.size() > valuesEqIDIndividual2.size()) {
+                                            mergeEqSets(eqIDIndividual1, valuesEqIDIndividual1,
+                                                        eqIDIndividual2, valuesEqIDIndividual2);
+                                        } else {
+                                            mergeEqSets(eqIDIndividual2, valuesEqIDIndividual2,
+                                                        eqIDIndividual1, valuesEqIDIndividual1);
+                                        }
+                                    }
 								}
 							}
 						}
@@ -295,20 +363,16 @@ public class Closure {
 		}
 	}
 
-	public void addObjectToExistingSet(HashMap<String, HashSet<String>> db, String key, String object) {
-		HashSet<String> X = db.get(key);
-		X.add(object);
-		db.put(key, X);
-	}
+	public void mergeEqSets(String eqIDIndividualA, HashSet<String> valuesA,
+                            String eqIDIndividualB, HashSet<String> valuesB) {
+		valuesA.addAll(valuesB);
 
-	public void mergeEqSets(String eqIDIndividualLarger, HashSet<String> valuesLarger,
-                            String eqIDIndividualSmaller, HashSet<String> valuesSmaller) {
-		valuesLarger.addAll(valuesSmaller);
-		dbClassToIndivs.put(eqIDIndividualLarger, valuesLarger);
-		for(String valueEq2: valuesSmaller) {
-			dbIndivToClass.put(valueEq2, eqIDIndividualLarger);
+		dbClassToIndivs.remove(eqIDIndividualB);
+		dbClassToIndivs.put(eqIDIndividualA, valuesA);
+
+        for(String individual: valuesB) {
+			dbIndivToClass.put(individual, eqIDIndividualA);
 		}
-		dbClassToIndivs.remove(eqIDIndividualSmaller);
 	}
 
 	public boolean saveIndividualLinksToFile(String filePath) {
