@@ -138,12 +138,7 @@ public class Closure {
 
                             if (sbj.startsWith("http")) {
                                 // URI of unlinked individual
-                                UUID uuid = UUID.nameUUIDFromBytes((sbj.getBytes()));
-                                if (namespace.equals("_:")) {
-                                    sbjPersonID = namespace + "U-" + uuid;
-                                } else {
-                                    sbjPersonID = "<" + namespace + "U-" + uuid + ">";
-                                }
+                                sbjPersonID = "<" + sbj + ">";
                             } else {
                                 // literal
                                 sbjPersonID = sbj;
