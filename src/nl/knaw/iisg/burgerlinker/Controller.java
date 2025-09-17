@@ -150,7 +150,6 @@ public class Controller {
         switch (this.function) {
 			case "within_b_m":
                 rule = ruleMap.get(this.function);
-                System.out.println("Rule: " + rule);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
