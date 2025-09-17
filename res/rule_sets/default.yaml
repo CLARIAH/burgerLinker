@@ -2,37 +2,24 @@
 name: "within_b_d"
 description: "The allowed difference in years between the birth and death of an individual"
 condition: "diff >= 0 && diff <= 110"
-actions:
-  - "boolean valid=true;"
 ---
 name: "within_b_m"
 description: "The allowed difference in years between the birth and marriage of an individual"
 condition: "diff >= 14 && diff <= 80"
-actions:
-  - "boolean valid=true;"
 ---
 name: "between_b_d"
 description: "The allowed difference in years between the birth of an individual and the death of the parents"
 condition: "diff >= -1 && diff <= 96"
-actions:
-  - "boolean valid=true;"
 ---
 name: "between_b_m"
 description: "The allowed difference in years between the birth of an individual and the marriage of the parents"
 condition: "diff >= -5 && diff <= 36"
-actions:
-  - "boolean valid=true;"
 ---
 name: "between_d_m"
 description: "The allowed difference in years between the death of an individual and the marriage of the parents"
 condition: "diff >= -5 && diff <= 146"
-actions:
-  - "boolean valid=true;"
 ---
 name: "between_m_m"
 description: "The allowed difference in years between the marriage of an individual and the marriage of the parents"
 condition: "diff >= 14 && diff <= 100"
-actions:
-  - "boolean valid=true;"
-
 ...

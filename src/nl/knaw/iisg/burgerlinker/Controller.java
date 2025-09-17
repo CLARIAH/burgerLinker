@@ -20,11 +20,12 @@ import org.apache.logging.log4j.Logger;
 import org.jeasy.rules.api.Rule;
 import org.jeasy.rules.api.Rules;
 import org.jeasy.rules.mvel.MVELRuleFactory;
-import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
+//import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 
 import org.yaml.snakeyaml.Yaml;
 
 import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.data.YamlRuleDefinitionReader;
 import nl.knaw.iisg.burgerlinker.processes.Between;
 import nl.knaw.iisg.burgerlinker.processes.Closure;
 import nl.knaw.iisg.burgerlinker.processes.Process;
@@ -137,16 +138,19 @@ public class Controller {
         if (!validateDataModel(this.dataModel)) {
             return;
         }
+        LOG.outputConsole("IMPORT: Data Model from '" + new File(this.dataModelPath).getName() + "'");
 
         // read rule definitions and remap
         Rules rules = loadRulesFromFile(this.rulesetPath);
         Map<String, Rule> ruleMap = buildRuleMap(rules);
+        LOG.outputConsole("IMPORT: Rule Definitions from '" + new File(this.rulesetPath).getName() + "'");
 
         Rule rule;
         Process process;
         switch (this.function) {
 			case "within_b_m":
                 rule = ruleMap.get(this.function);
+                System.out.println("Rule: " + rule);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
