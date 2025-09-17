@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.jeasy.rules.api.Facts;
+import org.jeasy.rules.api.Rule;
 
 import nl.knaw.iisg.burgerlinker.core.CandidateList;
 import nl.knaw.iisg.burgerlinker.core.Dictionary;
@@ -24,9 +26,10 @@ public class Within {
 	private String mainDirectoryPath, processName;
 	private MyHDT myHDT;
     private Process process;
+    private Rule rule;
 	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
-	private Boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
+	private boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexSubjectB, indexMother, indexFather;
 
     public static final Logger lg = LogManager.getLogger(Within.class);
@@ -34,9 +37,9 @@ public class Within {
 
 	LinksCSV LINKS;
 
-	public Within(MyHDT hdt, Process process, String directoryPath, Integer maxLevenshtein,
-                  Boolean fixedLev, Boolean ignoreDate, Boolean ignoreBlock,
-                  Boolean singleInd, Boolean formatCSV) {
+	public Within(MyHDT hdt, Process process, Rule rule, String directoryPath,
+                  Integer maxLevenshtein, boolean fixedLev, boolean ignoreDate,
+                  boolean ignoreBlock, boolean singleInd, boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
@@ -46,6 +49,7 @@ public class Within {
 		this.myHDT = hdt;
         this.process = process;
         this.processName = this.process.toString();
+        this.rule = rule;
 
 		String options = LOG.getUserOptions(this.maxLev, this.fixedLev, singleInd,
                                             this.ignoreDate, this.ignoreBlock);
@@ -63,7 +67,7 @@ public class Within {
 		}
 	}
 
-	public void link_within(String gender, Boolean closeStream) {
+	public void link_within(String gender, boolean closeStream) {
         String familyCode;
         String roleBSubject = this.process.roleBSubject;
         String roleBSubjectMother = this.process.roleBSubjectMother;
@@ -266,7 +270,7 @@ public class Within {
 		}
 	}
 
-	public void link_within_single(String gender, Boolean closeStream) {
+	public void link_within_single(String gender, boolean closeStream) {
         boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED);
         String familyCode;
         String roleBSubject = this.process.roleBSubject;
@@ -284,7 +288,7 @@ public class Within {
         }
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath, this.maxLev, this.fixedLev);
-		Boolean success = dict.generateDictionary(myHDT, roleBSubject, genderFilter, gender);
+		boolean success = dict.generateDictionary(myHDT, roleBSubject, genderFilter, gender);
 		if(success == true) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
 			try {
@@ -366,15 +370,17 @@ public class Within {
 	public int checkTimeConsistency(int eventYear, String referenceEventName) {
 		int referenceYear = myHDT.getEventDate(referenceEventName);
 		int diff = referenceYear - eventYear;
-		if(diff >= this.process.minYearDiff && diff <= this.process.maxYearDiff) {
-        System.out.println("True");
-			return diff;
-		} else {
-			return 999;
-		}
-	}
 
-	public Boolean checkTimeConsistencyWithAge(int registrationDifference, Person personURI) {
+        Facts facts = new Facts();
+        facts.put("diff", diff);
+        if (rule == null || this.rule.evaluate(facts)) {
+            return diff;
+        }
+
+        return 999;
+    }
+
+	public boolean checkTimeConsistencyWithAge(int registrationDifference, Person personURI) {
 		int ageDeceased = myHDT.getAgeFromHDT(personURI.getURI());
 		if(ageDeceased != 999) {
 			if(Math.abs(registrationDifference - ageDeceased) < 2) {

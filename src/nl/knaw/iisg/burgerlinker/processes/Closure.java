@@ -57,7 +57,21 @@ public class Closure {
 
 		String resultsFileName = "links-individuals";
 		if(formatCSV == true) {
-			String header = "";
+			String header = "id_certificate_A,"
+                          + "id_certificate_B,"
+                          + "link,"
+                          + "process,"
+                          + "family_line,"
+                          + "number_certificate_matches,"
+                          + "id_event_A,"
+                          + "id_event_B,"
+                          + "levenshtein_total_AB,"
+                          + "levenshtein_max_AB,"
+                          + "number_names_matches_AB,"
+                          + "number_names_A,"
+                          + "number_names_B,"
+                          + "year_diff";
+
 			LINKS = new LinksCSV(resultsFileName, outputDirectoryPath, header);
 
 			this.dirClassToIndivs = outputDirectoryPath + "/" + DIRECTORY_NAME_DATABASE + "/ClassToIndivs";

@@ -14,6 +14,7 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 public class App {
     // default arguments
     private String dataModelDefault = "CIV",  // use shorthand
+                   rulesetDefault = "default",  // use shorthand
                    namespaceDefault = "_:";
 
 
@@ -31,6 +32,9 @@ public class App {
 
     @Parameter(names = "--namespace")
     String namespace = namespaceDefault;
+
+    @Parameter(names = "--ruleset")
+    String ruleset = rulesetDefault;
 
 	@Parameter(names = "--maxLev")
 	int maxLev = 4;
@@ -98,7 +102,7 @@ public class App {
 			}
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
                                               ignoreBlock, singleInd, inputData, outputDir,
-                                              format, dataModel, namespace);
+                                              format, dataModel, ruleset, namespace);
 			cntrl.runProgram();
 		} else {
 			// do not run program and show some help message if user enter: --help

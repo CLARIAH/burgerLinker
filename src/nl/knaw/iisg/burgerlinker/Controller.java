@@ -6,6 +6,7 @@ import static nl.knaw.iisg.burgerlinker.Properties.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -15,6 +16,11 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import org.jeasy.rules.api.Rule;
+import org.jeasy.rules.api.Rules;
+import org.jeasy.rules.mvel.MVELRuleFactory;
+import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -44,8 +50,10 @@ public class Controller {
 
     private String dataModelDir = "./res/data_models/";
     private String dataModelExt = "yaml";
+    private String rulesetDir = "./res/rule_sets/";
+    private String rulesetExt = "yaml";
 
-	private String dataModelPath, function, inputDataset, namespace, outputDirectory;
+	private String dataModelPath, rulesetPath, function, inputDataset, namespace, outputDirectory;
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
                     singleInd = false, outputFormatCSV = true, doubleInputs = false;
@@ -58,7 +66,7 @@ public class Controller {
 	public Controller(String function, int maxlev, boolean fixedLev,
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
                       String inputDataset, String outputDirectory, String outputFormat,
-                      String dataModel, String namespace) {
+                      String dataModel, String ruleset, String namespace) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -80,6 +88,12 @@ public class Controller {
         if (!this.dataModelPath.endsWith('.' + dataModelExt)) {
             // assume shorthand format
             this.dataModelPath = dataModelDir + this.dataModelPath + '.' + dataModelExt;
+        }
+
+        this.rulesetPath = ruleset;
+        if (!this.rulesetPath.endsWith('.' + rulesetExt)) {
+            // assume shorthand format
+            this.rulesetPath = rulesetDir + this.rulesetPath + '.' + rulesetExt;
         }
 
 		if(!outputFormat.equals("CSV")) {
@@ -124,9 +138,15 @@ public class Controller {
             return;
         }
 
+        // read rule definitions and remap
+        Rules rules = loadRulesFromFile(this.rulesetPath);
+        Map<String, Rule> ruleMap = buildRuleMap(rules);
+
+        Rule rule;
         Process process;
         switch (this.function) {
 			case "within_b_m":
+                rule = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
@@ -134,12 +154,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.WITHIN,
                                           this.dataModel);
-					Within(process);
+					Within(process, rule);
 					LOG.outputTotalRuntime("Within Births-Marriages (newborn -> bride/groom)", startTime, true);
 				}
 
 				break;
 			case "within_b_d":
+                rule = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Deaths (newborn -> deceased)");
@@ -147,12 +168,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.WITHIN,
                                           this.dataModel);
-					Within(process);
+					Within(process, rule);
 					LOG.outputTotalRuntime("Within Births-Deaths (newborn -> deceased)", startTime, true);
 				}
 
 				break;
 			case "between_b_m":
+                rule = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Marriages (newborn parents -> bride + groom)");
@@ -160,12 +182,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process);
+					Between(process, rule);
 					LOG.outputTotalRuntime("Between Births-Marriages (newborn parents -> bride + groom)", startTime, true);
 				}
 
 				break;
 			case "between_b_d":
+                rule = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Deaths (parents of newborn -> deceased + partner)");
@@ -173,12 +196,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process);
+					Between(process, rule);
 					LOG.outputTotalRuntime("Between Births-Deaths (parents of newborn -> deceased + partner)", startTime, true);
 				}
 
 				break;
 			case "between_d_m":
+                rule = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Deaths-Marriages (parents of deceased -> bride + groom)");
@@ -186,12 +210,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.DECEASED_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process);
+					Between(process, rule);
 					LOG.outputTotalRuntime("Between Deaths-Marriages (parents of deceased -> bride + groom)", startTime, true);
 				}
 
 				break;
 			case "between_m_m":
+                rule = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
@@ -199,7 +224,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.MARIAGE_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-                    Between(process);
+                    Between(process, rule);
 					LOG.outputTotalRuntime("Between Marriages-Marriages (parents of bride/groom -> bride + groom)", startTime, true);
 				}
 
@@ -235,7 +260,7 @@ public class Controller {
         try {
             InputStream is = new FileInputStream(new File(path));
             data = yaml.load(is);
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
@@ -286,6 +311,47 @@ public class Controller {
         }
 
         return valid;
+    }
+
+    // ========= Validation Rule Functions =========
+
+    public Rules loadRulesFromFile(String path) {
+        /**
+         * Read MVEL rules from specified YAML rule set
+         */
+        Rules rules = new Rules();
+        if (!FILE_UTILS.checkIfFileExists(path)) {
+            LOG.logError("loadRulesFromFile", "Error reading rule definitions");
+            return rules;
+        }
+
+        try {
+            MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
+            rules = ruleFactory.createRules(new FileReader(path));
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        return rules;
+    }
+
+    public Map<String, Rule> buildRuleMap(Rules rules) {
+        /**
+         * Create map from process name to rule.
+         */
+        Map<String, Rule> out = new HashMap<>();
+        for (Rule r: rules) {
+            String name = r.getName();
+            if (!PROCESSES.contains(name)) {
+                LOG.logWarn("buildRuleMap", "Found rule for unknown target: " + name + " . Skipping.");
+                continue;
+            }
+
+            out.put(name, r);
+        }
+
+        return out;
     }
 
 	// ========= input checks =========
@@ -448,7 +514,7 @@ public class Controller {
 		myHDT.closeDataset();
 	}
 
-	public void Within(Process process) {
+	public void Within(Process process, Rule rule) {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
@@ -465,7 +531,7 @@ public class Controller {
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
-				new Within(myHDT, process, mainDirectory, maxLev, fixedLev,
+				new Within(myHDT, process, rule, mainDirectory, maxLev, fixedLev,
                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
 				myHDT.closeDataset();
@@ -477,7 +543,7 @@ public class Controller {
 		}
 	}
 
-	public void Between(Process process) {
+	public void Between(Process process, Rule rule) {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
@@ -491,7 +557,7 @@ public class Controller {
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
-				new Between(myHDT, process, mainDirectory, maxLev, fixedLev,
+				new Between(myHDT, process, rule, mainDirectory, maxLev, fixedLev,
                             ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
 				myHDT.closeDataset();

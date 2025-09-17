@@ -8,6 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.jeasy.rules.api.Facts;
+import org.jeasy.rules.api.Rule;
 
 import nl.knaw.iisg.burgerlinker.data.LinksCSV;
 import nl.knaw.iisg.burgerlinker.data.MyHDT;
@@ -25,6 +27,7 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Between {
 	private MyHDT myHDT;
     private Process process;
+    private Rule rule;
 	private String mainDirectoryPath, processName;
 	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
@@ -36,9 +39,9 @@ public class Between {
 
 	LinksCSV LINKS;
 
-	public Between(MyHDT hdt, Process process, String directoryPath, Integer maxLevenshtein,
-                   boolean fixedLev, boolean ignoreDate, boolean ignoreBlock,
-                   boolean singleInd, boolean formatCSV) {
+	public Between(MyHDT hdt, Process process, Rule rule, String directoryPath,
+                   Integer maxLevenshtein, boolean fixedLev, boolean ignoreDate,
+                   boolean ignoreBlock, boolean singleInd, boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
 		this.maxLev = maxLevenshtein;
 		this.fixedLev = fixedLev;
@@ -47,6 +50,7 @@ public class Between {
 		this.myHDT = hdt;
         this.process = process;
         this.processName = this.process.toString();
+        this.rule = rule;
 
         // setup output format
 		String options = LOG.getUserOptions(this.maxLev, this.fixedLev, singleInd,
@@ -190,10 +194,12 @@ public class Between {
             diff = eventYear - referenceYear;
         }
 
-		if(diff >= this.process.minYearDiff && diff <= this.process.maxYearDiff) {
-			return diff;
-		} else {
-			return 999;
-		}
-	}
+        Facts facts = new Facts();
+        facts.put("diff", diff);
+        if (rule == null || this.rule.evaluate(facts)) {
+            return diff;
+        }
+
+        return 999;
+    }
 }
