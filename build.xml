@@ -2,7 +2,7 @@
     <description>Ant build script for BurgerLinker</description>
 
     <!-- BurgerLinker version -->
-    <property name="version"           value="2.0.1"/>
+    <property name="version"           value="0.8.0"/>
 
     <!-- common directories -->
     <property name="src.dir"           value="src"/>

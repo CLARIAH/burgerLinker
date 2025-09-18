@@ -3,6 +3,7 @@ package nl.knaw.iisg.burgerlinker.processes;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,7 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Between {
 	private MyHDT myHDT;
     private Process process;
-    private Rule rule;
+    private Map<String, Rule> rules;
 	private String mainDirectoryPath, processName;
 	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
@@ -39,7 +40,7 @@ public class Between {
 
 	LinksCSV LINKS;
 
-	public Between(MyHDT hdt, Process process, Rule rule, String directoryPath,
+	public Between(MyHDT hdt, Process process, Map<String, Rule> rules, String directoryPath,
                    Integer maxLevenshtein, boolean fixedLev, boolean ignoreDate,
                    boolean ignoreBlock, boolean singleInd, boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
@@ -50,7 +51,7 @@ public class Between {
 		this.myHDT = hdt;
         this.process = process;
         this.processName = this.process.toString();
-        this.rule = rule;
+        this.rules = rules;
 
         // setup output format
 		String options = LOG.getUserOptions(this.maxLev, this.fixedLev, singleInd,
@@ -196,7 +197,9 @@ public class Between {
 
         Facts facts = new Facts();
         facts.put("diff", diff);
-        if (rule == null || this.rule.evaluate(facts)) {
+
+        Rule rule = this.rules.get("timegapdiff");
+        if (rule == null || rule.evaluate(facts)) {
             return diff;
         }
 

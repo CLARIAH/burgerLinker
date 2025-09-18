@@ -141,15 +141,15 @@ public class Controller {
         LOG.outputConsole("IMPORT: Data Model from '" + new File(this.dataModelPath).getName() + "'");
 
         // read rule definitions and remap
-        Rules rules = loadRulesFromFile(this.rulesetPath);
-        Map<String, Rule> ruleMap = buildRuleMap(rules);
+        Rules rulesRaw = loadRulesFromFile(this.rulesetPath);
+        Map<String, Map<String, Rule>> ruleMap = buildRuleMap(rulesRaw);
         LOG.outputConsole("IMPORT: Rule Definitions from '" + new File(this.rulesetPath).getName() + "'");
 
-        Rule rule;
+        Map<String, Rule> rules;
         Process process;
         switch (this.function) {
 			case "within_b_m":
-                rule = ruleMap.get(this.function);
+                rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
@@ -157,13 +157,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.WITHIN,
                                           this.dataModel);
-					Within(process, rule);
+					Within(process, rules);
 					LOG.outputTotalRuntime("Within Births-Marriages (newborn -> bride/groom)", startTime, true);
 				}
 
 				break;
 			case "within_b_d":
-                rule = ruleMap.get(this.function);
+                rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Within Births-Deaths (newborn -> deceased)");
@@ -171,13 +171,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.WITHIN,
                                           this.dataModel);
-					Within(process, rule);
+					Within(process, rules);
 					LOG.outputTotalRuntime("Within Births-Deaths (newborn -> deceased)", startTime, true);
 				}
 
 				break;
 			case "between_b_m":
-                rule = ruleMap.get(this.function);
+                rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Marriages (newborn parents -> bride + groom)");
@@ -185,13 +185,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process, rule);
+					Between(process, rules);
 					LOG.outputTotalRuntime("Between Births-Marriages (newborn parents -> bride + groom)", startTime, true);
 				}
 
 				break;
 			case "between_b_d":
-                rule = ruleMap.get(this.function);
+                rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Births-Deaths (parents of newborn -> deceased + partner)");
@@ -199,13 +199,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process, rule);
+					Between(process, rules);
 					LOG.outputTotalRuntime("Between Births-Deaths (parents of newborn -> deceased + partner)", startTime, true);
 				}
 
 				break;
 			case "between_d_m":
-                rule = ruleMap.get(this.function);
+                rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Deaths-Marriages (parents of deceased -> bride + groom)");
@@ -213,13 +213,13 @@ public class Controller {
                     process = new Process(Process.ProcessType.DECEASED_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process, rule);
+					Between(process, rules);
 					LOG.outputTotalRuntime("Between Deaths-Marriages (parents of deceased -> bride + groom)", startTime, true);
 				}
 
 				break;
 			case "between_m_m":
-                rule = ruleMap.get(this.function);
+                rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole("START: Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
@@ -227,7 +227,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.MARIAGE_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-                    Between(process, rule);
+                    Between(process, rules);
 					LOG.outputTotalRuntime("Between Marriages-Marriages (parents of bride/groom -> bride + groom)", startTime, true);
 				}
 
@@ -339,19 +339,24 @@ public class Controller {
         return rules;
     }
 
-    public Map<String, Rule> buildRuleMap(Rules rules) {
+    public Map<String, Map<String, Rule>> buildRuleMap(Rules rules) {
         /**
          * Create map from process name to rule.
          */
-        Map<String, Rule> out = new HashMap<>();
+        Map<String, Map<String, Rule>> out = new HashMap<>();
         for (Rule r: rules) {
-            String name = r.getName();
-            if (!PROCESSES.contains(name)) {
-                LOG.logWarn("buildRuleMap", "Found rule for unknown target: " + name + " . Skipping.");
+            String[] name = r.getName().split("[\\.]");  // processName.checkName
+            if (!PROCESSES.contains(name[0])) {
+                LOG.logWarn("buildRuleMap", "Found rule for unknown target: " + name[0] + " . Skipping.");
                 continue;
             }
 
-            out.put(name, r);
+            if (!out.containsKey(name[0])) {
+                out.put(name[0], new HashMap<>());
+            }
+
+            Map<String, Rule> map = out.get(name[0]);
+            map.put(name[1], r);
         }
 
         return out;
@@ -517,7 +522,7 @@ public class Controller {
 		myHDT.closeDataset();
 	}
 
-	public void Within(Process process, Rule rule) {
+	public void Within(Process process, Map<String, Rule> rules) {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
@@ -534,7 +539,7 @@ public class Controller {
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
-				new Within(myHDT, process, rule, mainDirectory, maxLev, fixedLev,
+				new Within(myHDT, process, rules, mainDirectory, maxLev, fixedLev,
                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
 				myHDT.closeDataset();
@@ -546,7 +551,7 @@ public class Controller {
 		}
 	}
 
-	public void Between(Process process, Rule rule) {
+	public void Between(Process process, Map<String, Rule> rules) {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
@@ -560,7 +565,7 @@ public class Controller {
 			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
 				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
 
-				new Between(myHDT, process, rule, mainDirectory, maxLev, fixedLev,
+				new Between(myHDT, process, rules, mainDirectory, maxLev, fixedLev,
                             ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
 				myHDT.closeDataset();

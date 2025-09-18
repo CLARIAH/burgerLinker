@@ -2,6 +2,7 @@ package nl.knaw.iisg.burgerlinker.processes;
 
 import java.lang.Math;
 import java.util.Set;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +27,7 @@ public class Within {
 	private String mainDirectoryPath, processName;
 	private MyHDT myHDT;
     private Process process;
-    private Rule rule;
+    private Map<String, Rule> rules;
 	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
 	private boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
@@ -37,7 +38,7 @@ public class Within {
 
 	LinksCSV LINKS;
 
-	public Within(MyHDT hdt, Process process, Rule rule, String directoryPath,
+	public Within(MyHDT hdt, Process process, Map<String, Rule> rules, String directoryPath,
                   Integer maxLevenshtein, boolean fixedLev, boolean ignoreDate,
                   boolean ignoreBlock, boolean singleInd, boolean formatCSV) {
 		this.mainDirectoryPath = directoryPath;
@@ -49,7 +50,7 @@ public class Within {
 		this.myHDT = hdt;
         this.process = process;
         this.processName = this.process.toString();
-        this.rule = rule;
+        this.rules = rules;
 
 		String options = LOG.getUserOptions(this.maxLev, this.fixedLev, singleInd,
                                             this.ignoreDate, this.ignoreBlock);
@@ -373,7 +374,9 @@ public class Within {
 
         Facts facts = new Facts();
         facts.put("diff", diff);
-        if (rule == null || this.rule.evaluate(facts)) {
+
+        Rule rule = this.rules.get("timegapdiff");
+        if (rule == null || rule.evaluate(facts)) {
             return diff;
         }
 
@@ -382,14 +385,18 @@ public class Within {
 
 	public boolean checkTimeConsistencyWithAge(int registrationDifference, Person personURI) {
 		int ageDeceased = myHDT.getAgeFromHDT(personURI.getURI());
-		if(ageDeceased != 999) {
-			if(Math.abs(registrationDifference - ageDeceased) < 2) {
-				return true;
-			} else {
+		if(ageDeceased < 999) {
+            int diff = Math.abs(registrationDifference - ageDeceased);
+
+            Facts facts = new Facts();
+            facts.put("diff", diff);
+
+            Rule rule = this.rules.get("consistencytolerance");
+            if (rule != null && !rule.evaluate(facts)) {
 				return false;
 			}
-		} else {
-			return true;
 		}
+
+        return true;
 	}
 }
