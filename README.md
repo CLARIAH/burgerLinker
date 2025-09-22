@@ -1,5 +1,27 @@
 ## **burgerLinker -** Civil Registries Linking Tool
 
+**This branch is undergoing active development. The instructions in this README might therefore not apply to the latest commits to this branch.**
+
+**To compile and run the code in this branch:**
+
+**1. Clone the upgrade branch**
+
+    git clone -b upgrade --single-branch https://github.com/CLARIAH/burgerLinker
+
+**2. Go to the source directory**
+
+    $ cd burgerLinker/
+
+**3. Compile the code and create a `jar` file**
+
+    $ ant jar
+
+**4. Run BurgerLinker (the jar file is stored in the `dist` directory)**
+
+    $ java -jar dist/BurgerLinker-0.8.0.jar --help
+
+---
+
 Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki) or via the [burgerLinker lecture](https://vimeo.com/573950112). Also see the paper on the [application of burgerLinker](https://hlcs.nl/article/view/14685/16325) in academia (LINKS).
 
 
