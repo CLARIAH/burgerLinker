@@ -1,24 +1,27 @@
 package nl.knaw.iisg.burgerlinker.core;
 
 
+import java.io.File;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
-import org.rdfhdt.hdt.triples.TripleString;
 
-import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
-import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
-import me.tongfei.progressbar.ProgressBarStyle;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 
-import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.data.MyRDF;
 import nl.knaw.iisg.burgerlinker.structs.Person;
+import nl.knaw.iisg.burgerlinker.utilities.ActivityIndicator;
+import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 
 public class Dictionary {
 	public String processName;
-	public String mainDirectoryPath;
+	public File mainDirectoryPath;
 	public int maxLev;
 	public Boolean fixedLev;
 	public Index indexFemalePartner, indexMalePartner, indexMain, indexMother, indexFather;
@@ -27,15 +30,15 @@ public class Dictionary {
 	public static final Logger lg = LogManager.getLogger(Dictionary.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 
-	public Dictionary(String processName, String mainDirectoryPath, int maxLev, Boolean fixedLev) {
+	public Dictionary(String processName, File mainDirectoryPath, int maxLev, Boolean fixedLev) {
 		this.processName = processName;
 		this.mainDirectoryPath = mainDirectoryPath;
 		this.maxLev = maxLev;
 		this.fixedLev = fixedLev;
 	}
 
-	public Boolean generateDictionary(MyHDT myHDT, String roleMain, Boolean genderFilter, String gender) {
-		indexMain = new Index(getRoleFragment(roleMain)+gender, mainDirectoryPath, maxLev, fixedLev);
+	public boolean generateDictionaryOneWay(MyRDF myRDF, String query, boolean genderFilter, String gender) {
+		indexMain = new Index("subject-"+gender, mainDirectoryPath, maxLev, fixedLev);
 
 		long startTime = System.currentTimeMillis();
 
@@ -43,34 +46,30 @@ public class Dictionary {
         int countAll = 0;
         int count_No_Main = 0;
 
-		IteratorTripleString it;
-
 		LOG.outputConsole("START: Generating Dictionary for process: " + processName);
 		try {
 			String taskName = "Indexing " + processName;
 
 			indexMain.openIndex();
 
-            it = myHDT.dataset.search("", roleMain, "");
-			long estNumber = it.estimatedNumResults();
-
-            ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(estNumber)
-                .setUpdateIntervalMillis(indexingUpdateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            TupleQueryResult qResult = null;
+            ActivityIndicator spinner = new ActivityIndicator(taskName);
 			try {
-                while (it.hasNext()) {
-                    TripleString ts = it.next();
+                spinner.start();
 
-					String event = ts.getSubject().toString();
-                    Person personMain = myHDT.getPersonInfo(event, roleMain);
+                qResult = myRDF.getQueryResults(query);
+                for (BindingSet bindingSet: qResult) {
+					String event = bindingSet.getValue("event").stringValue();
+
+                    Person personMain = new Person(event,
+                                               bindingSet.getValue("givenNameSubject").stringValue(),
+                                               bindingSet.getValue("familyNameSubject").stringValue(),
+                                               bindingSet.getValue("genderSubject").stringValue());
 
 					countAll++;
 					if( (genderFilter == false) || (genderFilter == true && personMain.hasGender(gender)) ) {
 						if(personMain.isValidWithFullName()){
-							String eventID = myHDT.getIDofEvent(event);
+							String eventID = bindingSet.getValue("eventID").stringValue();
 							indexMain.addPersonToIndex(personMain, eventID, "");
 
 							countInserts++;
@@ -80,14 +79,15 @@ public class Dictionary {
 					}
 
                     if(countAll % 10000 == 0) {
-                        pb.stepBy(10000);
+                        spinner.update(countAll);
                     }
-			    } pb.stepTo(estNumber);
+			    }
             } finally {
-                pb.close();
+                qResult.close();
+                spinner.terminate();
             }
-        } catch (NotFoundException e) {
-            LOG.logError("generateDictionary", "Error in iterating over HDT file in process "+ processName);
+        } catch (Exception e) {
+            LOG.logError("generateDictionary", "Error in iterating over RDF file in process "+ processName);
             LOG.logError("", e.toString());
 
             return false;
@@ -113,63 +113,63 @@ public class Dictionary {
         return true;
     }
 
-    public Boolean generateDictionary(MyHDT myHDT, String roleFemalePartner, String roleMalePartner, Boolean knownGender) {
-        indexFemalePartner = new Index(getRoleFragment(roleFemalePartner), mainDirectoryPath, maxLev, fixedLev);
-        indexMalePartner = new Index(getRoleFragment(roleMalePartner), mainDirectoryPath, maxLev, fixedLev);
+    public boolean generateDictionaryTwoWay(MyRDF myRDF, String query, boolean knownGender) {
+        Index indexSubject = new Index("subject", mainDirectoryPath, maxLev, fixedLev);
+        Index indexPartner = new Index("partner", mainDirectoryPath, maxLev, fixedLev);
 
         long startTime = System.currentTimeMillis();
 
         int countInserts = 0;
         int countAll = 0;
 
-        IteratorTripleString it;
-
         LOG.outputConsole("START: Generating Dictionary for process: " + processName);
         try {
             String taskName = "Indexing " + processName;
 
-            indexFemalePartner.openIndex();
-            indexMalePartner.openIndex();
+            indexSubject.openIndex();
+            indexPartner.openIndex();
 
-            it = myHDT.dataset.search("", roleFemalePartner, "");
-            long estNumber = it.estimatedNumResults();
-
-             ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(estNumber)
-                .setUpdateIntervalMillis(indexingUpdateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            TupleQueryResult qResult = null;
+            ActivityIndicator spinner = new ActivityIndicator(taskName);
 			try {
-                while (it.hasNext()) {
-                    TripleString ts = it.next();
+                spinner.start();
 
-                    String event = ts.getSubject().toString();
-                    Person femalePartner = myHDT.getPersonInfo(event, roleFemalePartner);
+                qResult = myRDF.getQueryResults(query);
+                for (BindingSet bindingSet: qResult) {
+					String event = bindingSet.getValue("event").stringValue();
+                    Person subject = new Person(event,
+                                            bindingSet.getValue("givenNameSubject").stringValue(),
+                                            bindingSet.getValue("familyNameSubject").stringValue(),
+                                            bindingSet.getValue("genderSubject").stringValue());
 
                     countAll++;
-                    if(femalePartner.isValidWithFullName()){
-                        String eventID = myHDT.getIDofEvent(event);
+                    if (subject.isValidWithFullName()){
+                        String eventID = bindingSet.getValue("eventID").stringValue();
 
-                        Person malePartner = myHDT.getPersonInfo(event, roleMalePartner);
-                        if(malePartner.isValidWithFullName()) {
-                            Boolean insert = addToIndex(femalePartner, malePartner, eventID, knownGender);
+                        Person partner = new Person(event,
+                                                bindingSet.getValue("givenNamePartner").stringValue(),
+                                                bindingSet.getValue("familyNamePartner").stringValue(),
+                                                bindingSet.getValue("genderPartner").stringValue());
+                        if(partner.isValidWithFullName()) {
+                            boolean insert = addToIndex(subject, partner, eventID, knownGender);
 
                             if(insert) {
                                 countInserts++;
                             }
                         }
+
                     }
 
                     if(countAll % 10000 == 0) {
-                        pb.stepBy(10000);
+                        spinner.update(countAll);
                     }
-                } pb.stepTo(estNumber);
+                }
             } finally {
-                pb.close();
+                qResult.close();
+                spinner.terminate();
             }
-        } catch (NotFoundException e) {
-            LOG.logError("generateDictionary", "Error in iterating over HDT file in process "+ processName);
+        } catch (Exception e) {
+            LOG.logError("generateDictionary", "Error in iterating over RDF file in process "+ processName);
             LOG.logError("", e.toString());
 
             return false;
@@ -187,11 +187,10 @@ public class Dictionary {
         return true;
     }
 
-    public Boolean generateDictionary(MyHDT myHDT, String roleMain, String roleMother, String roleFather,
-                                      boolean genderFilter, String gender) {
-        indexMain = new Index(getRoleFragment(roleMain)+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexMother = new Index(getRoleFragment(roleMother)+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexFather = new Index(getRoleFragment(roleFather)+gender, mainDirectoryPath, maxLev, fixedLev);
+    public boolean generateDictionaryThreeWay(MyRDF myRDF, String query, boolean genderFilter, String gender) {
+        indexMain = new Index("subject-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexMother = new Index("subjectMother-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexFather = new Index("subjectFather-"+gender, mainDirectoryPath, maxLev, fixedLev);
 
         long startTime = System.currentTimeMillis();
 
@@ -203,8 +202,6 @@ public class Dictionary {
         int count_Main = 0;
         int count_No_Main = 0;
 
-        IteratorTripleString it;
-
         LOG.outputConsole("START: Generating Dictionary for process: " + processName);
         try {
             String taskName = "Indexing " + processName;
@@ -213,29 +210,34 @@ public class Dictionary {
             indexMother.openIndex();
             indexFather.openIndex();
 
-            it = myHDT.dataset.search("", roleMain, "");
-            long estNumber = it.estimatedNumResults();
-
-            ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(estNumber)
-                .setUpdateIntervalMillis(indexingUpdateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            TupleQueryResult qResult = null;
+            ActivityIndicator spinner = new ActivityIndicator(taskName);
 			try {
-                while (it.hasNext()) {
-                    TripleString ts = it.next();
+                spinner.start();
 
-                    String event = ts.getSubject().toString();
-                    Person personMain = myHDT.getPersonInfo(event, roleMain);
+                qResult = myRDF.getQueryResults(query);
+                for (BindingSet bindingSet: qResult) {
+					String event = bindingSet.getValue("event").stringValue();
+
+                    Person personMain = new Person(event,
+                                               bindingSet.getValue("givenNameSubject").stringValue(),
+                                               bindingSet.getValue("familyNameSubject").stringValue(),
+                                               bindingSet.getValue("genderSubject").stringValue());
 
                     countAll++;
                     if( (genderFilter == false) || (genderFilter == true && personMain.hasGender(gender)) ) {
                         if(personMain.isValidWithFullName()){
-                            String eventID = myHDT.getIDofEvent(event);
+							String eventID = bindingSet.getValue("eventID").stringValue();
 
-                            Person mother = myHDT.getPersonInfo(event, roleMother);
-                            Person father = myHDT.getPersonInfo(event, roleFather);
+                            Person mother = new Person(event,
+                                                   bindingSet.getValue("givenNameSubjectMother").stringValue(),
+                                                   bindingSet.getValue("familyNameSubjectMother").stringValue(),
+                                                   bindingSet.getValue("genderSubjectMother").stringValue());
+
+                            Person father = new Person(event,
+                                                   bindingSet.getValue("givenNameSubjectFather").stringValue(),
+                                                   bindingSet.getValue("familyNameSubjectFather").stringValue(),
+                                                   bindingSet.getValue("genderSubjectFather").stringValue());
 
                             boolean motherValid = mother.isValidWithFullName();
                             boolean fatherValid = father.isValidWithFullName();
@@ -268,14 +270,15 @@ public class Dictionary {
                     }
 
                     if(countAll % 10000 == 0) {
-                        pb.stepBy(10000);
+                        spinner.update(countAll);
                     }
-                } pb.stepTo(estNumber);
+                }
             } finally {
-                pb.close();
+                qResult.close();
+                spinner.terminate();
             }
-        } catch (NotFoundException e) {
-            LOG.logError("generateDictionary", "Error in iterating over HDT file in process "+ processName);
+        } catch (Exception e) {
+            LOG.logError("generateDictionary", "Error in iterating over RDF file in process "+ processName);
             LOG.logError("", e.toString());
 
             return false;
@@ -345,12 +348,5 @@ public class Dictionary {
         }
 
         return false;
-    }
-
-
-    public String getRoleFragment(String role) {
-        String[] bits = role.split("/");
-
-        return bits[bits.length-1];
     }
 }

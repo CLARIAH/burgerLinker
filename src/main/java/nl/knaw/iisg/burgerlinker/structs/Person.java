@@ -18,16 +18,14 @@ public class Person {
 	private Boolean valid;
 	public final String names_separator = " ", compound_name_separator = "_";
 
-	public Person() {
-		setValid(false);
-	}
+    public Person(String event, String firstName, String familyName, String Gender) {
+		this.URI = event;
+        this.first_name = firstName;
+        this.last_name = familyName;
+        this.gender = gender;
 
-	public Person(CharSequence URI, String role) {
-		this.URI = URI.toString();
-		this.role = role;
-
-		setValid(true);
-	}
+		this.valid = true;
+    }
 
     public String toString() {
         return gender + ": " + last_name + ", " + first_name + "; " + URI.toString();
@@ -47,10 +45,6 @@ public class Person {
 
 	public String getURI() {
 		return URI;
-	}
-
-	public String getRole() {
-		return role;
 	}
 
 	public String getFirstName() {
@@ -125,7 +119,6 @@ public class Person {
 		System.out.println("* Person: " + URI);
 		System.out.println(" ---> First Name: " + first_name);
 		System.out.println(" ---> Last Name: " + last_name);
-		System.out.println(" ---> Role: " + role);
 		System.out.println(" ---> Gender: " + gender);
 		System.out.println("+-------------------------------------------------------------------------------");
 	}

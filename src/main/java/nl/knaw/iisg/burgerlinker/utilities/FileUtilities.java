@@ -132,9 +132,9 @@ public class FileUtilities {
 		return countLines;
 	}
 
-	public ArrayList<String> getAllValidLinksFile(String directory, Boolean output) {
+	public ArrayList<String> getAllValidLinksFile(File directory, Boolean output) {
 		ArrayList<String> consideredFiles = new ArrayList<String>();
-		try (Stream<Path> walk = Files.walk(Paths.get(directory))) {
+		try (Stream<Path> walk = Files.walk(Paths.get(directory.getCanonicalPath()))) {
 			List<String> result = walk.map(x -> x.toString()).filter(f -> f.endsWith(".csv")).collect(Collectors.toList());
 			for(String fileName : result) {
 				if(checkIfValidLinksFile(fileName)) {

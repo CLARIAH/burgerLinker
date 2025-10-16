@@ -11,20 +11,22 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.eclipse.rdf4j.query.BindingSet;
+
 import org.jeasy.rules.api.Rule;
 import org.jeasy.rules.api.Rules;
 import org.jeasy.rules.mvel.MVELRuleFactory;
-//import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 
 import org.yaml.snakeyaml.Yaml;
 
-import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.data.MyRDF;
 import nl.knaw.iisg.burgerlinker.data.YamlRuleDefinitionReader;
 import nl.knaw.iisg.burgerlinker.processes.Between;
 import nl.knaw.iisg.burgerlinker.processes.Closure;
@@ -54,11 +56,14 @@ public class Controller {
     private String rulesetDir = "./res/rule_sets/";
     private String rulesetExt = "yaml";
 
-	private String dataModelPath, rulesetPath, function, inputDataset, namespace, outputDirectory;
+	private String dataModelPath, rulesetPath, function, input, namespace;
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
-                    singleInd = false, outputFormatCSV = true, doubleInputs = false;
+                    singleInd = false, outputFormatCSV = true, doubleInputs = false,
+                    reload;
     private Map<String, String> dataModel;
+    private File workdir;
+    private MyRDF myRDF;
 
 	public static final Logger lg = LogManager.getLogger(Controller.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -66,16 +71,34 @@ public class Controller {
 
 	public Controller(String function, int maxlev, boolean fixedLev,
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
-                      String inputDataset, String outputDirectory, String outputFormat,
-                      String dataModel, String ruleset, String namespace) {
+                      String input, String output, String outputFormat,
+                      String dataModel, String ruleset, String namespace,
+                      boolean reload) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
 		this.ignoreDate = ignoreDate;
 		this.ignoreBlock = ignoreBlock;
 		this.singleInd = singleInd;
-		this.inputDataset = inputDataset;
-		this.outputDirectory = outputDirectory;
+		this.input = input;
+        this.reload = reload;
+
+        if (output == null) {
+            System.out.println("An output directory must be provided");
+
+            return;
+        }
+
+        if (!output.endsWith("/")){
+            output += "/";
+        }
+		this.workdir = new File(output);
+        if (!this.workdir.isDirectory()) {
+            System.out.println("Creating working directory '" + this.workdir.getName() + "/'");
+            this.workdir.mkdirs();
+        } else {
+            System.out.println("Found working directory '" + this.workdir.getName() + "/'");
+        }
 
         this.namespace = namespace;
         if (!(this.namespace.endsWith("#")
@@ -103,48 +126,50 @@ public class Controller {
 	}
 
 	public void runProgram() {
-		if(checkInputFunction() == true) {
-            if (PROCESSES.contains(this.function)) {
-                execProcess();
-            } else {
-                switch (this.function) {
-                case "showdatasetstats":
-                    if(checkInputDataset()) {
-                        outputDatasetStatistics(this.dataModel);
-                    }
+		try {
+            if (checkInputFunction() && checkAllUserInputs()) {
+                try {
+                    initGraphStore();
+                } catch (Exception e) {
+                    LOG.logError("execProcess", "Error initiating graph store: " + e);
+                }
 
-                    break;
-                case "converttohdt":
-                    if(checkInputDirectory()) {
-                        convertToHDT(inputDataset);
-                    }
+                // read data model specification from file
+                Map<String, Map<String, String>> dataModelRaw = loadYamlFromFile(this.dataModelPath);
+                if (dataModelRaw == null) {
+                    LOG.logError("execProcess", "Error reading data model");
+                    return;
+                }
 
-                    break;
+                // build and validate data model
+                this.dataModel = buildDataModel(dataModelRaw);
+                if (!validateDataModel(this.dataModel)) {
+                    return;
+                }
+                LOG.outputConsole("IMPORT: Data Model from '" + new File(this.dataModelPath).getName() + "'");
+
+                // read rule definitions and remap
+                Rules rulesRaw = loadRulesFromFile(this.rulesetPath);
+                Map<String, Map<String, Rule>> ruleMap = buildRuleMap(rulesRaw);
+                LOG.outputConsole("IMPORT: Rule Definitions from '" + new File(this.rulesetPath).getName() + "'");
+
+                outputDatasetStatistics(this.dataModel);
+                if (PROCESSES.contains(this.function)) {
+                    try {
+                        execProcess(ruleMap);
+                    } catch (Exception e) {
+                        LOG.logError("runProgram", "Error running process: " + e);
+                    }
                 }
             }
-		}
+		} catch (Exception e) {
+            LOG.logError("execProcess", "Error: " + e);
+        }
+
+		myRDF.shutdown();
 	}
 
-    public void execProcess() {
-        // read data model specification from file
-        Map<String, Map<String, String>> dataModelRaw = loadYamlFromFile(this.dataModelPath);
-        if (dataModelRaw == null) {
-            LOG.logError("execProcess", "Error reading data model");
-            return;
-        }
-
-        // build and validate data model
-        this.dataModel = buildDataModel(dataModelRaw);
-        if (!validateDataModel(this.dataModel)) {
-            return;
-        }
-        LOG.outputConsole("IMPORT: Data Model from '" + new File(this.dataModelPath).getName() + "'");
-
-        // read rule definitions and remap
-        Rules rulesRaw = loadRulesFromFile(this.rulesetPath);
-        Map<String, Map<String, Rule>> ruleMap = buildRuleMap(rulesRaw);
-        LOG.outputConsole("IMPORT: Rule Definitions from '" + new File(this.rulesetPath).getName() + "'");
-
+    public void execProcess(Map<String, Map<String, Rule>> ruleMap) throws java.io.IOException {
         Map<String, Rule> rules;
         Process process;
         switch (this.function) {
@@ -157,7 +182,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.WITHIN,
                                           this.dataModel);
-					Within(process, rules);
+					within(process, rules);
 					LOG.outputTotalRuntime("Within Births-Marriages (newborn -> bride/groom)", startTime, true);
 				}
 
@@ -171,7 +196,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.WITHIN,
                                           this.dataModel);
-					Within(process, rules);
+					within(process, rules);
 					LOG.outputTotalRuntime("Within Births-Deaths (newborn -> deceased)", startTime, true);
 				}
 
@@ -185,7 +210,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process, rules);
+					between(process, rules);
 					LOG.outputTotalRuntime("Between Births-Marriages (newborn parents -> bride + groom)", startTime, true);
 				}
 
@@ -199,7 +224,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process, rules);
+					between(process, rules);
 					LOG.outputTotalRuntime("Between Births-Deaths (parents of newborn -> deceased + partner)", startTime, true);
 				}
 
@@ -213,7 +238,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.DECEASED_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-					Between(process, rules);
+					between(process, rules);
 					LOG.outputTotalRuntime("Between Deaths-Marriages (parents of deceased -> bride + groom)", startTime, true);
 				}
 
@@ -227,7 +252,7 @@ public class Controller {
                     process = new Process(Process.ProcessType.MARIAGE_MARIAGE,
                                           Process.RelationType.BETWEEN,
                                           this.dataModel);
-                    Between(process, rules);
+                    between(process, rules);
 					LOG.outputTotalRuntime("Between Marriages-Marriages (parents of bride/groom -> bride + groom)", startTime, true);
 				}
 
@@ -238,7 +263,7 @@ public class Controller {
 					LOG.outputConsole("START: Computing the transitive closure");
 
                     process = new Process(this.dataModel);
-					computeClosure(process, this.namespace);
+					closure(process, this.namespace);
 					LOG.outputTotalRuntime("Computing the transitive closure", startTime, true);
 				}
 
@@ -364,11 +389,10 @@ public class Controller {
 
 	// ========= input checks =========
 
-	public boolean checkAllUserInputs() {
+	public boolean checkAllUserInputs() throws java.io.IOException {
 		boolean validInputs = true;
 
-		validInputs = validInputs & checkInputDataset();
-		validInputs = validInputs & checkInputDirectory();
+		validInputs = validInputs & checkOutputDir();
 		validInputs = validInputs & checkInputMaxLevenshtein();
 
 		checkOutputFormatRDF();
@@ -415,58 +439,45 @@ public class Controller {
 	}
 
 	public boolean checkInputDataset() {
-		if(inputDataset.contains(",")){
-			String[] inputs = inputDataset.split(",");
+		if(input.contains(",")){
+			String[] inputs = input.split(",");
 			boolean check = checkInputDataset(inputs[0]);
 			check = check & checkInputDataset(inputs[1]);
 			doubleInputs = true;
 
 			return check;
 		} else {
-			return checkInputDataset(inputDataset);
+			return checkInputDataset(input);
 		}
 	}
 
-	public boolean checkInputDataset(String fileURL) {
-		if(FILE_UTILS.checkIfFileExists(fileURL) == true) {
+	public boolean checkInputDataset(String path) {
+		if(FILE_UTILS.checkIfFileExists(path) == true) {
 			LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: "
-                                                 + inputDataset);
+                                                 + path);
 
 			return true;
 		} else {
-			String suggestedFix = "A valid HDT file, or two valid HDT files separated only by a comma "
-                                  + "(without a space) are required as input after parameter: --inputData ";
-			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --inputData",
+			String suggestedFix = "A valid RDF file, or multiple valid RDF files separated only by a comma "
+                                  + "(without a space) are required as input after parameter: --input ";
+			LOG.logError("checkInputFileInput", "Invalid or Missing user input for parameter: --input",
                          suggestedFix);
 
 			return false;
 		}
 	}
 
-	public boolean checkInputDirectory() {
-		if(FILE_UTILS.checkIfDirectoryExists(outputDirectory)) {
-			LOG.logDebug("checkInputDirectoryOutput", "The following directory is set to store results: "
-                                                      + outputDirectory);
-
-			return true;
-		} else {
-			LOG.logError("checkInputDirectoryOutput", "Invalid or Missing user input for parameter: "
-                         + "--outputDir", "A valid directory for storing links is required as input "
-                         + "after parameter: --outputDir");
-
-			return false;
-		}
-	}
-
 	public boolean checkInputDirectoryContents() {
-		if(checkInputDirectory()) {
-			if(FILE_UTILS.getAllValidLinksFile(outputDirectory, false) != null) {
-				return true;
-			}
-		}
+        if(FILE_UTILS.getAllValidLinksFile(this.workdir, false) != null) {
+            return true;
+        }
 
 		return false;
 	}
+
+    public boolean checkOutputDir() throws java.io.IOException {
+        return FILE_UTILS.checkIfDirectoryExists(this.workdir.getCanonicalPath());
+    }
 
 	public boolean checkOutputFormatRDF() {
 		if(outputFormatCSV == true) {
@@ -480,70 +491,59 @@ public class Controller {
 		}
 	}
 
-	// ========= utilities =========
-
-	public void convertToHDT(String s) {
-		if(inputDataset.contains(",")){
-			System.out.println("Input Dataset: " + inputDataset);
-			String[] inputs = inputDataset.split(",");
-			if(checkInputDataset(inputs[0]) && checkInputDataset(inputs[1])) {
-				new MyHDT(inputs[0], inputs[1], outputDirectory);
-			}
-		}
-		else {
-			if(checkInputDataset()){
-				new MyHDT(inputDataset, outputDirectory);
-			}
-		}
-	}
-
 	// ========= functions =========
 
+    public void initGraphStore() throws java.io.IOException {
+        File dir = new File(this.workdir.getCanonicalPath() + "/store");
+        if (!this.reload && FILE_UTILS.checkIfDirectoryExists(dir.getCanonicalPath())) {
+            LOG.outputConsole("IMPORT: Found existing RDF store. Reusing data.");
+
+            myRDF = new MyRDF(dir);
+
+            return;
+        }
+
+        checkInputDataset();
+        String[] paths = {input};
+        if(doubleInputs == true) {
+            paths = input.split(",");
+        }
+
+        LOG.outputConsole("IMPORT: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
+        myRDF = new MyRDF(dir);
+        myRDF.parse(paths);
+    }
+
 	public void outputDatasetStatistics(Map<String, String> dataModel) {
-		MyHDT myHDT;
 		DecimalFormat formatter = new DecimalFormat("#,###");
+        for (BindingSet bindingSet: myRDF.getQueryResults(MyRDF.qInstanceCount)) {
+            String uri = bindingSet.getValue("type").stringValue();
+            int amount = myRDF.valueToInt(bindingSet.getValue("instanceCount"));
 
-		if(doubleInputs == true) {
-			String[] inputs = inputDataset.split(",");
-			myHDT = new MyHDT(inputs[0], inputs[1], doubleInputs, dataModel);
-		} else {
-			myHDT = new MyHDT(inputDataset, dataModel);
-		}
-
-		int numberOfBirthEvents = myHDT.getNumberOfSubjects(dataModel.get("birth_event"));
-		LOG.outputConsole("--- 	# Birth Events: " + formatter.format(numberOfBirthEvents) + " ---");
-		int numberOfMarriageEvents = myHDT.getNumberOfSubjects(dataModel.get("marriage_event"));
-		LOG.outputConsole("--- 	# Marriage Events: " + formatter.format(numberOfMarriageEvents) + " ---");
-		int numberOfDeathEvents = myHDT.getNumberOfSubjects(dataModel.get("death_event"));
-		LOG.outputConsole("--- 	# Death Events: " + formatter.format(numberOfDeathEvents) + " ---");
-		int numberOfIndividuals = myHDT.getNumberOfSubjects(dataModel.get("person"));
-		LOG.outputConsole("--- 	# Individuals: " + formatter.format(numberOfIndividuals) + " ---");
-
-		myHDT.closeDataset();
+            LOG.outputConsole(">>> " + uri + ": " + formatter.format(amount));
+        }
 	}
 
-	public void Within(Process process, Map<String, Rule> rules) {
+	public void within(Process process, Map<String, Rule> rules) throws java.io.IOException {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
-		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
+        File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
+		if (dir.mkdir()) {
+            if (new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DICTIONARY).mkdir()
+                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE).mkdir()
+                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS).mkdir()) {
+                Within within = new Within(myRDF, process, rules, dir, maxLev, fixedLev,
+                                           ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
-			boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory,
-                                                                      DIRECTORY_NAME_DICTIONARY);
-			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory,
-                                                                    DIRECTORY_NAME_DATABASE);
-			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory,
-                                                                   DIRECTORY_NAME_RESULTS);
-			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
-
-				new Within(myHDT, process, rules, mainDirectory, maxLev, fixedLev,
-                           ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
-
-				myHDT.closeDataset();
-			} else {
+                if(singleInd == false) {
+                    within.link_within("f", false); // false = do not close stream
+                    within.link_within("m", true); // true = close stream
+                } else {
+                    within.link_within_single("f", false);
+                    within.link_within_single("m", true);
+                }
+            } else {
 				LOG.logError(process.toString(), "Error in creating the three sub output directories");
 			}
 		} else {
@@ -551,25 +551,20 @@ public class Controller {
 		}
 	}
 
-	public void Between(Process process, Map<String, Rule> rules) {
+    public void between(Process process, Map<String, Rule> rules) throws java.io.IOException {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
 		String dirName = function + options;
 
-		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
+        File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
+		if (dir.mkdir()) {
+            if (new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DICTIONARY).mkdir()
+                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE).mkdir()
+                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS).mkdir()) {
+                Between between = new Between(myRDF, process, rules, dir, maxLev, fixedLev,
+                                              ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
-			boolean dictionaryDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DICTIONARY);
-			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
-			if(dictionaryDirCreated && databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
-
-				new Between(myHDT, process, rules, mainDirectory, maxLev, fixedLev,
-                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
-
-				myHDT.closeDataset();
-			} else {
+                between.link_between();
+            } else {
 				LOG.logError(process.toString(), "Error in creating the three sub output directories");
 			}
 		} else {
@@ -577,21 +572,16 @@ public class Controller {
 		}
 	}
 
-	public void computeClosure(Process process, String namespace) {
+	public void closure(Process process, String namespace) throws java.io.IOException {
 		String dirName = function;
 
-		boolean processDirCreated =  FILE_UTILS.createDirectory(outputDirectory, dirName);
-		if(processDirCreated == true) {
-			String mainDirectory = outputDirectory + "/" + dirName;
+        File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
+		if (dir.mkdir()) {
+           if (new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE).mkdir()
+               && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS).mkdir()) {
+			 	Closure closure = new Closure(myRDF, process, namespace, dir, outputFormatCSV);
 
-			boolean databaseDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_DATABASE);
-			boolean resultsDirCreated = FILE_UTILS.createDirectory(mainDirectory, DIRECTORY_NAME_RESULTS);
-			if(databaseDirCreated && resultsDirCreated) {
-				MyHDT myHDT = new MyHDT(inputDataset, process.dataModel);
-
-				new Closure(myHDT, process, namespace, outputDirectory, outputFormatCSV);
-
-				myHDT.closeDataset();
+                closure.computeClosure();
 			} else {
 				LOG.logError("Closure", "Error in creating the main output directory");
 			}

@@ -21,11 +21,11 @@ public class App {
 	@Parameter(names = "--function")
 	String function = null;
 
-	@Parameter(names = "--inputData")
-	String inputData = null;
+	@Parameter(names = "--input")
+	String input = null;
 
-	@Parameter(names = "--outputDir")
-	String outputDir = null;
+	@Parameter(names = "--output")
+	String output = null;
 
     @Parameter(names = "--dataModel")
     String dataModel = dataModelDefault;
@@ -35,6 +35,9 @@ public class App {
 
     @Parameter(names = "--ruleset")
     String ruleset = rulesetDefault;
+
+    @Parameter(names = "--reload")
+    boolean reload = false;
 
 	@Parameter(names = "--maxLev")
 	int maxLev = 4;
@@ -101,8 +104,9 @@ public class App {
 				Configurator.setRootLevel(Level.DEBUG);
 			}
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
-                                              ignoreBlock, singleInd, inputData, outputDir,
-                                              format, dataModel, ruleset, namespace);
+                                              ignoreBlock, singleInd, input, output,
+                                              format, dataModel, ruleset, namespace,
+                                              reload);
 			cntrl.runProgram();
 		} else {
 			// do not run program and show some help message if user enter: --help
@@ -110,8 +114,8 @@ public class App {
 
 			System.out.println("Parameters that can be provided as input to the linking tool:");
 			System.out.printf(formatting, "--function:", "(required) One of the functionalities listed below");
-			System.out.printf(formatting, "--inputData:", "(required) Path of the HDT dataset");
-			System.out.printf(formatting, "--outputDir:", "(required) Path of the directory for saving the indices and the detected links");
+			System.out.printf(formatting, "--input:", "(required) Comma-separated path to one or more RDF graphs");
+			System.out.printf(formatting, "--output:", "(required) Path of the directory for saving the indices and the detected links");
 			System.out.printf(formatting, "--dataModel:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
             System.out.printf(formatting, "--ruleSet:", "(optional) Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.");
 			System.out.printf(formatting, "--namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
@@ -119,11 +123,10 @@ public class App {
 			System.out.printf(formatting, "--fixedLev:", "(optional, default = False) Add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths");
 			System.out.printf(formatting, "--format:", "(optional, default = CSV) One of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates");
 			System.out.printf(formatting, "--debug:", "(optional, default = error) One of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)");
+			System.out.printf(formatting, "--reload:", "(optional) Reload RDF data from graph(s) instead of reusing an existing RDF store.");
 			System.out.println("\n");
 
 			System.out.println("Functionalities that are supported in the current version: (case insensitive)");
-			System.out.printf(formatting, "ConvertToHDT:", "Convert an RDF dataset (given as --inputData) to an HDT file generated in the same directory. This function can also be used for merging two HDT files into one (see Example 3 below).");
-			System.out.printf(formatting, "ShowDatasetStats:", "Display some general stats about the HDT dataset (given as --inputData)");
 			System.out.printf(formatting, "Within_B_M:", "Link newborns in Birth Certificates to brides/grooms in Marriage Certificates (reconstructs life course)");
 			System.out.printf(formatting, "Within_B_D:", "Link newborns in Birth Certificates to deceased individuals in Death Certificates (reconstructs life course)");
 			System.out.printf(formatting, "Between_B_M:", "Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
@@ -135,27 +138,11 @@ public class App {
 			System.out.println("\n");
 			System.out.println("------------------------");
 
-			System.out.println("Example 1. Generate an HDT file and its index from an RDF dataset:");
-			System.out.println("--function ConvertToHDT --inputData dataDirectory/myData.nq --outputDir . ");
-			System.out.println("\nThis will generate the HDT file 'myData.hdt' and its index 'myData.hdt.index' in the same directory."
-					+ "\nThe index should be kept in the same directory of the HDT file to speed up all queries.");
-
-			System.out.println("\n");
-			System.out.println("------------------------");
-
-			System.out.println("Example 2. Merge two HDT files into one:");
-			System.out.println("--function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . ");
-			System.out.println("\nThis will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory."
-					+ "\nThe two input HDT files are separated by a comma ',' without a space)");
-
-			System.out.println("\n");
-			System.out.println("------------------------");
-
-			System.out.println("Example 3. Linking parents of newborns to brides and grooms:");
-			System.out.println("--function Between_B_M --inputData dataDirectory/myData.hdt --outputDir . --format CSV  --maxLev 3 --fixedLev");
+			System.out.println("Example 1. Linking parents of newborns to brides and grooms:");
+			System.out.println("--function Between_B_M --inputData data/myData.nq --output out/ --format CSV  --maxLev 3 --fixedLev");
 			System.out.println("\nThese arguments indicate that the user wants to:\n "
 					+ "\t \t [Between_B_M] link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates,\n "
-					+ "\t \t [dataDirectory/myData.hdt] described in the dataset myData.hdt (according to CLARIAH's civil registries RDF schema),\n "
+					+ "\t \t [data/myData.nq] described in the dataset myData.nq,\n "
 					+ "\t \t [.] save the detected links in the current directory,\n "
 					+ "\t \t [CSV] as a CSV file,\n "
 					+ "\t \t [3] allowing a maximum Levenshtein of 3 per name (first name or last name),\n "
@@ -164,10 +151,10 @@ public class App {
 			System.out.println("\n");
 			System.out.println("------------------------");
 
-			System.out.println("Example 4. Family Reconstruction:");
-			System.out.println("--function closure --inputData dataDirectory/myData.hdt --outputDir myResultsDirectory ");
+			System.out.println("Example 2. Family Reconstruction:");
+			System.out.println("--function closure --inputData data/myDataPart1.nq,data/myDataPart2.nq --outputDir myResultsDirectory ");
 			System.out.println("\nThis command computes the transitive closure of all links existing in the directory myResultsDirectory, and generates a new finalDataset.nt.gz dataset in this directory "
-					+ "\n by replacing all matched individuals' identifiers from the myData.hdt input dataset with the same unique identifier)");
+					+ "\n by replacing all matched individuals' identifiers from the input datasets with the same unique identifier)");
 
 			System.out.println("\n");
 			System.out.println("------------------------");

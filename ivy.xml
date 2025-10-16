@@ -2,7 +2,6 @@
     <info organisation="nl.knaw.iisg" module="burgerLinker"/>
     <dependencies>
         <dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.25.1"/>  <!-- logging -->
-        <dependency org="org.rdfhdt" name="hdt-java-core" rev="3.0.10"/>  <!-- support RDF HDT -->
         <dependency org="com.opencsv" name="opencsv" rev="5.12.0"/>  <!-- support CSV -->
         <dependency org="org.rocksdb" name="rocksdbjni" rev="10.2.1"/>  <!-- key-value database -->
         <dependency org="me.tongfei" name="progressbar" rev="0.10.1"/>  <!-- progress bar -->
@@ -16,6 +15,7 @@
         <dependency org="org.jeasy" name="easy-rules-mvel" rev="4.1.0"/>  <!-- simple rule engine -->
         <dependency org="org.jeasy" name="easy-rules-support" rev="4.1.0"/>  <!-- simple rule engine -->
         <dependency org="org.mvel" name="mvel2" rev="2.5.2.Final"/>  <!-- java expression language -->
+        <dependency org="org.eclipse.rdf4j" name="rdf4j-storage" type="pom" rev="5.1.5"/>  <!-- support RDF -->
     </dependencies>
 </ivy-module>
 

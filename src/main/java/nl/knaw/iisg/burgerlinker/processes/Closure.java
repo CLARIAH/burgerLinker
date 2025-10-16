@@ -2,40 +2,47 @@ package nl.knaw.iisg.burgerlinker.processes;
 
 import static nl.knaw.iisg.burgerlinker.Properties.*;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
-import org.rdfhdt.hdt.triples.TripleString;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
+import static org.eclipse.rdf4j.model.util.Values.iri;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.QueryResults;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
 import nl.knaw.iisg.burgerlinker.core.Index;
 import nl.knaw.iisg.burgerlinker.data.LinksCSV;
-import nl.knaw.iisg.burgerlinker.data.MyHDT;
+import nl.knaw.iisg.burgerlinker.data.MyRDF;
 import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.Properties;
 import nl.knaw.iisg.burgerlinker.utilities.*;
-import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
-import me.tongfei.progressbar.ProgressBarStyle;
+import nl.knaw.iisg.burgerlinker.utilities.ActivityIndicator;
 
 
 // Between_M_M: link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)
 public class Closure {
 	// output directory specified by the user + name of the called function
-	private String inputDirectoryPath, namespace, outputDirectoryPath;
-	private MyHDT myHDT;
+	private String namespace;
+	private MyRDF myRDF;
     private Process process;
 	private final int updateInterval = 5000;
+    private File inputDirectoryPath, outputDirectoryPath;
 	Index indexBride, indexGroom;
 
 	public static final Logger lg = LogManager.getLogger(Closure.class);
@@ -48,10 +55,11 @@ public class Closure {
     HashMap<String, HashSet<String>> dbClassToIndivs;
 	HashMap<String, String> dbIndivToClass;
 
-	public Closure(MyHDT hdt, Process process, String namespace, String directoryPath, boolean formatCSV) {
+	public Closure(MyRDF myRDF, Process process, String namespace,
+                   File directoryPath, boolean formatCSV) throws java.io.IOException {
 		this.inputDirectoryPath = directoryPath;
-		this.outputDirectoryPath = directoryPath + "/closure";
-		this.myHDT = hdt;
+		this.outputDirectoryPath = new File(directoryPath.getCanonicalPath() + "closure");
+		this.myRDF = myRDF;
         this.process = process;
         this.namespace = namespace;
 
@@ -77,8 +85,6 @@ public class Closure {
 			this.dirClassToIndivs = outputDirectoryPath + "/" + DIRECTORY_NAME_DATABASE + "/ClassToIndivs";
 			this.dirIndivToClass = outputDirectoryPath + "/" + DIRECTORY_NAME_DATABASE + "/IndivToClass";
 		}
-
-		computeClosure();
 	}
 
 	public void computeClosure() {
@@ -107,79 +113,94 @@ public class Closure {
 
 	public void reconstructDataset(String namespace) {
 		try {
-			String taskName = "Reconstructing dataset after transitive closure";
 			int cntAll = 0;
-
-			// iterate through the marriage certificates to link it to the marriage dictionaries
-			IteratorTripleString it = myHDT.dataset.search("", "", "");
-			long estNumber = it.estimatedNumResults();
-
-			LOG.outputConsole("Estimated number of certificates to be processed is: " + estNumber);
 
 			LinksCSV reconstruction = new LinksCSV("dataset_reconstructed", outputDirectoryPath, true);
 			LinksCSV singletons = new LinksCSV("dataset_singletons", outputDirectoryPath, true);
 
-            ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(estNumber)
-                .setUpdateIntervalMillis(updateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            TupleQueryResult qResult = null;
+            ActivityIndicator spinner = new ActivityIndicator("Reconstructing Individuals");
 			try {
-				while(it.hasNext()) {
-					TripleString ts = it.next();
+                spinner.start();
+
+                qResult = myRDF.getQueryResults(MyRDF.qStatements);
+                for (BindingSet bindingSet: qResult) {
                     LinksCSV stream = reconstruction;
 					cntAll++;
 
+                    // unpack nodes
+                    Value subject = bindingSet.getValue("s");
+                    Value predicate = bindingSet.getValue("p");
+                    Value object = bindingSet.getValue("o");
+
 					// skip blank nodes
-					if(!ts.getSubject().toString().startsWith("_:")) {
-                        String obj = ts.getObject().toString();
-						String objPersonID = getEqClassOfPerson(obj, namespace);
-                        if (objPersonID == null) {
-                            if (obj.startsWith("http")) {
-                                // URI of unlinked individual
-                                objPersonID = "<" + obj + ">";
-                            } else {
-                                // literal
-                                objPersonID = obj;
+					if(subject.isBNode()) {
+                        continue;
+                    }
+
+                    String sbjNew = null;
+                    Value sbjPersonID = bindingSet.getValue("sPersonID");
+                    if (sbjPersonID != null) {
+                        sbjNew = getEqClassOfPerson(sbjPersonID.stringValue(), namespace);
+                    }
+                    if (sbjNew == null) {
+                        stream = singletons;
+
+                        if (subject.isIRI()) {
+                            // URI of unlinked individual
+                            sbjNew = "<" + subject.stringValue() + ">";
+                        } else {
+                            // literal
+                            sbjNew = subject.stringValue();
+                        }
+                    }
+
+                    String objNew = null;
+                    Value objPersonID = bindingSet.getValue("oPersonID");
+                    if (objPersonID != null) {
+                        objNew = getEqClassOfPerson(objPersonID.stringValue(), namespace);
+                    }
+                    if (objNew == null) {
+                        if (object.isIRI()) {
+                            // URI of unlinked individual
+                            objNew = "<" + object.stringValue() + ">";
+                        } else {
+                            // literal
+                            objNew = object.stringValue();
+                        }
+                    }
+
+                    String pStr = "<" + predicate.stringValue() + ">";
+                    if(object.isLiteral() && pStr.contains("age")) {
+                        Literal objLit = (Literal) object;
+
+                        Value eventDate = bindingSet.getValue("eventDate");
+                        if (eventDate != null) {
+                            String[] dateElem = eventDate.stringValue().split("-");  // YYYY-MM-DD
+                            try {
+                                int dateYear = Integer.parseInt(dateElem[0]);
+                                int birthYear = dateYear - objLit.intValue();
+
+                                String birthYearStr = "\"" + Integer.toString(birthYear) + "\""
+                                                     + "^^<http://www.w3.org/2001/XMLSchema#gYear>";
+                                stream.addToStream(sbjNew + " <" + BIRTH_YEAR + "> " + birthYearStr + " .");
+                            } catch (Exception e) {
+                                // skip
                             }
                         }
-
-                        String sbj = ts.getSubject().toString();
-						String sbjPersonID = getEqClassOfPerson(sbj, namespace);
-                        if (sbjPersonID == null) {
-                            stream = singletons;
-
-                            if (sbj.startsWith("http")) {
-                                // URI of unlinked individual
-                                sbjPersonID = "<" + sbj + ">";
-                            } else {
-                                // literal
-                                sbjPersonID = sbj;
-                            }
-                        }
-
-                        String predicate = "<" + ts.getPredicate().toString() + ">";
-						if(predicate.contains("age")) {
-							String ageInString = myHDT.getStringValueFromLiteral(objPersonID);
-							int age = Integer.valueOf(ageInString);
-
-							String birthYear = myHDT.getBirthYearFromAge(ts.getSubject().toString(), age);
-							if(birthYear != null) {
-								stream.addToStream(sbjPersonID + " <" + BIRTH_YEAR + "> " + birthYear + " .");
-							}
-						} else {
-							stream.addToStream(sbjPersonID + " " + predicate + " " + objPersonID + " .");
-						}
+                    } else {
+                        stream.addToStream(sbjNew + " " + predicate + " " + objNew + " .");
 					}
-					if(cntAll % 10000 == 0) {
-						pb.stepBy(10000);
-					}
-				} pb.stepTo(estNumber);
-			} finally {
-				pb.close();
+
+                    if (cntAll % 10000 == 0) {
+                        spinner.update(cntAll);
+                    }
+				}
+            } finally {
+                qResult.close();
 				reconstruction.closeStream();
                 singletons.closeStream();
+                spinner.terminate();
 			}
 		} catch (Exception e) {
 			LOG.logError("reconstructDataset", "Error in reconstructing the dataset after transitive closure");
@@ -189,9 +210,7 @@ public class Closure {
 		}
 	}
 
-	public String getEqClassOfPerson(String someURI, String namespace) {
-		String personID = myHDT.getIDofPerson(someURI);
-
+	public String getEqClassOfPerson(String personID, String namespace) {
 		if(personID != null) {
 			String eqClass = dbIndivToClass.get(personID);
 			if(eqClass != null) {
@@ -261,12 +280,8 @@ public class Closure {
 			String [] nextLine;
 			int nbLines = FILE_UTILS.countLines(linksFilePath);
 
-            ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(nbLines)
-                .setUpdateIntervalMillis(updateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            ActivityIndicator spinner = new ActivityIndicator("Computing Closure");
+            spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(linksFilePath));
 			try {
@@ -355,16 +370,15 @@ public class Closure {
 								}
 							}
 						}
-						if(countProgress % 1000 == 0) {
-							pb.stepBy(1000);
-						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
+                    if (countProgress % 10000 == 0) {
+                        spinner.update(countProgress);
+                    }
 				}
-				pb.stepTo(nbLines);
 			} finally {
-				pb.close();
+                spinner.terminate();
 				reader.close();
 			}
 		} catch (IOException | CsvValidationException e) {
@@ -390,37 +404,55 @@ public class Closure {
             this.process.setValues(Process.ProcessType.BIRTH_MARIAGE,
                                    Process.RelationType.WITHIN);
 
-			success = success & saveLinksIndividuals_Within(filePath);
+            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
+            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+
+			success = success & saveLinksIndividuals_Within(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Within_B_D(filePath)) {
             this.process.setValues(Process.ProcessType.BIRTH_DECEASED,
                                    Process.RelationType.WITHIN);
 
-			success = success & saveLinksIndividuals_Within(filePath);
+            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
+            String queryB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
+
+			success = success & saveLinksIndividuals_Within(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_B_M(filePath)) {
             this.process.setValues(Process.ProcessType.BIRTH_MARIAGE,
                                    Process.RelationType.BETWEEN);
 
-			success = success & saveLinksIndividuals_Between(filePath);
+            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
+            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+
+			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_D_M(filePath)) {
             this.process.setValues(Process.ProcessType.DECEASED_MARIAGE,
                                    Process.RelationType.BETWEEN);
 
-			success = success & saveLinksIndividuals_Between(filePath);
+            String queryA = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
+            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+
+			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_B_D(filePath)) {
             this.process.setValues(Process.ProcessType.BIRTH_DECEASED,
                                    Process.RelationType.BETWEEN);
 
-			success = success & saveLinksIndividuals_Between(filePath);
+            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
+            String queryB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
+
+			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_M_M(filePath)) {
             this.process.setValues(Process.ProcessType.MARIAGE_MARIAGE,
                                    Process.RelationType.BETWEEN);
 
-			success = success & saveLinksIndividuals_Between(filePath);
+            String queryA = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+
+			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
 		}
 
 		LINKS.flushLinks();
@@ -428,7 +460,7 @@ public class Closure {
 		return success;
 	}
 
-	public boolean saveLinksIndividuals_Within(String filePath) {
+	public boolean saveLinksIndividuals_Within(String filePath, String qEventA, String qEventB) {
 		boolean success = false;
 		try {
             String taskName = this.process.toString();
@@ -440,12 +472,8 @@ public class Closure {
 			String linktype = "sameAs", linkProv = this.process.abbr();
 			int nbLines = FILE_UTILS.countLines(filePath);
 
-            ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(nbLines)
-                .setUpdateIntervalMillis(updateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            ActivityIndicator spinner = new ActivityIndicator("Saving Within Links");
+            spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
@@ -458,55 +486,66 @@ public class Closure {
 					int matchedIndiv = 1;
 					boolean fatherMatched = false,  motherMatched = false;
 
+                    String familyLine = nextLine[2];  // 21: bride, 22: groom
+
+                    // event A participants
 					String idEventA = nextLine[0];
-					String idEventB = nextLine[1];
-					String familyLine = nextLine[2];
-					String idSubjectA = myHDT.getPersonID(idEventA, this.process.roleASubject);
-                    String idSubjectB;
-                    if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                        idSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubject);
-                    } else {
-                        idSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubject,
-                                                       this.process.roleBSubjectPartner, familyLine);
+                    Map<String, Value> bindingsA = new HashMap<>();
+                    bindingsA.put("eventID", iri(idEventA));
+                    BindingSet qResultA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
+
+					String idSubjectA = qResultA.getValue("idSubject").stringValue();
+                    String idSubjectAFather = null, idSubjectAMother = null;
+					if (!nextLine[7].equals("N.A")) { // if there is a match for the fathers
+						idSubjectAFather = qResultA.getValue("idSubjectFather").stringValue();
                     }
-					String idFatherSubjectA = null, idFatherSubjectB = null, idMotherSubjectA = null, idMotherSubjectB = null;
+                    if (!nextLine[5].equals("N.A")) { // if there is a match for the mothers
+					    idSubjectAMother = qResultA.getValue("idSubjectMother").stringValue();
+                    }
 
-					if(!nextLine[7].equals("N.A")) { // if there is a match for the fathers
-						idFatherSubjectA = myHDT.getPersonID(idEventA, process.roleASubjectFather);
+                    // event B participants
+					String idEventB = nextLine[1];
+                    Map<String, Value> bindingsB = new HashMap<>();
+                    bindingsB.put("eventID", iri(idEventB));
+                    BindingSet qResultB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
-						if(idFatherSubjectA != null) {
-                            if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                idFatherSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubjectFather);
-                            } else {
-                                idFatherSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubjectFather,
-                                                                     this.process.roleBSubjectPartnerFather, familyLine);
-                            }
-							if(idFatherSubjectB != null) {
-								matchedIndiv++;
+                    String idSubjectB;
+                    if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
+                        idSubjectB = qResultB.getValue("idSubject").stringValue();
+                    } else {  // familyLine.equals("22")
+                        idSubjectB = qResultB.getValue("idPartner").stringValue();
+                    }
 
-								fatherMatched = true;
-							}
-						}
+					String idSubjectBFather = null, idSubjectBMother = null;
+					if(idSubjectAFather != null) { // if there is a match for the fathers
+                        if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
+                            idSubjectBFather = qResultB.getValue("idSubjectFather").stringValue();
+                        } else {
+                            idSubjectBFather = qResultB.getValue("idPartnerFather").stringValue();
+                        }
+
+                        if(idSubjectBFather != null) {
+                            matchedIndiv++;
+
+                            fatherMatched = true;
+                        }
 					}
 
-					if(!nextLine[5].equals("N.A")) { // if there is a match for the mothers
-						idMotherSubjectA = myHDT.getPersonID(idEventA, this.process.roleASubjectMother);
-						if(idMotherSubjectA != null) {
-                            if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                idMotherSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubjectMother);
-                            } else {
-                                idMotherSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubjectMother,
-                                                                     this.process.roleBSubjectPartnerMother, familyLine);
-                            }
+                    if(idSubjectAMother != null) { // if there is a match for the mothers
+                        if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
+                            idSubjectBMother = qResultB.getValue("idSubjectMother").stringValue();
+                        } else {
+                            idSubjectBMother = qResultB.getValue("idPartnerMother").stringValue();
+                        }
 
-							if(idMotherSubjectB != null) {
-								matchedIndiv++;
+                        if(idSubjectBMother != null) {
+                            matchedIndiv++;
 
-								motherMatched = true;
-							}
-						}
-					}
+                            motherMatched = true;
+                        }
+                    }
 
+                    // metadata
 					String meta_newborn = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
                                           + idEventA + "," + idEventB + "," + nextLine[3] + "," + nextLine[4] + ","
                                           + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[18];
@@ -516,24 +555,22 @@ public class Closure {
 						String meta_fathers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
                                               + idEventA + "," + idEventB + "," + nextLine[7] + "," + nextLine[8] + ","
                                               + nextLine[15] + "," + nextLine[16] + "," + nextLine[17] + "," + nextLine[18];
-						LINKS.saveIndividualLink(idFatherSubjectA, idFatherSubjectB, meta_fathers);
+						LINKS.saveIndividualLink(idSubjectAFather, idSubjectBFather, meta_fathers);
 					}
 
 					if(motherMatched) {
 						String meta_mothers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
                                               + idEventA + "," + idEventB + "," + nextLine[5] + "," + nextLine[6] + ","
                                               + nextLine[12] + "," + nextLine[13] + "," + nextLine[14] + "," + nextLine[18];
-						LINKS.saveIndividualLink(idMotherSubjectA, idMotherSubjectB, meta_mothers);
+						LINKS.saveIndividualLink(idSubjectAMother, idSubjectBMother, meta_mothers);
 					}
 
-					if(countProgress % 1000 == 0) {
-						pb.stepBy(1000);
-					}
+                    if (countProgress % 10000 == 0) {
+                        spinner.update(countProgress);
+                    }
 				}
-				pb.stepTo(nbLines);
 			} finally {
-				//LINKS.flushLinks();
-				pb.close();
+                spinner.terminate();
 				reader.close();
 				success = true;
 			}
@@ -544,7 +581,7 @@ public class Closure {
 		return success;
 	}
 
-	public boolean saveLinksIndividuals_Between(String filePath) {
+	public boolean saveLinksIndividuals_Between(String filePath, String qEventA, String qEventB) {
 		Boolean success = false;
 		try {
             String taskName = this.process.toString();
@@ -555,12 +592,8 @@ public class Closure {
 			String linktype = "sameAs", linkProv = this.process.abbr(), matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
 
-            ProgressBar pb = new ProgressBarBuilder()
-                .setTaskName(taskName)
-                .setInitialMax(nbLines)
-                .setUpdateIntervalMillis(updateInterval)
-                .setStyle(ProgressBarStyle.UNICODE_BLOCK)
-                .build();
+            ActivityIndicator spinner = new ActivityIndicator("Saving Between Links");
+            spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(filePath));
 			try {
@@ -570,25 +603,42 @@ public class Closure {
 				while ((nextLine = reader.readNext()) != null) {
 					countProgress++;
 
-					String idEventA = nextLine[0];
-					String idEventB = nextLine[1];
 					String familyLine = nextLine[2];
-					String idSubjectB = myHDT.getPersonID(idEventB, this.process.roleBSubject);
-					String idSubjectBPartner = myHDT.getPersonID(idEventB, this.process.roleBSubjectPartner);
-                    String idFather, idMother, meta_father, meta_mother;
 
-					String meta = linktype + "," + linkProv + "," + familyLine + ","
-                                  + matchedIndiv + "," + idEventA + "," + idEventB;
+                    // event A participants
+					String idEventA = nextLine[0];
+                    Map<String, Value> bindingsA = new HashMap<>();
+                    bindingsA.put("eventID", iri(idEventA));
+                    BindingSet bindingSetA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
+
+                    String idFather, idMother;
                     if (this.process.type == Process.ProcessType.MARIAGE_MARIAGE) {
-                        idFather = myHDT.getPersonID(idEventA, this.process.roleASubjectFather,
-                                                     this.process.roleBSubjectPartnerFather, familyLine);
-                        idMother = myHDT.getPersonID(idEventA, this.process.roleASubjectMother,
-                                                     this.process.roleBSubjectPartnerMother, familyLine);
+                        if (familyLine.equals("21")) {  // bride
+                            idFather = bindingSetA.getValue("idSubjectFather").stringValue();
+                            idMother = bindingSetA.getValue("idSubjectMother").stringValue();
+                        } else {  // familyLine == 22 // groom
+                            idFather = bindingSetA.getValue("idPartnerFather").stringValue();
+                            idMother = bindingSetA.getValue("idPartnerMother").stringValue();
+                        }
                     } else {
-                        idFather = myHDT.getPersonID(idEventA, this.process.roleASubjectFather);
-    					idMother = myHDT.getPersonID(idEventA, this.process.roleASubjectMother);
+                        idFather = bindingSetA.getValue("idSubjectFather").stringValue();
+    					idMother = bindingSetA.getValue("idSubjectMother").stringValue();
                     }
 
+                    // event B participants
+					String idEventB = nextLine[1];
+                    Map<String, Value> bindingsB = new HashMap<>();
+                    bindingsB.put("eventID", iri(idEventB));
+                    BindingSet bindingSetB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
+
+					String idSubjectB = bindingSetB.getValue("idSubject").stringValue();
+					String idSubjectBPartner = bindingSetB.getValue("idPartner").stringValue();
+
+                    // metadata
+					String meta = linktype + "," + linkProv + "," + familyLine + ","
+                                  + matchedIndiv + "," + idEventA + "," + idEventB;
+
+                    String meta_father, meta_mother;
                     meta_father = meta + ","
                                   + nextLine[7] + "," + nextLine[8] + "," + nextLine[15] + ","
                                   + nextLine[16] + "," + nextLine[17] + "," + nextLine[18];
@@ -596,11 +646,16 @@ public class Closure {
                                   + nextLine[5] + "," + nextLine[6] + "," + nextLine[12] + ","
                                   + nextLine[13] + "," + nextLine[14] + "," + nextLine[18];
 
+                    // determine order based on gender
                     String idSubjectFemale = idSubjectB;
                     String idSubjectMale = idSubjectBPartner;
                     if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                        String eventBURI = myHDT.getEventURIfromID(idEventB);
-                        Person subjectB = myHDT.getPersonInfo(eventBURI, this.process.roleBSubject);
+                        String eventB = bindingSetB.getValue("event").stringValue();
+                        Person subjectB = new Person(eventB,
+                                                 bindingSetB.getValue("givenNameSubject").stringValue(),
+                                                 bindingSetB.getValue("familyNameSubject").stringValue(),
+                                                 bindingSetB.getValue("genderSubject").stringValue());
+
                         if (subjectB.isMale()) {
                             idSubjectMale = idSubjectB;
                             idSubjectFemale = idSubjectBPartner;
@@ -610,13 +665,12 @@ public class Closure {
 					LINKS.saveIndividualLink(idMother, idSubjectFemale, meta_mother);
 					LINKS.saveIndividualLink(idFather, idSubjectMale, meta_father);
 
-					if(countProgress % 1000 == 0) {
-						pb.stepBy(1000);
-					}
+                    if (countProgress % 10000 == 0) {
+                        spinner.update(countProgress);
+                    }
 				}
-				pb.stepTo(nbLines);
 			} finally {
-				pb.close();
+                spinner.terminate();
 				reader.close();
 				success = true;
 			}

@@ -4,6 +4,7 @@ package nl.knaw.iisg.burgerlinker.data;
 import static nl.knaw.iisg.burgerlinker.Properties.DIRECTORY_NAME_RESULTS;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -28,21 +29,21 @@ public class LinksCSV {
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public LinksCSV(String ID, String directoryPath, String header) {
+	public LinksCSV(String ID, File directoryPath, String header) {
 		this.linksID = ID;
 		this.fileLinks = directoryPath + "/" + DIRECTORY_NAME_RESULTS + "/" + linksID + ".csv";
 
 		openLinks(header);
 	}
 
-	public LinksCSV(String ID, String directoryPath) {
+	public LinksCSV(String ID, File directoryPath) {
 		this.linksID = ID;
 		this.fileLinks = directoryPath + "/" + DIRECTORY_NAME_RESULTS + "/" + linksID + ".csv";
 
 		openLinks();
 	}
 
-	public LinksCSV(String ID, String directoryPath, Boolean triples) {
+	public LinksCSV(String ID, File directoryPath, Boolean triples) {
 		this.linksID = ID;
         this.fileLinks = directoryPath + "/" + DIRECTORY_NAME_RESULTS + "/" + linksID + ".nt";
 

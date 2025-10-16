@@ -4,6 +4,7 @@ package nl.knaw.iisg.burgerlinker.core;
 import static nl.knaw.iisg.burgerlinker.Properties.*;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public class Index {
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
 
-	public Index(String ID, String directoryPath, int maxLev, Boolean fixedLev) {
+	public Index(String ID, File directoryPath, int maxLev, Boolean fixedLev) {
 		this.indexID = ID;
 		this.maxLev = maxLev;
 		this.directoryDB = directoryPath + "/" + DIRECTORY_NAME_DATABASE + "/" + indexID;
