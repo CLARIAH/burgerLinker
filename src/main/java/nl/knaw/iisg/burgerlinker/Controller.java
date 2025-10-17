@@ -97,7 +97,7 @@ public class Controller {
             System.out.println("Creating working directory '" + this.workdir.getName() + "/'");
             this.workdir.mkdirs();
         } else {
-            System.out.println("Found working directory '" + this.workdir.getName() + "/'");
+            System.out.println(".: Found working directory '" + this.workdir.getName() + "/'");
         }
 
         this.namespace = namespace;
@@ -128,16 +128,10 @@ public class Controller {
 	public void runProgram() {
 		try {
             if (checkInputFunction() && checkAllUserInputs()) {
-                try {
-                    initGraphStore();
-                } catch (Exception e) {
-                    LOG.logError("execProcess", "Error initiating graph store: " + e);
-                }
-
                 // read data model specification from file
                 Map<String, Map<String, String>> dataModelRaw = loadYamlFromFile(this.dataModelPath);
                 if (dataModelRaw == null) {
-                    LOG.logError("execProcess", "Error reading data model");
+                    LOG.logError("runProgram", "Error reading data model");
                     return;
                 }
 
@@ -146,12 +140,19 @@ public class Controller {
                 if (!validateDataModel(this.dataModel)) {
                     return;
                 }
-                LOG.outputConsole("IMPORT: Data Model from '" + new File(this.dataModelPath).getName() + "'");
+                LOG.outputConsole(".: Reading Data Model from '" + new File(this.dataModelPath).getName() + "'");
 
                 // read rule definitions and remap
                 Rules rulesRaw = loadRulesFromFile(this.rulesetPath);
                 Map<String, Map<String, Rule>> ruleMap = buildRuleMap(rulesRaw);
-                LOG.outputConsole("IMPORT: Rule Definitions from '" + new File(this.rulesetPath).getName() + "'");
+                LOG.outputConsole(".: Reading Rule Definitions from '" + new File(this.rulesetPath).getName() + "'");
+
+                // read or load data
+                try {
+                    initGraphStore();
+                } catch (Exception e) {
+                    LOG.logError("runProgram", "Error initiating graph store: " + e);
+                }
 
                 outputDatasetStatistics(this.dataModel);
                 if (PROCESSES.contains(this.function)) {
@@ -163,7 +164,7 @@ public class Controller {
                 }
             }
 		} catch (Exception e) {
-            LOG.logError("execProcess", "Error: " + e);
+            LOG.logError("runProgram", "Error: " + e);
         }
 
 		myRDF.shutdown();
@@ -177,7 +178,7 @@ public class Controller {
                 rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Within Births-Marriages (newborn -> bride/groom)");
+					LOG.outputConsole(".: Starting Process - Within Births-Marriages (newborn -> bride/groom)");
 
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.WITHIN,
@@ -191,7 +192,7 @@ public class Controller {
                 rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Within Births-Deaths (newborn -> deceased)");
+					LOG.outputConsole(".: Starting Process - Within Births-Deaths (newborn -> deceased)");
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.WITHIN,
@@ -205,7 +206,7 @@ public class Controller {
                 rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Births-Marriages (newborn parents -> bride + groom)");
+					LOG.outputConsole(".: Starting Process - Between Births-Marriages (newborn parents -> bride + groom)");
 
                     process = new Process(Process.ProcessType.BIRTH_MARIAGE,
                                           Process.RelationType.BETWEEN,
@@ -219,7 +220,7 @@ public class Controller {
                 rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Births-Deaths (parents of newborn -> deceased + partner)");
+					LOG.outputConsole(".: Starting Process - Between Births-Deaths (parents of newborn -> deceased + partner)");
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.BETWEEN,
@@ -233,7 +234,7 @@ public class Controller {
                 rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Deaths-Marriages (parents of deceased -> bride + groom)");
+					LOG.outputConsole(".: Starting Process - Between Deaths-Marriages (parents of deceased -> bride + groom)");
 
                     process = new Process(Process.ProcessType.DECEASED_MARIAGE,
                                           Process.RelationType.BETWEEN,
@@ -247,7 +248,7 @@ public class Controller {
                 rules = ruleMap.get(this.function);
 				if(checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
+					LOG.outputConsole(".: Starting Process - Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
 
                     process = new Process(Process.ProcessType.MARIAGE_MARIAGE,
                                           Process.RelationType.BETWEEN,
@@ -260,7 +261,7 @@ public class Controller {
 			case "closure":
 				if(checkInputDataset() && checkInputDirectoryContents()) {
 					long startTime = System.currentTimeMillis();
-					LOG.outputConsole("START: Computing the transitive closure");
+					LOG.outputConsole(".: Starting Process - Computing Transitive Closure");
 
                     process = new Process(this.dataModel);
 					closure(process, this.namespace);
@@ -495,10 +496,21 @@ public class Controller {
 
     public void initGraphStore() throws java.io.IOException {
         File dir = new File(this.workdir.getCanonicalPath() + "/store");
-        if (!this.reload && FILE_UTILS.checkIfDirectoryExists(dir.getCanonicalPath())) {
-            LOG.outputConsole("IMPORT: Found existing RDF store. Reusing data.");
+        if (!this.reload && dir.isDirectory() && dir.listFiles().length > 0) {
+            LOG.outputConsole(".: Found existing RDF store. Reusing data.");
 
+            ActivityIndicator spinner = new ActivityIndicator(".: Loading RDF Store");
+            spinner.start();
+
+            // load data from existing store
             myRDF = new MyRDF(dir);
+
+            spinner.terminate();
+            try {
+                spinner.join();
+            } catch (Exception e) {
+                LOG.logError("initGraphStore", "Error waiting for ActivityIndicator to stop: " + e);
+            }
 
             return;
         }
@@ -509,18 +521,49 @@ public class Controller {
             paths = input.split(",");
         }
 
-        LOG.outputConsole("IMPORT: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
+        LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
         myRDF = new MyRDF(dir);
         myRDF.parse(paths);
     }
 
 	public void outputDatasetStatistics(Map<String, String> dataModel) {
 		DecimalFormat formatter = new DecimalFormat("#,###");
-        for (BindingSet bindingSet: myRDF.getQueryResults(MyRDF.qInstanceCount)) {
+
+        ActivityIndicator spinner = new ActivityIndicator(".: Validating RDF Store");
+        spinner.start();
+
+        // run query
+        List<BindingSet> qResults = myRDF.getQueryResultsAsList(MyRDF.qInstanceCount);
+        spinner.terminate();
+            try {
+                spinner.join();
+            } catch (Exception e) {
+                LOG.logError("initGraphStore", "Error waiting for ActivityIndicator to stop: " + e);
+            }
+
+        int uriLenMax = 0;
+        int countLenMax = 0;
+        for (BindingSet bindingSet: qResults) {
+            String uri = bindingSet.getValue("type").stringValue();
+            if (uri.length() > uriLenMax) {
+                uriLenMax = uri.length();
+            }
+
+            int amount = myRDF.valueToInt(bindingSet.getValue("instanceCount"));
+            String amountStr = formatter.format(amount);
+            if (amountStr.length() > countLenMax) {
+                countLenMax = amountStr.length();
+            }
+        }
+
+        LOG.outputConsole(".: Dataset Overview");
+        LOG.outputConsole("     class" + " ".repeat(uriLenMax + countLenMax - 7) + "count");
+        for (BindingSet bindingSet: qResults) {
             String uri = bindingSet.getValue("type").stringValue();
             int amount = myRDF.valueToInt(bindingSet.getValue("instanceCount"));
 
-            LOG.outputConsole(">>> " + uri + ": " + formatter.format(amount));
+            LOG.outputConsole("   - " + String.format("%-" + uriLenMax + "s", uri) + "   "
+                                      + String.format("%" + countLenMax + "s", formatter.format(amount)));
         }
 	}
 
@@ -529,10 +572,13 @@ public class Controller {
 		String dirName = function + options;
 
         File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
-		if (dir.mkdir()) {
-            if (new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DICTIONARY).mkdir()
-                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE).mkdir()
-                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS).mkdir()) {
+		if (dir.exists() || dir.mkdir()) {
+            File dirDict = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DICTIONARY);
+            File dirDB = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE);
+            File dirRes = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS);
+            if ((dirDict.exists() || dirDict.mkdir())
+                && (dirDB.exists() || dirDB.mkdir())
+                && (dirRes.exists() || dirRes.mkdir())) {
                 Within within = new Within(myRDF, process, rules, dir, maxLev, fixedLev,
                                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
@@ -556,10 +602,13 @@ public class Controller {
 		String dirName = function + options;
 
         File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
-		if (dir.mkdir()) {
-            if (new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DICTIONARY).mkdir()
-                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE).mkdir()
-                    && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS).mkdir()) {
+		if (dir.exists() || dir.mkdir()) {
+            File dirDict = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DICTIONARY);
+            File dirDB = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE);
+            File dirRes = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS);
+            if ((dirDict.exists() || dirDict.mkdir())
+                && (dirDB.exists() || dirDB.mkdir())
+                && (dirRes.exists() || dirRes.mkdir())) {
                 Between between = new Between(myRDF, process, rules, dir, maxLev, fixedLev,
                                               ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
@@ -576,9 +625,10 @@ public class Controller {
 		String dirName = function;
 
         File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
-		if (dir.mkdir()) {
-           if (new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE).mkdir()
-               && new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS).mkdir()) {
+		if (dir.exists() || dir.mkdir()) {
+            File dirDB = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_DATABASE);
+            File dirRes = new File(dir.getCanonicalPath() + "/" + DIRECTORY_NAME_RESULTS);
+            if ((dirDB.exists() || dirDB.mkdir()) && (dirRes.exists() || dirRes.mkdir())) {
 			 	Closure closure = new Closure(myRDF, process, namespace, dir, outputFormatCSV);
 
                 closure.computeClosure();

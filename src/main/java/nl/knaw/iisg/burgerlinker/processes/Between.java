@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.jeasy.rules.api.Facts;
 import org.jeasy.rules.api.Rule;
 import org.eclipse.rdf4j.model.Value;
-import static org.eclipse.rdf4j.model.util.Values.iri;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
@@ -99,15 +98,15 @@ public class Between {
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
         if (dict.generateDictionaryTwoWay(myRDF, querySubjectB, genderFilter)) {
-			indexMale = dict.indexMalePartner;
-			indexFemale = dict.indexFemalePartner;
+			indexMale = dict.indexMale;
+			indexFemale = dict.indexFemale;
 			indexMale.createTransducer();
 			indexFemale.createTransducer();
 			try {
 				int cntAll = 0;
 
                 TupleQueryResult qResultA = null;
-                ActivityIndicator spinner = new ActivityIndicator("Linking " + processName);
+                ActivityIndicator spinner = new ActivityIndicator(".: Linking " + processName);
 				try {
                     spinner.start();
 
@@ -162,7 +161,7 @@ public class Between {
 
                                         for (String finalCandidate: finalCandidatesList) {
                                             Map<String, Value> bindings = new HashMap<>();
-                                            bindings.put("eventID", iri(finalCandidate));
+                                            bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
                                             TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
                                             for (BindingSet bindingSetB: qResultB) {
@@ -170,8 +169,8 @@ public class Between {
 
                                                 int yearDifference = 0;
                                                 if (ignoreDate == false) {
-                                                    int eventADate = myRDF.valueToInt(bindingSetA.getValue("eventDate"));
-                                                    int eventBDate = myRDF.valueToInt(bindingSetB.getValue("eventDate"));
+                                                    int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                                    int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
                                                     yearDifference = checkTimeConsistency(eventADate, eventBDate);
                                                 }
                                                 if (yearDifference < 999) { // if it fits the time line

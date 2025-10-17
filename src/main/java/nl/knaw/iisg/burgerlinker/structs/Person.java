@@ -18,7 +18,7 @@ public class Person {
 	private Boolean valid;
 	public final String names_separator = " ", compound_name_separator = "_";
 
-    public Person(String event, String firstName, String familyName, String Gender) {
+    public Person(String event, String firstName, String familyName, String gender) {
 		this.URI = event;
         this.first_name = firstName;
         this.last_name = familyName;
@@ -150,7 +150,7 @@ public class Person {
 	}
 
 	public Boolean isFemale() {
-		if(gender.equals("f")){
+		if (gender.equals("f")){
 			return true;
 		}
 
@@ -158,7 +158,7 @@ public class Person {
 	}
 
 	public Boolean isMale() {
-		if(gender.equals("m")){
+		if (gender.equals("m")){
 			return true;
 		}
 

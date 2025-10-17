@@ -76,7 +76,7 @@ public class ActivityIndicator extends Thread {
         }
 
         dynLen = post.length() + 1;
-        System.out.println("\b".repeat(dynLen) + "OK");
+        System.out.println("\b".repeat(dynLen) + "OK" + " ".repeat(dynLen-2));
         System.out.flush();
     }
 

@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
-import static org.eclipse.rdf4j.model.util.Values.iri;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -119,7 +118,7 @@ public class Closure {
 			LinksCSV singletons = new LinksCSV("dataset_singletons", outputDirectoryPath, true);
 
             TupleQueryResult qResult = null;
-            ActivityIndicator spinner = new ActivityIndicator("Reconstructing Individuals");
+            ActivityIndicator spinner = new ActivityIndicator(".: Reconstructing Individuals");
 			try {
                 spinner.start();
 
@@ -175,18 +174,13 @@ public class Closure {
                         Literal objLit = (Literal) object;
 
                         Value eventDate = bindingSet.getValue("eventDate");
-                        if (eventDate != null) {
-                            String[] dateElem = eventDate.stringValue().split("-");  // YYYY-MM-DD
-                            try {
-                                int dateYear = Integer.parseInt(dateElem[0]);
-                                int birthYear = dateYear - objLit.intValue();
+                        int dateYear = myRDF.yearFromDate(eventDate);
+                        if (dateYear >= 0) {
+                            int birthYear = dateYear - objLit.intValue();
 
-                                String birthYearStr = "\"" + Integer.toString(birthYear) + "\""
-                                                     + "^^<http://www.w3.org/2001/XMLSchema#gYear>";
-                                stream.addToStream(sbjNew + " <" + BIRTH_YEAR + "> " + birthYearStr + " .");
-                            } catch (Exception e) {
-                                // skip
-                            }
+                            String birthYearStr = "\"" + Integer.toString(birthYear) + "\""
+                                                 + "^^<http://www.w3.org/2001/XMLSchema#gYear>";
+                            stream.addToStream(sbjNew + " <" + BIRTH_YEAR + "> " + birthYearStr + " .");
                         }
                     } else {
                         stream.addToStream(sbjNew + " " + predicate + " " + objNew + " .");
@@ -280,7 +274,7 @@ public class Closure {
 			String [] nextLine;
 			int nbLines = FILE_UTILS.countLines(linksFilePath);
 
-            ActivityIndicator spinner = new ActivityIndicator("Computing Closure");
+            ActivityIndicator spinner = new ActivityIndicator(".: Computing Closure");
             spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(linksFilePath));
@@ -472,7 +466,7 @@ public class Closure {
 			String linktype = "sameAs", linkProv = this.process.abbr();
 			int nbLines = FILE_UTILS.countLines(filePath);
 
-            ActivityIndicator spinner = new ActivityIndicator("Saving Within Links");
+            ActivityIndicator spinner = new ActivityIndicator(".: Consolidating Within Links");
             spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(filePath));
@@ -491,7 +485,7 @@ public class Closure {
                     // event A participants
 					String idEventA = nextLine[0];
                     Map<String, Value> bindingsA = new HashMap<>();
-                    bindingsA.put("eventID", iri(idEventA));
+                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA, "int"));
                     BindingSet qResultA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
 					String idSubjectA = qResultA.getValue("idSubject").stringValue();
@@ -506,7 +500,7 @@ public class Closure {
                     // event B participants
 					String idEventB = nextLine[1];
                     Map<String, Value> bindingsB = new HashMap<>();
-                    bindingsB.put("eventID", iri(idEventB));
+                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB, "int"));
                     BindingSet qResultB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
                     String idSubjectB;
@@ -592,7 +586,7 @@ public class Closure {
 			String linktype = "sameAs", linkProv = this.process.abbr(), matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
 
-            ActivityIndicator spinner = new ActivityIndicator("Saving Between Links");
+            ActivityIndicator spinner = new ActivityIndicator(".: Consolidating Between Links");
             spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(filePath));
@@ -608,7 +602,7 @@ public class Closure {
                     // event A participants
 					String idEventA = nextLine[0];
                     Map<String, Value> bindingsA = new HashMap<>();
-                    bindingsA.put("eventID", iri(idEventA));
+                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA, "int"));
                     BindingSet bindingSetA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
                     String idFather, idMother;
@@ -628,7 +622,7 @@ public class Closure {
                     // event B participants
 					String idEventB = nextLine[1];
                     Map<String, Value> bindingsB = new HashMap<>();
-                    bindingsB.put("eventID", iri(idEventB));
+                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB, "int"));
                     BindingSet bindingSetB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
 					String idSubjectB = bindingSetB.getValue("idSubject").stringValue();

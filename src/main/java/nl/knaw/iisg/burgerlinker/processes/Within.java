@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.jeasy.rules.api.Facts;
 import org.jeasy.rules.api.Rule;
 import org.eclipse.rdf4j.model.Value;
-import static org.eclipse.rdf4j.model.util.Values.iri;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
@@ -93,7 +92,7 @@ public class Within {
 				int cntAll = 0;
 
                 TupleQueryResult qResultA = null;
-                ActivityIndicator spinner = new ActivityIndicator("Linking " + processName + " (" + gender + ")");
+                ActivityIndicator spinner = new ActivityIndicator(".: Linking " + processName + " (" + gender + ")");
 				try {
                     spinner.start();
 
@@ -140,7 +139,7 @@ public class Within {
 
 													if (link == true) { // if one of them does not have a father, we match on two individuals
                                                         Map<String, Value> bindings = new HashMap<>();
-                                                        bindings.put("eventID", iri(finalCandidate));
+                                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
                                                         TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
                                                         for (BindingSet bindingSetB: qResultB) {
@@ -148,8 +147,8 @@ public class Within {
 
                                                             int yearDifference = 0;
                                                             if (ignoreDate == false) {
-                                                                int eventADate = myRDF.valueToInt(bindingSetA.getValue("eventDate"));
-                                                                int eventBDate = myRDF.valueToInt(bindingSetB.getValue("eventDate"));
+                                                                int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                                                int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
                                                                 yearDifference = checkTimeConsistency(eventADate, eventBDate);
                                                             }
                                                             if (yearDifference < 999) { // if it fits the time line
@@ -197,7 +196,7 @@ public class Within {
 
 													if (link == true) { // if one of them does not have a mother, we match on two individuals
                                                         Map<String, Value> bindings = new HashMap<>();
-                                                        bindings.put("eventID", iri(finalCandidate));
+                                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
                                                         TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
                                                         for (BindingSet bindingSetB: qResultB) {
@@ -205,8 +204,8 @@ public class Within {
 
                                                             int yearDifference = 0;
                                                             if (ignoreDate == false) {
-                                                                int eventADate = myRDF.valueToInt(bindingSetA.getValue("eventDate"));
-                                                                int eventBDate = myRDF.valueToInt(bindingSetB.getValue("eventDate"));
+                                                                int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                                                int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
                                                                 yearDifference = checkTimeConsistency(eventADate, eventBDate);
                                                             }
                                                             if (yearDifference < 999) { // if it fits the time line
@@ -245,7 +244,7 @@ public class Within {
 
 												for (String finalCandidate: finalCandidatesMotherFather) {
                                                     Map<String, Value> bindings = new HashMap<>();
-                                                    bindings.put("eventID", iri(finalCandidate));
+                                                    bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
                                                     TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
                                                     for (BindingSet bindingSetB: qResultB) {
@@ -253,8 +252,8 @@ public class Within {
 
                                                         int yearDifference = 0;
                                                         if (ignoreDate == false) {
-                                                            int eventADate = myRDF.valueToInt(bindingSetA.getValue("eventDate"));
-                                                            int eventBDate = myRDF.valueToInt(bindingSetB.getValue("eventDate"));
+                                                            int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                                            int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
                                                             yearDifference = checkTimeConsistency(eventADate, eventBDate);
                                                         }
                                                         if (yearDifference < 999) { // if it fits the time line
@@ -341,11 +340,11 @@ public class Within {
 		if(dict.generateDictionaryOneWay(myRDF, querySubjectB, genderFilter, gender)) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
 			try {
-				String taskName = "Linking Single " + processName + " (" + gender + ")";
+				String taskName = ".: Linking Single " + processName + " (" + gender + ")";
 				int cntAll = 0;
 
                 TupleQueryResult qResultA = null;
-                ActivityIndicator spinner = new ActivityIndicator("Linking " + taskName);
+                ActivityIndicator spinner = new ActivityIndicator(taskName);
 				try {
                     spinner.start();
 
@@ -353,8 +352,8 @@ public class Within {
                     for (BindingSet bindingSetA: qResultA) {
 						cntAll++;
 
-                        String event = bindingSetA.getValue("event").toString();
-						String eventID = bindingSetA.getValue("eventID").toString();
+                        String event = bindingSetA.getValue("event").stringValue();
+						String eventID = bindingSetA.getValue("eventID").stringValue();
 
 						Person newborn = new Person(event,
                                                 bindingSetA.getValue("givenNameSubject").stringValue(),
@@ -368,16 +367,16 @@ public class Within {
 								if(candidatesSubjectB.candidates.isEmpty() == false) {
 									for(String finalCandidate: candidatesSubjectB.candidates.keySet()) {
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", iri(finalCandidate));
+                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
-                                            String subjectBEventURI = bindingSetB.getValue("event").toString();
+                                            String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
                                             int yearDifference = 0;
                                             if(ignoreDate == false) {
-                                                int eventADate = myRDF.valueToInt(bindingSetA.getValue("eventDate"));
-                                                int eventBDate = myRDF.valueToInt(bindingSetB.getValue("eventDate"));
+                                                int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                                int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
                                                 yearDifference = checkTimeConsistency(eventADate, eventBDate);
                                             }
                                             if(yearDifference < 999) { // if it fits the time line

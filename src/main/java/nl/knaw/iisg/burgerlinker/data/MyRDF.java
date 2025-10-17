@@ -11,9 +11,13 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
+import static org.eclipse.rdf4j.model.util.Values.iri;
+import static org.eclipse.rdf4j.model.util.Values.literal;
 import org.eclipse.rdf4j.repository.util.Repositories;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
@@ -37,6 +41,7 @@ public class MyRDF {
     // TODO: make dynamic
     static String qPrefix = String.join("\n",
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
             "PREFIX civ: <https://iisg.amsterdam/id/civ/>",
             "PREFIX sdo: <https://schema.org/>"
             );
@@ -174,9 +179,9 @@ public class MyRDF {
     }
 
     public void parse(String[] paths) {
-        ActivityIndicator spinner = new ActivityIndicator("Parsing Graph(s)");
         if (conn.isOpen()) {
             for (String path: paths) {
+                ActivityIndicator spinner = new ActivityIndicator("Parsing Graph '" + path + "'");
                 if (!FILE_UTILS.checkIfFileExists(path)) {
                     LOG.logError("parse", "Unable to find file '" + path + "'");
                     return;
@@ -197,6 +202,11 @@ public class MyRDF {
                 }
 
                 spinner.terminate();
+                try {
+                    spinner.join();
+                } catch (Exception e) {
+                    LOG.logError("parse", "Error waiting for ActivityIndicator to stop: " + e);
+                }
             }
         } else {
             LOG.logError("parse", "Error connecting to RDF store");
@@ -328,17 +338,39 @@ public class MyRDF {
         return out;
     }
 
+    public int yearFromDate(Value date) {
+        // ISO 8601
+        int out = -1;
+        if (date != null && date.isLiteral()) {
+            String[] dateArray = date.stringValue().split("-");  // YYYY-MM-DD
+            if (dateArray.length == 3) {
+                String yearStr = dateArray[0];
+                try {
+                    out = Integer.parseInt(yearStr);
+                } catch (NumberFormatException e) {
+                    LOG.logError("yearFromDate", "Error extracting year from literal: '" + yearStr + "'");
+                }
+            }
+        }
+
+        return out;
+    }
+
+    public static Literal mkLiteral(String value, String datatype) {
+        return literal(value, iri(XSD.NAMESPACE, datatype));
+    }
+
     public static String generalizeQuery(String q) {
         return generalizeQuery(q, "");
     }
 
     public static String generalizeQuery(String q, String gender) {
         if (q.contains("Newborn")) {
-            q.replace("newborn", "subject");
-            q.replace("Newborn", "Subject");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)newborn", "$1subject");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)Newborn", "$1Subject");
         } else if (q.contains("Deceased")) {
-            q.replace("deceased", "subject");
-            q.replace("Deceased", "Subject");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)deceased", "$1subject");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)Deceased", "$1Subject");
         } else if (q.contains("Bride")) {
             String subject, partner;
             if (gender == "f") {
@@ -349,10 +381,10 @@ public class MyRDF {
                 partner = "bride";
             }
 
-            q.replace(subject, "subject");
-            q.replace(subject.substring(0, 1).toUpperCase() + subject.substring(1), "Subject");
-            q.replace(partner, "partner");
-            q.replace(partner.substring(0, 1).toUpperCase() + partner.substring(1), "Partner");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + subject, "$1subject");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + subject.substring(0, 1).toUpperCase() + subject.substring(1), "$1Subject");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + partner, "$1partner");
+            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + partner.substring(0, 1).toUpperCase() + partner.substring(1), "$1Partner");
         }
 
         return q;
