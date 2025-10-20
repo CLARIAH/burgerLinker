@@ -424,55 +424,55 @@ public class Closure {
             this.process.setValues(Process.ProcessType.BIRTH_MARRIAGE,
                                    Process.RelationType.WITHIN);
 
-            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+            String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+            String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
 
-			success = success & saveLinksIndividuals_Within(filePath, queryA, queryB);
+			success = success & saveLinksIndividuals_Within(filePath, queryEventA, queryEventB);
 		}
 		if(FILE_UTILS.check_Within_B_D(filePath)) {
             this.process.setValues(Process.ProcessType.BIRTH_DECEASED,
                                    Process.RelationType.WITHIN);
 
-            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-            String queryB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
+            String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+            String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
 
-			success = success & saveLinksIndividuals_Within(filePath, queryA, queryB);
+			success = success & saveLinksIndividuals_Within(filePath, queryEventA, queryEventB);
 		}
 		if(FILE_UTILS.check_Between_B_M(filePath)) {
             this.process.setValues(Process.ProcessType.BIRTH_MARRIAGE,
                                    Process.RelationType.BETWEEN);
 
-            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+            String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+            String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
 
-			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
+			success = success & saveLinksIndividuals_Between(filePath, queryEventA, queryEventB);
 		}
 		if(FILE_UTILS.check_Between_D_M(filePath)) {
             this.process.setValues(Process.ProcessType.DECEASED_MARRIAGE,
                                    Process.RelationType.BETWEEN);
 
-            String queryA = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
-            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+            String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+            String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
 
-			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
+			success = success & saveLinksIndividuals_Between(filePath, queryEventA, queryEventB);
 		}
 		if(FILE_UTILS.check_Between_B_D(filePath)) {
             this.process.setValues(Process.ProcessType.BIRTH_DECEASED,
                                    Process.RelationType.BETWEEN);
 
-            String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-            String queryB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
+            String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+            String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
 
-			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
+			success = success & saveLinksIndividuals_Between(filePath, queryEventA, queryEventB);
 		}
 		if(FILE_UTILS.check_Between_M_M(filePath)) {
             this.process.setValues(Process.ProcessType.MARRIAGE_MARRIAGE,
                                    Process.RelationType.BETWEEN);
 
-            String queryA = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
-            String queryB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
+            String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+            String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
 
-			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
+			success = success & saveLinksIndividuals_Between(filePath, queryEventA, queryEventB);
 		}
 
 		LINKS.flushLinks();
