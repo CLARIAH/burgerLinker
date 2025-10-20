@@ -26,6 +26,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -178,8 +179,17 @@ public class MyRDF {
         }
     }
 
+    public MyRDF(String endpoint) {
+        try{
+            store = new SPARQLRepository(endpoint);
+            conn = store.getConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void parse(String[] paths) {
-        if (conn.isOpen()) {
+        if (store != null && conn.isOpen()) {
             for (String path: paths) {
                 ActivityIndicator spinner = new ActivityIndicator("Parsing Graph '" + path + "'");
                 if (!FILE_UTILS.checkIfFileExists(path)) {

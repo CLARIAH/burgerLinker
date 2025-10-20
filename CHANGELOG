@@ -21,4 +21,12 @@
       pertain between runs; those starting with 'U-' can change.
     * Split reconstruction output in linked and unlinked individuals.
     * Added header to links-individuals file.
-    * Moved from Maven to Ant build tool (incl Ivy) to simplify compiling.
+    
+    * Added feature to execute all functions after one another if none is
+      specified.
+    * Changed progress bar to activity indicator.
+    * Cleaned up messages to standard output.
+    * Added native support for text-encoded RDF format (e.g. N-Triples and
+      N-Quads). This removes the need to first convert the input data to
+      HDT format. Instead, an on-disk triple store is created and queried.
+    * Added support for (remote) SPARQL endpoint as input.

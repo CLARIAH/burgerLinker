@@ -5,6 +5,7 @@ import static nl.knaw.iisg.burgerlinker.Properties.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +41,6 @@ public class Closure {
 	private String namespace;
 	private MyRDF myRDF;
     private Process process;
-	private final int updateInterval = 5000;
     private File inputDirectoryPath, outputDirectoryPath;
 	Index indexBride, indexGroom;
 
@@ -57,7 +57,7 @@ public class Closure {
 	public Closure(MyRDF myRDF, Process process, String namespace,
                    File directoryPath, boolean formatCSV) throws java.io.IOException {
 		this.inputDirectoryPath = directoryPath;
-		this.outputDirectoryPath = new File(directoryPath.getCanonicalPath() + "closure");
+		this.outputDirectoryPath = new File(directoryPath.getCanonicalPath());
 		this.myRDF = myRDF;
         this.process = process;
         this.namespace = namespace;
@@ -90,12 +90,11 @@ public class Closure {
 		boolean success = false;
 
 		try {
-			ArrayList<String> linkFiles = FILE_UTILS.getAllValidLinksFile(inputDirectoryPath, false);
+			ArrayList<String> linkFiles = FILE_UTILS.getAllValidLinksFile(inputDirectoryPath.getParentFile(), false);
 
 			for (String linkFile : linkFiles) {
 				success = success | saveIndividualLinksToFile(linkFile);
 			}
-			LOG.outputConsole("");
 
 			if(success) {
 				String filepath = LINKS.getLinksFilePath();
@@ -122,7 +121,7 @@ public class Closure {
 			try {
                 spinner.start();
 
-                qResult = myRDF.getQueryResults(MyRDF.qStatements);
+                qResult = myRDF.getQueryResults(process.dataModel.get("STATEMENTS"));
                 for (BindingSet bindingSet: qResult) {
                     LinksCSV stream = reconstruction;
 					cntAll++;
@@ -186,7 +185,7 @@ public class Closure {
                         stream.addToStream(sbjNew + " " + predicate + " " + objNew + " .");
 					}
 
-                    if (cntAll % 10000 == 0) {
+                    if (cntAll % 1000 == 0) {
                         spinner.update(cntAll);
                     }
 				}
@@ -195,6 +194,7 @@ public class Closure {
 				reconstruction.closeStream();
                 singletons.closeStream();
                 spinner.terminate();
+                spinner.join();
 			}
 		} catch (Exception e) {
 			LOG.logError("reconstructDataset", "Error in reconstructing the dataset after transitive closure");
@@ -237,13 +237,34 @@ public class Closure {
 			}
 		}
 
-		LOG.outputConsole("Number of individuals from Invidual to Class: " + dbIndivToClass.size());
-		LOG.outputConsole("Number of individuals from Class to Individuals: " + countIndivsClassToIndivs);
-		LOG.outputConsole("Number of max individuals in Eq Class: " + max);
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        Map<String, String> summary = new HashMap<>();
+        summary.put("Number of individuals from Invidual to Class", formatter.format(dbIndivToClass.size()));
+        summary.put("Number of individuals from Class to Individuals", formatter.format(countIndivsClassToIndivs));
+        summary.put("Number of max individuals in Eq Class", formatter.format(max));
+
+        int keyLenMax = 0, valLenMax = 0;
+        for (String key: summary.keySet()) {
+            String val = summary.get(key);
+            if (val.length() > valLenMax) {
+                valLenMax -= val.length();
+            }
+            if (key.length() > keyLenMax) {
+                keyLenMax = key.length();
+            }
+        }
+
+        LOG.outputConsole(".: Closure Summary");
+        for (String key: summary.keySet()) {
+            String val = summary.get(key);
+            LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
+                              + "   " + String.format("%" + valLenMax + "s", val));
+        }
 	}
 
 	public void saveClosureToFile() {
-		LOG.outputConsole("Saving closure results to file...");
+        ActivityIndicator spinner = new ActivityIndicator(".: Saving Closure Results");
+        spinner.start();
 
 		LinksCSV closureTerms = new LinksCSV("closureTerms", outputDirectoryPath, "");
 		LinksCSV closureDist = new LinksCSV("closureSizeDist", outputDirectoryPath, "");
@@ -258,16 +279,20 @@ public class Closure {
 			closureDist.addToStream(Integer.toString(entry.getValue().size()));
 		}
 
-		LOG.outputConsole("Finished saving closure results to file!");
 		closureTerms.closeStream();
 		closureDist.closeStream();
+
+        spinner.terminate();
+        try {
+            spinner.join();
+        } catch (Exception e) {
+            LOG.logError("saveClosureToFile", "Error waiting for ActivityIndicator to stop: " + e);
+        }
 	}
 
 	public void transitiveClosure(String linksFilePath) {
 		try {
 			String taskName = "Closure";
-			LOG.outputConsole("Starting: " + taskName + " of links in file: " + linksFilePath);
-			LOG.outputConsole("");
 
             createDB();
 
@@ -367,15 +392,16 @@ public class Closure {
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
-                    if (countProgress % 10000 == 0) {
+                    if (countProgress % 1000 == 0) {
                         spinner.update(countProgress);
                     }
 				}
 			} finally {
-                spinner.terminate();
 				reader.close();
+                spinner.terminate();
+                spinner.join();
 			}
-		} catch (IOException | CsvValidationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -395,7 +421,7 @@ public class Closure {
 	public boolean saveIndividualLinksToFile(String filePath) {
 		boolean success = true;
 		if(FILE_UTILS.check_Within_B_M(filePath)) {
-            this.process.setValues(Process.ProcessType.BIRTH_MARIAGE,
+            this.process.setValues(Process.ProcessType.BIRTH_MARRIAGE,
                                    Process.RelationType.WITHIN);
 
             String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
@@ -413,7 +439,7 @@ public class Closure {
 			success = success & saveLinksIndividuals_Within(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_B_M(filePath)) {
-            this.process.setValues(Process.ProcessType.BIRTH_MARIAGE,
+            this.process.setValues(Process.ProcessType.BIRTH_MARRIAGE,
                                    Process.RelationType.BETWEEN);
 
             String queryA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
@@ -422,7 +448,7 @@ public class Closure {
 			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_D_M(filePath)) {
-            this.process.setValues(Process.ProcessType.DECEASED_MARIAGE,
+            this.process.setValues(Process.ProcessType.DECEASED_MARRIAGE,
                                    Process.RelationType.BETWEEN);
 
             String queryA = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
@@ -440,7 +466,7 @@ public class Closure {
 			success = success & saveLinksIndividuals_Between(filePath, queryA, queryB);
 		}
 		if(FILE_UTILS.check_Between_M_M(filePath)) {
-            this.process.setValues(Process.ProcessType.MARIAGE_MARIAGE,
+            this.process.setValues(Process.ProcessType.MARRIAGE_MARRIAGE,
                                    Process.RelationType.BETWEEN);
 
             String queryA = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
@@ -458,15 +484,12 @@ public class Closure {
 		boolean success = false;
 		try {
             String taskName = this.process.toString();
-			LOG.outputConsole("");
-			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
-
 			String [] nextLine;
 
 			String linktype = "sameAs", linkProv = this.process.abbr();
 			int nbLines = FILE_UTILS.countLines(filePath);
 
-            ActivityIndicator spinner = new ActivityIndicator(".: Consolidating Within Links");
+            ActivityIndicator spinner = new ActivityIndicator(".: Consolidating " + taskName + " Links");
             spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(filePath));
@@ -559,16 +582,17 @@ public class Closure {
 						LINKS.saveIndividualLink(idSubjectAMother, idSubjectBMother, meta_mothers);
 					}
 
-                    if (countProgress % 10000 == 0) {
+                    if (countProgress % 1000 == 0) {
                         spinner.update(countProgress);
                     }
 				}
 			} finally {
-                spinner.terminate();
 				reader.close();
+                spinner.terminate();
+                spinner.join();
 				success = true;
 			}
-		} catch (IOException | CsvValidationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -579,14 +603,12 @@ public class Closure {
 		Boolean success = false;
 		try {
             String taskName = this.process.toString();
-			LOG.outputConsole("");
-			LOG.outputConsole("Saving individual links (" + taskName + ") for file: " + filePath);
 
 			String [] nextLine;
 			String linktype = "sameAs", linkProv = this.process.abbr(), matchedIndiv = "2";
 			int nbLines = FILE_UTILS.countLines(filePath);
 
-            ActivityIndicator spinner = new ActivityIndicator(".: Consolidating Between Links");
+            ActivityIndicator spinner = new ActivityIndicator(".: Consolidating " + taskName + " Links");
             spinner.start();
 
             CSVReader reader = new CSVReader(new FileReader(filePath));
@@ -606,7 +628,7 @@ public class Closure {
                     BindingSet bindingSetA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
                     String idFather, idMother;
-                    if (this.process.type == Process.ProcessType.MARIAGE_MARIAGE) {
+                    if (this.process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
                         if (familyLine.equals("21")) {  // bride
                             idFather = bindingSetA.getValue("idSubjectFather").stringValue();
                             idMother = bindingSetA.getValue("idSubjectMother").stringValue();
@@ -659,16 +681,17 @@ public class Closure {
 					LINKS.saveIndividualLink(idMother, idSubjectFemale, meta_mother);
 					LINKS.saveIndividualLink(idFather, idSubjectMale, meta_father);
 
-                    if (countProgress % 10000 == 0) {
+                    if (countProgress % 1000 == 0) {
                         spinner.update(countProgress);
                     }
 				}
 			} finally {
-                spinner.terminate();
 				reader.close();
+                spinner.terminate();
+                spinner.join();
 				success = true;
 			}
-		} catch (IOException | CsvValidationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 

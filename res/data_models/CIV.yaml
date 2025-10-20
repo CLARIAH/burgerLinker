@@ -6,8 +6,10 @@
 #  -------------------------------------------  #
 #                                               #
 #  This file specifies the data model used by   #
-#  the input data to BurgerLinker. All classes  #
-#  and properties in this file must be defined. #
+#  the input data to BurgerLinker. All          #
+#  requested variable bindings must be          #
+#  resolvable for BurgerLinker to work          #
+#  properly.                                    #
 #                                               #
 #  The data model specified in this files is    #
 #  based upon the Civil Registry Schema, and is #
@@ -18,156 +20,152 @@
 #                                               #
 # ********************************************* #
 
-# ==============================================#
+
+# ============================================= #
 #                                               #
-# Namespaces to model events, roles, and people #
+# SPARQL Query Bodies                           #
 #                                               #
-# ==============================================#
+# ============================================= #
 
-namespace: &civ
-  # Civil Registry namespace
-  uri: https://iisg.amsterdam/id/civ/
+# Return all classes in the data and the
+# frequency of their occurrence.
+SUMMARY: >
+  SELECT ?type (COUNT (?s) AS ?instanceCount)
+  WHERE {
+    ?s a ?type .
+  } GROUP BY ?type
 
-namespace: &schema
-  # Schema.org namespace
-  uri: https://schema.org/
+# Return all statements in the graph, and, if it
+# concerns information about a person, also
+# return the identifiers and event date.
+STATEMENTS: >
+  PREFIX civ: <https://iisg.amsterdam/id/civ/>
 
-# ==============================================#
-#                                               #
-#   Classes and properties to model events      #
-#                                               #
-# ==============================================#
+  SELECT ?s ?p ?o ?sPersonID ?oPersonID ?eventDate
+  WHERE {
+    ?s ?p ?o .
 
-birth_event:
-  # Class of all birth events
-  <<: *civ
-  name: Birth
+    OPTIONAL { ?s civ:personID ?sPersonID } .
+    OPTIONAL { ?o civ:personID ?oPersonID } .
+    OPTIONAL { ?event ?q ?s;
+                      civ:eventDate ?eventDate . }
+  }
 
-marriage_event:
-  # Class of all marriage events
-  <<: *civ
-  name: Marriage
+# Return all information pertaining to birth
+# events, including information about the newborn
+# and its parents.
+BIRTHS: >
+  PREFIX civ: <https://iisg.amsterdam/id/civ/>
+  PREFIX sdo: <https://schema.org/>
 
-death_event:
-  # Class of all death events
-  <<: *civ
-  name: Death
+  SELECT *
+  WHERE {
+  ?event civ:newborn ?newbornID ;
+         civ:father ?fatherNewbornID ;
+         civ:mother ?motherNewbornID ;
+         civ:eventDate ?eventDate ;
+         civ:registrationID ?eventID .
+  ?newbornID sdo:givenName ?givenNameNewborn ;
+            sdo:familyName ?familyNameNewborn ;
+            sdo:gender ?genderNewborn .
+  OPTIONAL { ?newbornID civ:age ?ageNewborn }
+  OPTIONAL { ?newbornID civ:personID ?idNewborn }
+  ?fatherNewbornID sdo:givenName ?givenNameNewbornFather ;
+                   sdo:familyName ?familyNameNewbornFather ;
+                   sdo:gender ?genderNewbornFather .
+  OPTIONAL { ?fatherNewbornID civ:age ?ageNewbornFather }
+  OPTIONAL { ?fatherNewbornID civ:personID ?idNewbornFather }
+  ?motherNewbornID sdo:givenName ?givenNameNewbornMother ;
+                   sdo:familyName ?familyNameNewbornMother ;
+                   sdo:gender ?genderNewbornMother .
+  OPTIONAL { ?motherNewbornID civ:age ?ageNewbornMother }
+  OPTIONAL { ?motherNewbornID civ:personID ?idNewbornMother }
+  }
 
-event_date:
-  # Property to date of event
-  <<: *civ
-  name: eventDate
+# Return all information pertaining to death
+# events, including information about the
+# deceased, its partner, and its parents.
+DEATHS: >
+  PREFIX civ: <https://iisg.amsterdam/id/civ/>
+  PREFIX sdo: <https://schema.org/>
 
-event_registration_identifier:
-  # Property to registration identifier of event
-  <<: *civ
-  name: registrationID
+  SELECT *
+  WHERE {
+  ?event civ:deceased ?deceasedID ;
+         civ:partner ?partnerID ;
+         civ:father ?fatherDeceasedID ;
+         civ:mother ?motherDeceasedID ;
+         civ:eventDate ?eventDate ;
+         civ:registrationID ?eventID .
+  ?deceasedID sdo:givenName ?givenNameDeceased ;
+              sdo:familyName ?familyNameDeceased ;
+              sdo:gender ?genderDeceased .
+  OPTIONAL { ?deceasedID civ:age ?ageDeceased }
+  OPTIONAL { ?deceasedID civ:personID ?idDeceased }
+  ?partnerID sdo:givenName ?givenNamePartner ;
+             sdo:familyName ?familyNamePartner ;
+             sdo:gender ?genderPartner .
+  OPTIONAL { ?partnerID civ:age ?agePartner }
+  OPTIONAL { ?partnerID civ:personID ?idPartner }
+  ?fatherDeceasedID sdo:givenName ?givenNameDeceasedFather ;
+                    sdo:familyName ?familyNameDeceasedFather ;
+                    sdo:gender ?genderDeceasedFather .
+  OPTIONAL { ?fatherDeceasedID civ:age ?ageDeceasedFather }
+  OPTIONAL { ?fatherDeceasedID civ:personID ?idDeceasedFather }
+  ?motherDeceasedID sdo:givenName ?givenNameDeceasedMother ;
+                    sdo:familyName ?familyNameDeceasedMother ;
+                    sdo:gender ?genderDeceasedMother .
+  OPTIONAL { ?motherDeceasedID civ:age ?ageDeceasedMother }
+  OPTIONAL { ?motherDeceasedID civ:personID ?idDeceasedMother }
+  }
 
-# ==============================================#
-#                                               #
-#   Classes and properties to model people      #
-#                                               #
-# ==============================================#
+# Return all information pertaining to marriage
+# events, including information about the
+# bride and groom, and of both their parents.
+MARRIAGES: >
+  PREFIX civ: <https://iisg.amsterdam/id/civ/>
+  PREFIX sdo: <https://schema.org/>
 
-person:
-  # Class of all people
-  <<: *schema
-  name: Person
-
-person_identifier:
-  # Property to person identifier
-  <<: *civ
-  name: personID
-
-person_given_name:
-  # Property to person given name
-  <<: *schema
-  name: givenName
-
-person_family_name:
-  # Property to person family name
-  <<: *schema
-  name: familyName
-
-person_age:
-  # Property to person age
-  <<: *civ
-  name: age
-
-person_gender:
-  # Property to person gender
-  <<: *schema
-  name: gender
-
-person_gender_male:
-  # Class of all males
-  <<: *schema
-  name: Male
-
-person_gender_female:
-  # Class of all females
-  <<: *schema
-  name: Female
-
-# ==============================================#
-#                                               #
-#   Properties to model event roles             #
-#                                               #
-# ==============================================#
-
-role_newborn:
-  # Property to role newborn (gender agnostic)
-  <<: *civ
-  name: newborn
-
-role_father:
-  # Property to role father of main role (event agnostic)
-  <<: *civ
-  name: father
-
-role_mother:
-  # Property to role mother of main role (event agnostic)
-  <<: *civ
-  name: mother
-
-role_deceased:
-  # Property to role deceased (gender agnostic)
-  <<: *civ
-  name: deceased
-
-role_partner:
-  # Property to role parter of deceased (gender agnostic)
-  <<: *civ
-  name: partner
-
-role_bride:
-  # Property to role bride
-  <<: *civ
-  name: bride
-
-role_bride_father:
-  # Property to role father of bride
-  <<: *civ
-  name: fatherBride
-
-role_bride_mother:
-  # Property to role mother of bride
-  <<: *civ
-  name: motherBride
-
-role_groom:
-  # Property to role groom
-  <<: *civ
-  name: groom
-
-role_groom_father:
-  # Property to role father of groom
-  <<: *civ
-  name: fatherGroom
-
-role_groom_mother:
-  # Property to role mother of groom
-  <<: *civ
-  name: motherGroom
+  SELECT *
+  WHERE {
+  ?event civ:bride ?brideID ;
+         civ:groom ?groomID ;
+         civ:fatherBride ?fatherBrideID ;
+         civ:motherBride ?motherBrideID ;
+         civ:fatherGroom ?fatherGroomID ;
+         civ:motherGroom ?motherGroomID ;
+         civ:eventDate ?eventDate ;
+         civ:registrationID ?eventID .
+  ?brideID sdo:givenName ?givenNameBride ;
+           sdo:familyName ?familyNameBride ;
+           sdo:gender ?genderBride .
+  OPTIONAL { ?brideID civ:age ?ageBride }
+  OPTIONAL { ?brideID civ:personID ?idBride }
+  ?groomID sdo:givenName ?givenNameGroom ;
+           sdo:familyName ?familyNameGroom ;
+           sdo:gender ?genderGroom .
+  OPTIONAL { ?groomID civ:age ?ageGroom }
+  OPTIONAL { ?groomID civ:personID ?idGroom }
+  ?fatherBrideID sdo:givenName ?givenNameBrideFather ;
+                 sdo:familyName ?familyNameBrideFather ;
+                 sdo:gender ?genderBrideFather .
+  OPTIONAL { ?fatherBrideID civ:age ?ageBrideFather }
+  OPTIONAL { ?fatherBrideID civ:personID ?idBrideFather }
+  ?motherBrideID sdo:givenName ?givenNameBrideMother ;
+                 sdo:familyName ?familyNameBrideMother ;
+                 sdo:gender ?genderBrideMother .
+  OPTIONAL { ?motherBrideID civ:age ?ageBrideMother }
+  OPTIONAL { ?motherBrideID civ:personID ?idBrideMother }
+  ?fatherGroomID sdo:givenName ?givenNameGroomFather ;
+                 sdo:familyName ?familyNameGroomFather ;
+                 sdo:gender ?genderGroomFather .
+  OPTIONAL { ?fatherGroomID civ:age ?ageGroomFather }
+  OPTIONAL { ?fatherGroomID civ:personID ?idGroomFather }
+  ?motherGroomID sdo:givenName ?givenNameGroomMother ;
+                 sdo:familyName ?familyNameGroomMother ;
+                 sdo:gender ?genderGroomMother .
+  OPTIONAL { ?motherGroomID civ:age ?ageGroomMother }
+  OPTIONAL { ?motherGroomID civ:personID ?idGroomMother }
+  }
 
 ...  # EOF

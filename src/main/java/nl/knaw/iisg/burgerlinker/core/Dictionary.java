@@ -26,7 +26,6 @@ public class Dictionary {
 	public int maxLev;
 	public Boolean fixedLev;
 	public Index indexMain, indexMale, indexFemale, indexMother, indexFather;
-	private final int indexingUpdateInterval = 2000;
 
 	public static final Logger lg = LogManager.getLogger(Dictionary.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -79,7 +78,7 @@ public class Dictionary {
 						count_No_Main++;
 					}
 
-                    if(countAll % 10000 == 0) {
+                    if(countAll % 1000 == 0) {
                         spinner.update(countAll);
                     }
 			    }
@@ -96,17 +95,17 @@ public class Dictionary {
         } finally {
             indexMain.closeStream();
 
-            DecimalFormat formatter = new DecimalFormat("#,###");
             int countNonIndexed = countAll - countInserts;
 
-            Map<String, Integer> summary = new HashMap<>();
-            summary.put("Certificates", countAll);
-            summary.put("Certificates Indexed", countInserts);
-            summary.put("Certificates Non-Indexed", countNonIndexed);
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            Map<String, String> summary = new HashMap<>();
+            summary.put("Certificates", formatter.format(countAll));
+            summary.put("Certificates Indexed", formatter.format(countInserts));
+            summary.put("Certificates Non-Indexed", formatter.format(countNonIndexed));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {
-                String val = formatter.format(summary.get(key));
+                String val = summary.get(key);
                 if (val.length() > valLenMax) {
                     valLenMax -= val.length();
                 }
@@ -117,7 +116,7 @@ public class Dictionary {
 
             LOG.outputConsole(".: Index Summary");
             for (String key: summary.keySet()) {
-                String val = formatter.format(summary.get(key));
+                String val = summary.get(key);
                 LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
                                   + "   " + String.format("%" + valLenMax + "s", val));
             }
@@ -173,7 +172,7 @@ public class Dictionary {
 
                     }
 
-                    if(countAll % 10000 == 0) {
+                    if(countAll % 1000 == 0) {
                         spinner.update(countAll);
                     }
                 }
@@ -191,17 +190,17 @@ public class Dictionary {
             indexMale.closeStream();
             indexFemale.closeStream();
 
-            DecimalFormat formatter = new DecimalFormat("#,###");
             int countNonIndexed = countAll - countInserts;
 
-            Map<String, Integer> summary = new HashMap<>();
-            summary.put("Certificates", countAll);
-            summary.put("Certificates Indexed", countInserts);
-            summary.put("Certificates Non-Indexed", countNonIndexed);
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            Map<String, String> summary = new HashMap<>();
+            summary.put("Certificates", formatter.format(countAll));
+            summary.put("Certificates Indexed", formatter.format(countInserts));
+            summary.put("Certificates Non-Indexed", formatter.format(countNonIndexed));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {
-                String val = formatter.format(summary.get(key));
+                String val = summary.get(key);
                 if (val.length() > valLenMax) {
                     valLenMax -= val.length();
                 }
@@ -212,7 +211,7 @@ public class Dictionary {
 
             LOG.outputConsole(".: Index Summary");
             for (String key: summary.keySet()) {
-                String val = formatter.format(summary.get(key));
+                String val = summary.get(key);
                 LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
                                   + "   " + String.format("%" + valLenMax + "s", val));
             }
@@ -303,7 +302,7 @@ public class Dictionary {
                         }
                     }
 
-                    if(countAll % 10000 == 0) {
+                    if(countAll % 1000 == 0) {
                         spinner.update(countAll);
                     }
                 }
@@ -322,17 +321,17 @@ public class Dictionary {
             indexMother.closeStream();
             indexFather.closeStream();
 
-            DecimalFormat formatter = new DecimalFormat("#,###");
             int countNonIndexed = countAll - countInserts;
 
-            Map<String, Integer> summary = new HashMap<>();
-            summary.put("Certificates", countAll);
-            summary.put("Certificates Indexed", countInserts);
-            summary.put("Certificates Non-Indexed", countNonIndexed);
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            Map<String, String> summary = new HashMap<>();
+            summary.put("Certificates", formatter.format(countAll));
+            summary.put("Certificates Indexed", formatter.format(countInserts));
+            summary.put("Certificates Non-Indexed", formatter.format(countNonIndexed));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {
-                String val = formatter.format(summary.get(key));
+                String val = summary.get(key);
                 if (val.length() > valLenMax) {
                     valLenMax -= val.length();
                 }
@@ -343,7 +342,7 @@ public class Dictionary {
 
             LOG.outputConsole(".: Index Summary");
             for (String key: summary.keySet()) {
-                String val = formatter.format(summary.get(key));
+                String val = summary.get(key);
                 LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
                                   + "   " + String.format("%" + valLenMax + "s", val));
             }

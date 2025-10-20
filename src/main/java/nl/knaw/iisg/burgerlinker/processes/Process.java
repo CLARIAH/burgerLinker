@@ -7,9 +7,9 @@ import java.util.Map;
 public class Process {
     public enum ProcessType {
         BIRTH_DECEASED,
-        BIRTH_MARIAGE,
-        DECEASED_MARIAGE,
-        MARIAGE_MARIAGE;
+        BIRTH_MARRIAGE,
+        DECEASED_MARRIAGE,
+        MARRIAGE_MARRIAGE;
     }
     public enum RelationType{
         WITHIN,
@@ -19,16 +19,7 @@ public class Process {
     public ProcessType type;
     public RelationType rtype;
     public Map<String, String> dataModel;
-    public int minYearDiff, maxYearDiff;
-    public String roleASubject,
-                  roleASubjectFather,
-                  roleASubjectMother,
-                  roleBSubject,
-                  roleBSubjectFather,
-                  roleBSubjectMother,
-                  roleBSubjectPartner,
-                  roleBSubjectPartnerFather,
-                  roleBSubjectPartnerMother;
+    public String queryEventA, queryEventB;
     public final String csvHeader = "id_certificate_A,"
                                   + "id_certificate_B,"
                                   + "family_line,"
@@ -73,78 +64,42 @@ public class Process {
         setProcessType(type);
         setRelationType(rtype);
 
-        switch(type) {
-            case BIRTH_DECEASED:
-                this.roleASubject = dataModel.get("role_newborn");
-                this.roleASubjectFather = dataModel.get("role_father");
-                this.roleASubjectMother = dataModel.get("role_mother");
-                this.roleBSubject = dataModel.get("role_deceased");
-                this.roleBSubjectFather = dataModel.get("role_father");
-                this.roleBSubjectMother = dataModel.get("role_mother");
-                this.roleBSubjectPartner = dataModel.get("role_partner");
-                this.roleBSubjectPartnerFather = null;
-                this.roleBSubjectPartnerMother = null;
+        if (this.rtype == RelationType.WITHIN) {
+            this.queryEventA = this.dataModel.get("BIRTHS");
+            switch (this.type) {
+                case BIRTH_DECEASED:
+                    this.queryEventB = this.dataModel.get("DEATHS");
 
-                if (rtype == Process.RelationType.WITHIN) {
-                    this.minYearDiff = 0;
-                    this.maxYearDiff = 110;
-                } else {
-                    this.minYearDiff = -1;
-                    this.maxYearDiff = 96;
-                }
+                    break;
+                case BIRTH_MARRIAGE:
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
 
-                break;
-            case BIRTH_MARIAGE:
-                this.roleASubject = dataModel.get("role_newborn");
-                this.roleASubjectFather = dataModel.get("role_father");
-                this.roleASubjectMother = dataModel.get("role_mother");
-                this.roleBSubject = dataModel.get("role_bride");
-                this.roleBSubjectFather = dataModel.get("role_bride_father");
-                this.roleBSubjectMother = dataModel.get("role_bride_mother");
-                this.roleBSubjectPartner = dataModel.get("role_groom");
-                this.roleBSubjectPartnerFather = dataModel.get("role_groom_father");
-                this.roleBSubjectPartnerMother = dataModel.get("role_groom_mother");
+                    break;
+            }
+        } else {  // RelationType.BETWEEN
+             switch (this.type) {
+                case BIRTH_DECEASED:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
+                    this.queryEventB = this.dataModel.get("DEATHS");
 
-                if (rtype == Process.RelationType.WITHIN) {
-                    this.minYearDiff = 14;
-                    this.maxYearDiff = 80;
-                } else {
-                    this.minYearDiff = -5;
-                    this.maxYearDiff = 36;
-                }
+                    break;
+                case BIRTH_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
 
-                break;
-            case DECEASED_MARIAGE:
-                this.roleASubject = dataModel.get("role_deceased");
-                this.roleASubjectFather = dataModel.get("role_father");
-                this.roleASubjectMother = dataModel.get("role_mother");
-                this.roleBSubject = dataModel.get("role_bride");
-                this.roleBSubjectFather = null;
-                this.roleBSubjectMother = null;
-                this.roleBSubjectPartner = dataModel.get("role_groom");
-                this.roleBSubjectPartnerFather = null;
-                this.roleBSubjectPartnerMother = null;
+                    break;
+                case DECEASED_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("DEATHS");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
 
-                this.minYearDiff = -5;
-                this.maxYearDiff = 146;
+                    break;
+                case MARRIAGE_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("MARRIAGES");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
 
-                break;
-            case MARIAGE_MARIAGE:
-                this.roleASubject = dataModel.get("role_bride");
-                this.roleASubjectFather = dataModel.get("role_bride_father");
-                this.roleASubjectMother = dataModel.get("role_bride_mother");
-                this.roleBSubject = dataModel.get("role_bride");
-                this.roleBSubjectFather = null;
-                this.roleBSubjectMother = null;
-                this.roleBSubjectPartner = dataModel.get("role_groom");
-                this.roleBSubjectPartnerFather = dataModel.get("role_groom_father");
-                this.roleBSubjectPartnerMother = dataModel.get("role_groom_mother");
-
-                this.minYearDiff = 14;
-                this.maxYearDiff = 100;
-
-                break;
-        }
+                    break;
+            }
+       }
     }
 
     public String abbr() {
@@ -166,15 +121,15 @@ public class Process {
                 processName += "B-D";
 
                 break;
-            case BIRTH_MARIAGE:
+            case BIRTH_MARRIAGE:
                 processName += "B-M";
 
                 break;
-            case DECEASED_MARIAGE:
+            case DECEASED_MARRIAGE:
                 processName += "D-M";
 
                 break;
-            case MARIAGE_MARIAGE:
+            case MARRIAGE_MARRIAGE:
                 processName += "M-M";
 
                 break;
@@ -187,11 +142,11 @@ public class Process {
         String processName = "";
         switch (this.rtype) {
             case WITHIN:
-                processName += "Within";
+                processName += "WITHIN";
 
                 break;
             case BETWEEN:
-                processName += "Between";
+                processName += "BETWEEN";
 
                 break;
         }
@@ -202,15 +157,15 @@ public class Process {
                 processName += "B-D";
 
                 break;
-            case BIRTH_MARIAGE:
+            case BIRTH_MARRIAGE:
                 processName += "B-M";
 
                 break;
-            case DECEASED_MARIAGE:
+            case DECEASED_MARRIAGE:
                 processName += "D-M";
 
                 break;
-            case MARIAGE_MARIAGE:
+            case MARRIAGE_MARRIAGE:
                 processName += "M-M";
 
                 break;

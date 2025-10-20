@@ -33,7 +33,6 @@ public class Between {
     private Map<String, Rule> rules;
 	private File mainDirectoryPath;
     private String processName;
-	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
 	private boolean fixedLev, ignoreDate, ignoreBlock;
 	Index indexFemale, indexMale;
@@ -66,38 +65,13 @@ public class Between {
 	}
 
 	public void link_between() {
-        String querySubjectA = "", querySubjectB = "";
-        boolean genderFilter = false;
-        switch (this.process.type) {
-            case BIRTH_DECEASED:
-                querySubjectA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
-                genderFilter = false;
-
-                break;
-            case BIRTH_MARIAGE:
-                querySubjectA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
-                genderFilter = true;
-
-                break;
-            case DECEASED_MARIAGE:
-                querySubjectA = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI);
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
-                genderFilter = true;
-
-                break;
-            case MARIAGE_MARIAGE:
-                querySubjectA = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI);
-                genderFilter = true;
-
-                break;
-        }
+        String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+        String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
+        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED) ? false : true;
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
-        if (dict.generateDictionaryTwoWay(myRDF, querySubjectB, genderFilter)) {
+        if (dict.generateDictionaryTwoWay(myRDF, queryEventB, genderFilter)) {
 			indexMale = dict.indexMale;
 			indexFemale = dict.indexFemale;
 			indexMale.createTransducer();
@@ -110,7 +84,7 @@ public class Between {
 				try {
                     spinner.start();
 
-                    qResultA = myRDF.getQueryResults(querySubjectA);
+                    qResultA = myRDF.getQueryResults(queryEventA);
                     for (BindingSet bindingSetA: qResultA) {
 						cntAll++;
 
@@ -118,7 +92,7 @@ public class Between {
 						String eventID = bindingSetA.getValue("eventID").stringValue();
 
                         Set<Couple> couples = new HashSet<>();
-                        if (process.type == Process.ProcessType.MARIAGE_MARIAGE) {
+                        if (process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
                             Couple otherCouple = new Couple(
                                     new Person(event,
                                            bindingSetA.getValue("givenNamePartnerMother").stringValue(),
@@ -163,7 +137,7 @@ public class Between {
                                             Map<String, Value> bindings = new HashMap<>();
                                             bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                            TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
+                                            TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                             for (BindingSet bindingSetB: qResultB) {
                                                 String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
@@ -196,7 +170,7 @@ public class Between {
                                                     }
 
                                                     String familyCode = "N.A.";
-                                                    if (process.type == Process.ProcessType.MARIAGE_MARIAGE) {
+                                                    if (process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
                                                         familyCode = c.familyCode;
                                                     }
 
@@ -211,7 +185,7 @@ public class Between {
                                 }
                             }
 						}
-                        if (cntAll % 10000 == 0) {
+                        if (cntAll % 1000 == 0) {
 							spinner.update(cntAll);
 						}
 					}

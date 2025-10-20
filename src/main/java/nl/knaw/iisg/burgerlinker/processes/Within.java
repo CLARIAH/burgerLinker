@@ -31,7 +31,6 @@ public class Within {
 	private MyRDF myRDF;
     private Process process;
     private Map<String, Rule> rules;
-	private final int linkingUpdateInterval = 10000;
 	private int maxLev;
 	private boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
 	Index indexSubjectB, indexMother, indexFather;
@@ -65,26 +64,13 @@ public class Within {
 	public void link_within(String gender, boolean closeStream) {
         String familyCode = (gender == "m") ? "22" : "21";
 
-        String querySubjectA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-
-        String querySubjectB = "";
-        boolean genderFilter = false;
-        switch (this.process.type) {
-            case BIRTH_DECEASED:
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI, gender);
-                genderFilter = true;
-
-                break;
-            case BIRTH_MARIAGE:
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI, gender);
-                genderFilter = false;
-
-                break;
-        }
+        String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+        String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
+        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED) ? true : false;
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
-		if (dict.generateDictionaryThreeWay(myRDF, querySubjectB, genderFilter, gender)) {
+		if (dict.generateDictionaryThreeWay(myRDF, queryEventB, genderFilter, gender)) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
 			indexMother = dict.indexMother; indexMother.createTransducer();
 			indexFather = dict.indexFather;	indexFather.createTransducer();
@@ -96,7 +82,7 @@ public class Within {
 				try {
                     spinner.start();
 
-                    qResultA = myRDF.getQueryResults(querySubjectA);
+                    qResultA = myRDF.getQueryResults(queryEventA);
                     for (BindingSet bindingSetA: qResultA) {
 						cntAll++;
 
@@ -141,7 +127,7 @@ public class Within {
                                                         Map<String, Value> bindings = new HashMap<>();
                                                         bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                                        TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
+                                                        TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                                         for (BindingSet bindingSetB: qResultB) {
                                                             String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
@@ -198,7 +184,7 @@ public class Within {
                                                         Map<String, Value> bindings = new HashMap<>();
                                                         bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                                        TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
+                                                        TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                                         for (BindingSet bindingSetB: qResultB) {
                                                             String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
@@ -246,7 +232,7 @@ public class Within {
                                                     Map<String, Value> bindings = new HashMap<>();
                                                     bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                                    TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
+                                                    TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                                     for (BindingSet bindingSetB: qResultB) {
                                                         String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
@@ -296,13 +282,14 @@ public class Within {
 								}
 							}
 						}
-                        if (cntAll % 10000 == 0) {
+                        if (cntAll % 1000 == 0) {
 							spinner.update(cntAll);
 						}
 					}
 				} finally {
 					qResultA.close();
                     spinner.terminate();
+                    spinner.join();
 				}
 			} catch (Exception e) {
 				LOG.logError("link_between", "Error in linking parents of newborns to partners in process " + this.processName);
@@ -318,26 +305,13 @@ public class Within {
 	public void link_within_single(String gender, boolean closeStream) {
         String familyCode = (gender == "m") ? "22" : "21";
 
-        String querySubjectA = MyRDF.generalizeQuery(MyRDF.qNewbornInfoFromEventURI);
-
-        String querySubjectB = "";
-        boolean genderFilter = false;
-        switch (this.process.type) {
-            case BIRTH_DECEASED:
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qDeceasedInfoFromEventURI, gender);
-                genderFilter = true;
-
-                break;
-            case BIRTH_MARIAGE:
-                querySubjectB = MyRDF.generalizeQuery(MyRDF.qMarriageInfoFromEventURI, gender);
-                genderFilter = false;
-
-                break;
-        }
+        String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
+        String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
+        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED) ? true : false;
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
-		if(dict.generateDictionaryOneWay(myRDF, querySubjectB, genderFilter, gender)) {
+		if(dict.generateDictionaryOneWay(myRDF, queryEventB, genderFilter, gender)) {
 			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
 			try {
 				String taskName = ".: Linking Single " + processName + " (" + gender + ")";
@@ -348,7 +322,7 @@ public class Within {
 				try {
                     spinner.start();
 
-                    qResultA = myRDF.getQueryResults(querySubjectA);
+                    qResultA = myRDF.getQueryResults(queryEventA);
                     for (BindingSet bindingSetA: qResultA) {
 						cntAll++;
 
@@ -369,7 +343,7 @@ public class Within {
                                         Map<String, Value> bindings = new HashMap<>();
                                         bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                        TupleQueryResult qResultB = myRDF.getQueryResults(querySubjectB, bindings);
+                                        TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
                                             String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
@@ -402,13 +376,14 @@ public class Within {
 								}
 							}
 						}
-                        if (cntAll % 10000 == 0) {
+                        if (cntAll % 1000 == 0) {
 							spinner.update(cntAll);
 						}
 					}
 				} finally {
 					qResultA.close();
                     spinner.terminate();
+                    spinner.join();
 				}
 			} catch (Exception e) {
 				LOG.logError("link_between", "Error in linking parents of newborns to partners in process " + this.processName);

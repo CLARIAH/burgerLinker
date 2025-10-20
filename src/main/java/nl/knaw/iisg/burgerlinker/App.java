@@ -13,7 +13,7 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 public class App {
     // default arguments
-    private String dataModelDefault = "CIV",  // use shorthand
+    private String modelDefault = "CIV",  // use shorthand
                    rulesetDefault = "default",  // use shorthand
                    namespaceDefault = "_:";
 
@@ -27,8 +27,8 @@ public class App {
 	@Parameter(names = "--output")
 	String output = null;
 
-    @Parameter(names = "--dataModel")
-    String dataModel = dataModelDefault;
+    @Parameter(names = "--model")
+    String model = modelDefault;
 
     @Parameter(names = "--namespace")
     String namespace = namespaceDefault;
@@ -77,11 +77,7 @@ public class App {
 	}
 
 	public void run() {
-		LOG.outputConsole("");
-		LOG.outputConsole("=======================");
-		LOG.outputConsole("Welcome to burgerLinker");
-		LOG.outputConsole("=======================");
-		LOG.outputConsole("");
+		LOG.outputConsole(".: Welcome to BurgerLinker");
 		long startTime = System.currentTimeMillis();
 
 
@@ -105,7 +101,7 @@ public class App {
 			}
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
                                               ignoreBlock, singleInd, input, output,
-                                              format, dataModel, ruleset, namespace,
+                                              format, model, ruleset, namespace,
                                               reload);
 			cntrl.runProgram();
 		} else {
@@ -116,7 +112,7 @@ public class App {
 			System.out.printf(formatting, "--function:", "(required) One of the functionalities listed below");
 			System.out.printf(formatting, "--input:", "(required) Comma-separated path to one or more RDF graphs");
 			System.out.printf(formatting, "--output:", "(required) Path of the directory for saving the indices and the detected links");
-			System.out.printf(formatting, "--dataModel:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
+			System.out.printf(formatting, "--model:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
             System.out.printf(formatting, "--ruleSet:", "(optional) Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.");
 			System.out.printf(formatting, "--namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
 			System.out.printf(formatting, "--maxLev:", "(optional, default = 4) Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link");
@@ -165,11 +161,5 @@ public class App {
 			// Add example of computing the closure
 
 		}
-
-		LOG.outputConsole("");
-		LOG.outputConsole("=====================");
-		LOG.outputTotalRuntime("burgerLinker", startTime, true);
-		LOG.outputConsole("=====================");
-		LOG.outputConsole("");
 	}
 }
