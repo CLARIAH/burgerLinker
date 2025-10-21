@@ -147,13 +147,7 @@ public class Controller {
                 }
 
                 outputDatasetStatistics(this.dataModel);
-                if (FUNCTIONS.contains(this.function)) {
-                    try {
-                        execProcess(this.function, ruleMap);
-                    } catch (Exception e) {
-                        LOG.logError("runProgram", "Error running process: " + e);
-                    }
-                } else if (this.function == null) {
+                if (this.function == null) {
                     LOG.outputConsole(".: No function specified: looping over all functions.");
                     for (String func: FUNCTIONS) {
                         if (func.equals("closure")) {
@@ -163,7 +157,13 @@ public class Controller {
                         execProcess(func, ruleMap);
                     }
 
-                    execProcess("closure", ruleMap);
+                    execProcess("closure", ruleMap);  // do this last
+                } else if (FUNCTIONS.contains(this.function)) {
+                    try {
+                        execProcess(this.function, ruleMap);
+                    } catch (Exception e) {
+                        LOG.logError("runProgram", "Error running process: " + e);
+                    }
                 }
             }
 		} catch (Exception e) {
@@ -373,7 +373,7 @@ public class Controller {
 	}
 
 	public boolean checkInputFunction() {
-		if(function != null) {
+		if (function != null) {
 			function = function.toLowerCase();
 			for (String f: FUNCTIONS) {
 				if(function.equalsIgnoreCase(f)) {
@@ -388,7 +388,7 @@ public class Controller {
 					"Choose one of the following options: " + FUNCTIONS.toString());
 		}
 
-		return false;
+		return true;
 	}
 
 	public boolean checkInputMaxLevenshtein() {
@@ -479,7 +479,7 @@ public class Controller {
 
         File dir = new File(this.workdir.getCanonicalPath() + "/store");
         if (!this.reload && dir.isDirectory() && dir.listFiles().length > 0) {
-            LOG.outputConsole(".: Found existing RDF store. Reusing data.");
+            LOG.outputConsole(".: Found existing RDF store. Trying to establish connection.");
 
             ActivityIndicator spinner = new ActivityIndicator(".: Loading RDF Store");
             spinner.start();
@@ -551,7 +551,7 @@ public class Controller {
 
 	public void within(Process process, Map<String, Rule> rules) throws java.io.IOException {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String dirName = function + options;
+		String dirName = process.toString().toLowerCase() + options;
 
         File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
 		if (dir.exists() || dir.mkdir()) {
@@ -581,7 +581,7 @@ public class Controller {
 
     public void between(Process process, Map<String, Rule> rules) throws java.io.IOException {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
-		String dirName = function + options;
+		String dirName = process.toString().toLowerCase() + options;
 
         File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
 		if (dir.exists() || dir.mkdir()) {
@@ -604,7 +604,7 @@ public class Controller {
 	}
 
 	public void closure(Process process, String namespace) throws java.io.IOException {
-		String dirName = function;
+		String dirName = "closure";
 
         File dir = new File(this.workdir.getCanonicalPath() + "/" + dirName);
 		if (dir.exists() || dir.mkdir()) {

@@ -192,6 +192,7 @@ public class Between {
 				} finally {
                     qResultA.close();
                     spinner.terminate();
+                    spinner.join();
 				}
 			} catch (Exception e) {
 				LOG.logError("link_between", "Linking Error in Process " + processName);

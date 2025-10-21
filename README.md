@@ -6,7 +6,7 @@
 
 **1. Clone the upgrade branch**
 
-    git clone -b upgrade --single-branch https://github.com/CLARIAH/burgerLinker
+    git clone -b upgrade-query --single-branch https://github.com/CLARIAH/burgerLinker
 
 **2. Go to the source directory**
 
@@ -14,11 +14,11 @@
 
 **3. Compile the code and create a `jar` file**
 
-    $ ant jar
+    $ mvn package
 
 **4. Run BurgerLinker (the jar file is stored in the `dist` directory)**
 
-    $ java -jar dist/BurgerLinker-0.8.0.jar --help
+    $ java -jar target/BurgerLinker-0.8.0.jar --help
 
 ---
 
