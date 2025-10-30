@@ -78,16 +78,17 @@ public class App {
 
 	public void run() {
 		LOG.outputConsole(".: Welcome to BurgerLinker");
+		LOG.outputConsole(".: Documentation is available at www.github.com/CLARIAH/burgerLinker");
 		long startTime = System.currentTimeMillis();
 
 
-		// BasicConfigurator.configure();
-		ClassLoader.getSystemResource("/res/log4j.properties");
+	//	// BasicConfigurator.configure();
+	//	ClassLoader.getSystemResource("/res/log4j.properties");
 
-		// default option is to show only errors
-		Configurator.setRootLevel(Level.ERROR);
-		Configurator.setAllLevels("com.github.liblevenshtein", Level.OFF);
-		Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
+	//	// default option is to show only errors
+	//	Configurator.setRootLevel(Level.ERROR);
+	//	Configurator.setAllLevels("com.github.liblevenshtein", Level.OFF);
+	//	Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
 
 
 		if(help == false) {
@@ -109,17 +110,17 @@ public class App {
 			String formatting =  "%-18s %15s %n";
 
 			System.out.println("Parameters that can be provided as input to the linking tool:");
-			System.out.printf(formatting, "--function:", "(required) One of the functionalities listed below");
-			System.out.printf(formatting, "--input:", "(required) Comma-separated path to one or more RDF graphs");
+			System.out.printf(formatting, "--input:", "(required) Comma-separated path to one or more RDF graphs, or a web address to a SPARQL endpoint.");
 			System.out.printf(formatting, "--output:", "(required) Path of the directory for saving the indices and the detected links");
+			System.out.printf(formatting, "--function:", "(optional) One of the functionalities listed below, or all functions in sequence if omitted.");
 			System.out.printf(formatting, "--model:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
             System.out.printf(formatting, "--ruleSet:", "(optional) Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.");
 			System.out.printf(formatting, "--namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
 			System.out.printf(formatting, "--maxLev:", "(optional, default = 4) Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link");
 			System.out.printf(formatting, "--fixedLev:", "(optional, default = False) Add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths");
 			System.out.printf(formatting, "--format:", "(optional, default = CSV) One of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates");
-			System.out.printf(formatting, "--debug:", "(optional, default = error) One of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)");
 			System.out.printf(formatting, "--reload:", "(optional) Reload RDF data from graph(s) instead of reusing an existing RDF store.");
+			System.out.printf(formatting, "--debug:", "(optional, default = error) One of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)");
 			System.out.println("\n");
 
 			System.out.println("Functionalities that are supported in the current version: (case insensitive)");
@@ -157,9 +158,6 @@ public class App {
 
 
 			System.out.println("For further details, visit https://github.com/CLARIAH/burgerLinker");
-
-			// Add example of computing the closure
-
 		}
 	}
 }

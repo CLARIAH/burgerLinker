@@ -8,6 +8,8 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import org.eclipse.rdf4j.model.Value;
+
 
 public class Person {
 	private String URI;
@@ -25,6 +27,15 @@ public class Person {
         this.gender = gender;
 
 		this.valid = true;
+    }
+
+    public Person(String event, Value firstName, Value familyName, Value gender) {
+		this.URI = event;
+        this.first_name = (firstName != null) ? firstName.stringValue() : "";
+        this.last_name = (familyName != null) ? familyName.stringValue() : "";
+        this.gender = (gender != null) ? gender.stringValue() : "u";
+
+		this.valid = (URI != null);
     }
 
     public String toString() {
@@ -48,7 +59,7 @@ public class Person {
 	}
 
 	public String getFirstName() {
-		if(first_name!=null){
+		if (first_name.length() > 0){
 			String modified_first_name = first_name.replace(" ", compound_name_separator);
 			modified_first_name = modified_first_name.replace("-", compound_name_separator);
 
@@ -59,7 +70,7 @@ public class Person {
 	}
 
 	public String getLastName() {
-		if(last_name!=null) {
+		if (last_name.length() > 0) {
 			String modified_last_name = last_name.replace(" ", compound_name_separator);
 			modified_last_name = modified_last_name.replace("-", compound_name_separator);
 
@@ -79,7 +90,7 @@ public class Person {
 		HashMap<String,String> fullNames = new HashMap<String,String>();
 
 		String firstName = getFirstName();
-		if(firstName.contains(compound_name_separator)) {
+		if (firstName.contains(compound_name_separator)) {
 			String[] firstNames = firstName.split(compound_name_separator);
 			fullNames = orderedCombination(firstNames, getLastName());
 		} else {
@@ -123,115 +134,43 @@ public class Person {
 		System.out.println("+-------------------------------------------------------------------------------");
 	}
 
-	public Boolean hasFirstName() {
-		if(first_name != null){
-			return true;
-		} else {
-			return false;
-		}
+	public boolean hasFullName() {
+		return (first_name.length() > 0
+                && last_name.length() > 0
+                && !first_name.equals("n"));
 	}
 
-	public Boolean hasLastName() {
-		if(last_name != null){
-			return true;
-		} else {
-			return false;
-		}
+	public boolean isFemale() {
+		return gender.equals("f");
+    }
+
+	public boolean isMale() {
+		return gender.equals("m");
+    }
+
+	public boolean hasGender(String gender) {
+		return (this.gender.equals(gender) || this.gender.equals("u"));
 	}
 
-	public Boolean hasFullName() {
-		if(first_name != null && !first_name.equals("n")){
-			if(last_name != null) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public Boolean isFemale() {
-		if (gender.equals("f")){
-			return true;
-		}
-
-		return false;
-	}
-
-	public Boolean isMale() {
-		if (gender.equals("m")){
-			return true;
-		}
-
-		return false;
-	}
-
-	public Boolean hasGender(String gender) {
-		if(this.gender.equals(gender) || this.gender.equals("u")) {
-			return true;
-		}
-
-		return false;
-	}
-
-	public Boolean hasDoubleBarreledFirstName() {
-		if (this.getFirstName() != null) {
-			if(this.getFirstName().contains(compound_name_separator)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public Boolean hasDoubleBarreledLastName() {
-		if (this.getLastName() != null) {
-			if(this.getLastName().contains(compound_name_separator)) {
-				return true;
-			}
-		}
-
-		return false;
+	public boolean hasDoubleBarreledFirstName() {
+		return (first_name.length() > 0
+                && this.getFirstName().contains(compound_name_separator));
 	}
 
 	public String[] decomposeFirstname() {
-		if(this.hasDoubleBarreledFirstName()) {
+		if (this.hasDoubleBarreledFirstName()) {
 			return this.getFirstName().split(compound_name_separator);
 		} else {
 			return new String[] {this.getFirstName()};
 		}
 	}
 
-	public Set<String> decomposeFirstnameAddLastName() {
-		Set<String> result = new HashSet<String>();
-		if(this.hasDoubleBarreledFirstName()) {
-			String[] firstNames = this.getFirstName().split(compound_name_separator);
-			String lastname = this.getLastName();
-			for(String firstname: firstNames) {
-				result.add(firstname + names_separator + lastname);
-			}
-		} else {
-			result.add(this.getFullName());
-		}
-
-		return result;
-	}
-
-	public String[] decomposeLastname() {
-		return this.getLastName().split(compound_name_separator);
-	}
-
-	public Boolean isValid() {
+	public boolean isValid() {
 		return valid;
 	}
 
-	public Boolean isValidWithFullName() {
-		if(isValid()) {
-			if(hasFullName()) {
-				return true;
-			}
-		}
-
-		return false;
+	public boolean isValidWithFullName() {
+		return (isValid() && hasFullName());
 	}
 
 	public void setValid(Boolean valid) {
@@ -239,7 +178,7 @@ public class Person {
 	}
 
 	public int getNumberOfFirstNames() {
-		if(hasFirstName()) {
+		if (first_name.length() > 0) {
 			int nb_first_names = StringUtils.countMatches(this.first_name, names_separator);
 
 			return nb_first_names + 1;

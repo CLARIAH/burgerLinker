@@ -1,6 +1,7 @@
 package nl.knaw.iisg.burgerlinker.utilities;
 
 import java.lang.Thread;
+import java.text.DecimalFormat;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +12,7 @@ public class ActivityIndicator extends Thread {
     int interval, interval_default = 500;  // ms
     String pre = "", post = "";
     public boolean active = false;
+    DecimalFormat formatter = new DecimalFormat("#,###");
 
     static final Logger lg = LogManager.getLogger(ActivityIndicator.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -89,6 +91,6 @@ public class ActivityIndicator extends Thread {
     }
 
     public void update(int post) {
-        this.post = String.valueOf(post);
+        this.post = formatter.format(post);
     }
 }

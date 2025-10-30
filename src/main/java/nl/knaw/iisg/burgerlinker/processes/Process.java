@@ -49,7 +49,42 @@ public class Process {
         this.type = type;
         this.rtype = rtype;
 
-        setValues(this.type, this.rtype);
+        if (this.rtype == RelationType.WITHIN) {
+            this.queryEventA = this.dataModel.get("BIRTHS");
+            switch (this.type) {
+                case BIRTH_DECEASED:
+                    this.queryEventB = this.dataModel.get("DEATHS");
+
+                    break;
+                case BIRTH_MARRIAGE:
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
+
+                    break;
+            }
+        } else {  // RelationType.BETWEEN
+             switch (this.type) {
+                case BIRTH_DECEASED:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
+                    this.queryEventB = this.dataModel.get("DEATHS");
+
+                    break;
+                case BIRTH_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
+
+                    break;
+                case DECEASED_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("DEATHS");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
+
+                    break;
+                case MARRIAGE_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("MARRIAGES");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
+
+                    break;
+            }
+       }
     }
 
     public void setProcessType(ProcessType type) {

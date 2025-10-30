@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>nl.knaw.iisg</groupId>
-  <artifactId>burgerLinker</artifactId>
+  <artifactId>burgerlinker</artifactId>
   <version>0.8.0</version>
   <packaging>jar</packaging>
 
-  <name>burgerLinker</name>
+  <name>burgerlinker</name>
   <url>https://github.com/CLARIAH/burgerLinker</url>
 
   <properties>
@@ -22,6 +22,13 @@
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <version>5.11.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-bom</artifactId>
+        <version>5.2.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -42,14 +49,14 @@
     </dependency>
 
     <dependency>
-      <groupId>org.rdfhdt</groupId>
-      <artifactId>hdt-java-core</artifactId>
-      <version>3.0.10</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>2.25.1</version>
+     </dependency>
+     <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>2.25.1</version>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -60,11 +67,6 @@
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>
       <version>10.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>me.tongfei</groupId>
-      <artifactId>progressbar</artifactId>
-      <version>0.10.1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -119,32 +121,14 @@
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-storage</artifactId>
-      <version>5.1.5</version>
+      <version>5.2.0</version>
       <type>pom</type>
-    </dependency>
-<dependency>
-  <groupId>org.eclipse.rdf4j</groupId>
-  <artifactId>rdf4j-sail-lmdb</artifactId>
-  <version>5.1.5</version>
   </dependency>
-  <dependency>
-  <groupId>org.lwjgl</groupId>
-  <artifactId>lwjgl</artifactId>
-  <classifier>natives-linux</classifier>
-  <version>3.3.6</version>
-  <scope>runtime</scope>
-</dependency>
-<dependency>
-  <groupId>org.lwjgl</groupId>
-  <artifactId>lwjgl-lmdb</artifactId>
-  <classifier>natives-linux</classifier>
-  <version>3.3.6</version>
-  <scope>runtime</scope>
-</dependency>
   </dependencies>
 
   <build>
       <plugins>
+        <!--
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
@@ -168,7 +152,47 @@
               </configuration>
             </execution>
           </executions>
-        </plugin>
-      </plugins>
+            </plugin>
+        -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>false</minimizeJar>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <shadedClassifierName>uber</shadedClassifierName>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>nl.knaw.iisg.burgerlinker.App</Main-Class>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+              <artifactSet/>
+              <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-uber.jar</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 </project>

@@ -39,6 +39,12 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 
 public class MyRDF {
+    public static String QUERY_SUMMARY = String.join("\n",
+        "SELECT ?type (COUNT (?s) AS ?instanceCount)",
+        "WHERE {",
+        "    ?s a ?type .",
+        "} GROUP BY ?type");
+
     // temporary on-disk triple store
     private Repository store;
     private RepositoryConnection conn;
@@ -65,20 +71,24 @@ public class MyRDF {
         }
     }
 
-    public void parse(String[] paths) {
+    public boolean parse(String[] paths) {
+        boolean success = false;
         if (store != null && conn.isOpen()) {
             for (String path: paths) {
-                ActivityIndicator spinner = new ActivityIndicator("Parsing Graph '" + path + "'");
+                ActivityIndicator spinner = new ActivityIndicator(".: Parsing Graph '" + path + "'");
                 if (!FILE_UTILS.checkIfFileExists(path)) {
                     LOG.logError("parse", "Unable to find file '" + path + "'");
-                    return;
+                    return success;
                 }
 
                 // guess format from file name
                 RDFFormat format = Rio.getParserFormatForFileName(path).orElse(null);
                 if (format == null) {
-                    LOG.logError("parse", "Unable to determine format of file '" + path +"'");
-                    return;
+                    format = getParserFormatForFileName(path);
+                    if (format == null) {
+                        LOG.logError("parse", "Unable to determine format of file '" + path +"'");
+                        return success;
+                    }
                 }
 
                 spinner.start();
@@ -86,18 +96,84 @@ public class MyRDF {
                     conn.add(new File(path), format);
                 } catch (Exception e) {
                     LOG.logError("parse", "Error adding statements: " + e);
+                    return success;
+                } finally {
+                    spinner.terminate();
+                    try {
+                        spinner.join();
+                    } catch (Exception e) {
+                        LOG.logError("parse", "Error waiting for ActivityIndicator to stop: " + e);
+                        return success;
+                    }
                 }
 
-                spinner.terminate();
-                try {
-                    spinner.join();
-                } catch (Exception e) {
-                    LOG.logError("parse", "Error waiting for ActivityIndicator to stop: " + e);
-                }
             }
         } else {
             LOG.logError("parse", "Error connecting to RDF store");
+            return success;
         }
+
+        success = true;
+        return success;
+    }
+
+    public RDFFormat getParserFormatForFileName(String filename) {
+        RDFFormat format = null;
+        if (filename != null) {
+            int dotIndex = filename.lastIndexOf(".");
+            if (dotIndex >= 0) {
+                String suffix = filename.substring(dotIndex + 1).toLowerCase();
+                if (suffix.length() > 0) {
+                    switch (suffix) {
+                        case "nt":
+                            format = RDFFormat.NTRIPLES;
+
+                            break;
+                        case "ttl":
+                            format = RDFFormat.TURTLE;
+
+                            break;
+                        case "nq":
+                            format = RDFFormat.NQUADS;
+
+                            break;
+                        case "n3":
+                            format = RDFFormat.N3;
+
+                            break;
+                        case "jsonld":
+                            format = RDFFormat.JSONLD;
+
+                            break;
+                        case "hdt":
+                            format = RDFFormat.HDT;
+
+                            break;
+                        case "trig":
+                            format = RDFFormat.TRIG;
+
+                            break;
+                        case "trigs":
+                            format = RDFFormat.TRIGSTAR;
+
+                            break;
+                        case "ttls":
+                            format = RDFFormat.TURTLESTAR;
+
+                            break;
+                        case "rdf":
+                        case "rdfs":
+                        case "owl":
+                        case "xml":
+                            format = RDFFormat.RDFXML;
+
+                            break;
+                    }
+                }
+            }
+        }
+
+        return format;
     }
 
     public List<BindingSet> getQueryResultsAsList(String query) {
@@ -260,10 +336,10 @@ public class MyRDF {
             q = q.replaceAll("(\\?[A-Za-z0-9]*)Deceased", "$1Subject");
         } else if (q.contains("Bride")) {
             String subject, partner;
-            if (gender == "f") {
+            if (gender == "m") {
                 subject = "bride";
                 partner = "groom";
-            } else {
+            } else {  // "m"
                 subject = "groom";
                 partner = "bride";
             }

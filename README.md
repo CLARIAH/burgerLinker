@@ -16,7 +16,7 @@
 
     $ mvn package
 
-**4. Run BurgerLinker (the jar file is stored in the `dist` directory)**
+**4. Run BurgerLinker (the jar file is stored in the `target` directory)**
 
     $ java -jar target/BurgerLinker-0.8.0.jar --help
 

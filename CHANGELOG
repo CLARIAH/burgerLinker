@@ -30,3 +30,5 @@
       N-Quads). This removes the need to first convert the input data to
       HDT format. Instead, an on-disk triple store is created and queried.
     * Added support for (remote) SPARQL endpoint as input.
+    * Fixed bug in timeline consistency check of parents that checked age
+      instead of age difference.

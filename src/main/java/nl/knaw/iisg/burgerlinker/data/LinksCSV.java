@@ -201,17 +201,17 @@ public class LinksCSV {
 				    + partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + ","  // max levenshtein newborn
 			        + motherList.candidates.get(targetCertificateID).levenshteinTotal + ","  // levenshtein total mother
 				    + motherList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + ","  // max levenshtein mother
-				    + "N.A" + ","  // levenshtein_total_father
-                    + "N.A" + ","  // levenshtein_max_father
+				    + "N.A." + ","  // levenshtein_total_father
+                    + "N.A." + ","  // levenshtein_max_father
                    	+ partnerPairedNames.size() + ","  // number of matched names for the newborn
 				    + partnerList.sourcePerson.getNumberOfFirstNames() + ","  // number of total names for the newborn
 				    + partnerList.candidates.get(targetCertificateID).numberNames + ","  // number of total names for the partner
 				    + motherPairedNames.size() + ","  // number of matched names for the newborn_mother
 				    + motherList.sourcePerson.getNumberOfFirstNames() + ","  // number of total names for the newborn_mother
 				    + motherList.candidates.get(targetCertificateID).numberNames + ","  // number of total names for the partner_mother
-				    + "N.A" + ","
-                    + "N.A" + ","
-                    + "N.A" + "," // number of matched names for the newborn_father
+				    + "N.A." + ","
+                    + "N.A." + ","
+                    + "N.A." + "," // number of matched names for the newborn_father
 				    + yearDifference;
 
 				addToStream(link);
@@ -231,16 +231,16 @@ public class LinksCSV {
 					+ familyLine + ","   // family line (21:bride, 22:groom)
 				    + partnerList.candidates.get(targetCertificateID).levenshteinTotal + ","  // levenshtein total newborn
 				    + partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + ","  // max levenshtein newborn
-				    + "N.A" + ","  // levenshtein_total_mother
-                    + "N.A" + ","  // levenshtein_max_mother
+				    + "N.A." + ","  // levenshtein_total_mother
+                    + "N.A." + ","  // levenshtein_max_mother
                     + fatherList.candidates.get(targetCertificateID).levenshteinTotal + ","  // levenshtein total father
                     + fatherList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + ","  // max levenshtein father
                    	+ partnerPairedNames.size() + ","  // number of matched names for the newborn
 				    + partnerList.sourcePerson.getNumberOfFirstNames() + ","  // number of total names for the newborn
 				    + partnerList.candidates.get(targetCertificateID).numberNames + ","  // number of total names for the partner
-				    + "N.A" + ","
-                    + "N.A" + ","
-                    + "N.A" + "," // number of matched names for the newborn_mother
+				    + "N.A." + ","
+                    + "N.A." + ","
+                    + "N.A." + "," // number of matched names for the newborn_mother
                     + fatherPairedNames.size() + "," // number of matched names for the newborn_mother
                     + fatherList.sourcePerson.getNumberOfFirstNames() + ","  // number of total names for the newborn_mother
                     + fatherList.candidates.get(targetCertificateID).numberNames + ","  // number of total names for the partner_mother
@@ -260,19 +260,19 @@ public class LinksCSV {
                 + familyLine + ","  // family line (21:bride, 22:groom)
 				+ partnerList.candidates.get(targetCertificateID).levenshteinTotal + "," // levenshtein total newborn
 				+ partnerList.candidates.get(targetCertificateID).maximumMatchedLevenshtein + "," // max levenshtein newborn
-                + "N.A" + ","  // levenshtein_total_mother
-                + "N.A" + ","  // levenshtein_max_mother
-                + "N.A" + ","  // levenshtein_total_father
-                + "N.A" + ","  // levenshtein_max_father
+                + "N.A." + ","  // levenshtein_total_mother
+                + "N.A." + ","  // levenshtein_max_mother
+                + "N.A." + ","  // levenshtein_total_father
+                + "N.A." + ","  // levenshtein_max_father
 				+ partnerPairedNames.size() + "," // number of matched names for the newborn
 				+ partnerList.sourcePerson.getNumberOfFirstNames() + "," // number of total names for the newborn
 				+ partnerList.candidates.get(targetCertificateID).numberNames + "," // number of total names for the partner
-                + "N.A" + ","
-                + "N.A" + ","
-                + "N.A" + "," // number of matched names for the newborn_mother
-                + "N.A" + ","
-                + "N.A" + ","
-                + "N.A" + "," // number of matched names for the newborn_father
+                + "N.A." + ","
+                + "N.A." + ","
+                + "N.A." + "," // number of matched names for the newborn_mother
+                + "N.A." + ","
+                + "N.A." + ","
+                + "N.A." + "," // number of matched names for the newborn_father
 				+ yearDifference;
 
 			addToStream(link);

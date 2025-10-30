@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,11 +38,10 @@ import nl.knaw.iisg.burgerlinker.utilities.*;
 
 public class Controller {
 	@SuppressWarnings("unused")
-	final private Set<String> FUNCTIONS = Set.of("closure", "within_b_m", "within_b_d",
-			                                     "between_b_m", "between_m_m", "between_d_m",
-                                                 "between_b_d");
-    final private Set<String> DATA_MODEL_KEYS = Set.of("SUMMARY", "STATEMENTS",
-                                                       "BIRTHS", "DEATHS", "MARRIAGES");
+	final private List<String> FUNCTIONS = Arrays.asList("within_b_m", "within_b_d", "between_b_d",
+                                                         "between_m_m", "between_d_m", "between_b_m",
+                                                         "closure");
+    final private Set<String> DATA_MODEL_KEYS = Set.of("STATEMENTS", "BIRTHS", "DEATHS", "MARRIAGES");
 
     private String dataModelDir = "./res/data_models/";
     private String dataModelExt = "yaml";
@@ -141,7 +141,9 @@ public class Controller {
 
                 // read or load data
                 try {
-                    initGraphStore();
+                    if (!initGraphStore()) {
+                        return;
+                    }
                 } catch (Exception e) {
                     LOG.logError("runProgram", "Error initiating graph store: " + e);
                 }
@@ -386,6 +388,8 @@ public class Controller {
 			LOG.logError("checkInputFunction",
 					"Incorrect user input for parameter: --function",
 					"Choose one of the following options: " + FUNCTIONS.toString());
+
+            return false;
 		}
 
 		return true;
@@ -428,7 +432,7 @@ public class Controller {
             // remote endpoint
             return true;
         }
-		if(FILE_UTILS.checkIfFileExists(path) == true) {
+		if (FILE_UTILS.checkIfFileExists(path)) {
 			LOG.logDebug("checkInputFileInput", "The following dataset is set as input dataset: "
                                                  + path);
 
@@ -467,14 +471,22 @@ public class Controller {
 		}
 	}
 
+    public boolean askConfirmation(String msg) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print(".: " + msg + " ([y]/n): ");
+
+        String answer = sc.nextLine().trim().toLowerCase();
+        return (answer.equals("y") || answer.equals("yes"));
+    }
+
 	// ========= functions =========
 
-    public void initGraphStore() throws java.io.IOException {
+    public boolean initGraphStore() throws java.io.IOException {
         if (input.startsWith("http")) {
             LOG.outputConsole(".: SPARQL Endpoint Provided. Preparing for remote query execution.");
             myRDF = new MyRDF(input);
 
-            return;
+            return true;
         }
 
         File dir = new File(this.workdir.getCanonicalPath() + "/store");
@@ -492,20 +504,31 @@ public class Controller {
                 spinner.join();
             } catch (Exception e) {
                 LOG.logError("initGraphStore", "Error waiting for ActivityIndicator to stop: " + e);
+
+                return false;
             }
 
-            return;
+            return true;
         }
 
         checkInputDataset();
         String[] paths = {input};
-        if(doubleInputs == true) {
+        if (doubleInputs) {
             paths = input.split(",");
+        }
+
+        if (this.reload && dir.isDirectory() && dir.listFiles().length > 0) {
+            if (askConfirmation("Found existing RDF store. Overwrite?")) {
+                dir.delete();
+
+                myRDF = new MyRDF(dir);
+                return myRDF.parse(paths);
+            }
         }
 
         LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
         myRDF = new MyRDF(dir);
-        myRDF.parse(paths);
+        return myRDF.parse(paths);
     }
 
 	public void outputDatasetStatistics(Map<String, String> dataModel) {
@@ -515,7 +538,7 @@ public class Controller {
         spinner.start();
 
         // run query
-        List<BindingSet> qResults = myRDF.getQueryResultsAsList(dataModel.get("SUMMARY"));
+        List<BindingSet> qResults = myRDF.getQueryResultsAsList(MyRDF.QUERY_SUMMARY);
         spinner.terminate();
             try {
                 spinner.join();
@@ -564,12 +587,12 @@ public class Controller {
                 Within within = new Within(myRDF, process, rules, dir, maxLev, fixedLev,
                                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
-                if(singleInd == false) {
-                    within.link_within("f", false); // false = do not close stream
-                    within.link_within("m", true); // true = close stream
-                } else {
+                if (singleInd) {
                     within.link_within_single("f", false);
                     within.link_within_single("m", true);
+                } else {
+                    within.link_within("f", false); // false = do not close stream
+                    within.link_within("m", true); // true = close stream
                 }
             } else {
 				LOG.logError(process.toString(), "Error in creating the three sub output directories");

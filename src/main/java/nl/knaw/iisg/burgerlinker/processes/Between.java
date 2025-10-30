@@ -95,13 +95,13 @@ public class Between {
                         if (process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
                             Couple otherCouple = new Couple(
                                     new Person(event,
-                                           bindingSetA.getValue("givenNamePartnerMother").stringValue(),
-                                           bindingSetA.getValue("familyNamePartnerMother").stringValue(),
-                                           bindingSetA.getValue("genderPartnerMother").stringValue()),
+                                           bindingSetA.getValue("givenNamePartnerMother"),
+                                           bindingSetA.getValue("familyNamePartnerMother"),
+                                           bindingSetA.getValue("genderPartnerMother")),
                                     new Person(event,
-                                           bindingSetA.getValue("givenNamePartnerFather").stringValue(),
-                                           bindingSetA.getValue("familyNamePartnerFather").stringValue(),
-                                           bindingSetA.getValue("genderPartnerFather").stringValue()),
+                                           bindingSetA.getValue("givenNamePartnerFather"),
+                                           bindingSetA.getValue("familyNamePartnerFather"),
+                                           bindingSetA.getValue("genderPartnerFather")),
                                     "22");  // groom
                             couples.add(otherCouple);
                         }
@@ -109,13 +109,13 @@ public class Between {
                         // default couple
                         Couple couple = new Couple(
                                 new Person(event,
-                                       bindingSetA.getValue("givenNameSubjectMother").stringValue(),
-                                       bindingSetA.getValue("familyNameSubjectMother").stringValue(),
-                                       bindingSetA.getValue("genderSubjectMother").stringValue()),
+                                       bindingSetA.getValue("givenNameSubjectMother"),
+                                       bindingSetA.getValue("familyNameSubjectMother"),
+                                       bindingSetA.getValue("genderSubjectMother")),
                                 new Person(event,
-                                       bindingSetA.getValue("givenNameSubjectFather").stringValue(),
-                                       bindingSetA.getValue("familyNameSubjectFather").stringValue(),
-                                       bindingSetA.getValue("genderSubjectFather").stringValue()),
+                                       bindingSetA.getValue("givenNameSubjectFather"),
+                                       bindingSetA.getValue("familyNameSubjectFather"),
+                                       bindingSetA.getValue("genderSubjectFather")),
                                 "21");  // bride (only relevant if event A is a marriage)
                         couples.add(couple);
 
@@ -149,13 +149,13 @@ public class Between {
                                                 }
                                                 if (yearDifference < 999) { // if it fits the time line
                                                     Person subjectB = new Person(subjectBEventURI,
-                                                            bindingSetB.getValue("givenNameSubject").stringValue(),
-                                                            bindingSetB.getValue("familyNameSubject").stringValue(),
-                                                            bindingSetB.getValue("genderSubject").stringValue());
+                                                            bindingSetB.getValue("givenNameSubject"),
+                                                            bindingSetB.getValue("familyNameSubject"),
+                                                            bindingSetB.getValue("genderSubject"));
                                                     Person subjectBPartner = new Person(subjectBEventURI,
-                                                            bindingSetB.getValue("givenNamePartner").stringValue(),
-                                                            bindingSetB.getValue("familyNamePartner").stringValue(),
-                                                            bindingSetB.getValue("genderPartner").stringValue());
+                                                            bindingSetB.getValue("givenNamePartner"),
+                                                            bindingSetB.getValue("familyNamePartner"),
+                                                            bindingSetB.getValue("genderPartner"));
 
                                                     // determine order
                                                     Person subjectBFemale, subjectBMale;
