@@ -124,7 +124,7 @@ public class Dictionary {
         return true;
     }
 
-    public boolean generateDictionaryTwoWay(MyRDF myRDF, String query, boolean knownGender) {
+    public boolean generateDictionaryTwoWay(MyRDF myRDF, String query) {
         indexMale = new Index("males", mainDirectoryPath, maxLev, fixedLev);
         indexFemale = new Index("females", mainDirectoryPath, maxLev, fixedLev);
 
@@ -347,12 +347,12 @@ public class Dictionary {
 
     // if known gender, person1 is the female partner and person2 is the male partner
     public boolean addToIndex(Person person1, Person person2, String eventID) {
-        if (person1.isFemale() && person2.isMale()) {
+        if (person1.isFemale()) {  // && person2.isMale()) {
             indexFemale.addPersonToIndex(person1, eventID);
             indexMale.addPersonToIndex(person2, eventID);
 
             return true;
-        } else if (person2.isFemale() && person1.isMale()) {
+        } else if (person2.isFemale()) {  // && person1.isMale()) {
             indexFemale.addPersonToIndex(person2, eventID);
             indexMale.addPersonToIndex(person1, eventID);
 

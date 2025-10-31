@@ -38,10 +38,6 @@ public class Person {
 		this.valid = (URI != null);
     }
 
-    public String toString() {
-        return gender + ": " + last_name + ", " + first_name + "; " + URI.toString();
-    }
-
 	public void setFirstName(String first_name){
 		this.first_name = first_name;
 	}
@@ -125,13 +121,8 @@ public class Person {
 		return gender;
 	}
 
-	public void printIdentity() {
-		System.out.println("+-------------------------------------------------------------------------------");
-		System.out.println("* Person: " + URI);
-		System.out.println(" ---> First Name: " + first_name);
-		System.out.println(" ---> Last Name: " + last_name);
-		System.out.println(" ---> Gender: " + gender);
-		System.out.println("+-------------------------------------------------------------------------------");
+	public String toString() {
+        return URI + " (" + gender + "): " + last_name + "." + first_name;
 	}
 
 	public boolean hasFullName() {

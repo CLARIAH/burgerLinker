@@ -55,9 +55,9 @@ BIRTHS: >
   ?event civ:newborn ?newbornID ;
          civ:eventDate ?eventDate ;
          civ:registrationID ?eventID .
-  ?newbornID civ:personID ?idNewborn ;
-             sdo:givenName ?givenNameNewborn ;
-             sdo:familyName ?familyNameNewborn .
+  ?newbornID civ:personID ?idNewborn .
+  OPTIONAL { ?newbornID sdo:givenName ?givenNameNewborn }
+  OPTIONAL { ?newbornID sdo:familyName ?familyNameNewborn }
   OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
   OPTIONAL { ?newbornID civ:age ?ageNewborn }
   OPTIONAL { ?event civ:father ?fatherNewbornID .
@@ -86,12 +86,11 @@ DEATHS: >
   SELECT *
   WHERE {
   ?event civ:deceased ?deceasedID ;
-         civ:mother ?motherDeceasedID ;
          civ:eventDate ?eventDate ;
          civ:registrationID ?eventID .
-  ?deceasedID civ:personID ?idDeceased ;
-              sdo:givenName ?givenNameDeceased ;
-              sdo:familyName ?familyNameDeceased .
+  ?deceasedID civ:personID ?idDeceased .
+  OPTIONAL { ?deceasedID sdo:givenName ?givenNameDeceased }
+  OPTIONAL { ?deceasedID sdo:familyName ?familyNameDeceased }
   OPTIONAL { ?deceasedID sdo:gender ?genderDeceased }
   OPTIONAL { ?deceasedID civ:age ?ageDeceased }
   OPTIONAL { ?event civ:partner ?partnerID .

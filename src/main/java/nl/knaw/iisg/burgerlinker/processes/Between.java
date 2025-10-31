@@ -67,11 +67,10 @@ public class Between {
 	public void link_between() {
         String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
         String queryEventB = MyRDF.generalizeQuery(process.queryEventB);
-        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED) ? false : true;
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
-        if (dict.generateDictionaryTwoWay(myRDF, queryEventB, genderFilter)) {
+        if (dict.generateDictionaryTwoWay(myRDF, queryEventB)) {
 			indexMale = dict.indexMale;
 			indexFemale = dict.indexFemale;
 			indexMale.createTransducer();
@@ -127,10 +126,10 @@ public class Between {
                             if (mother.isValidWithFullName() && father.isValidWithFullName()) {
                                 // start linking here
                                 CandidateList candidatesMale = indexMale.searchForCandidate(father, eventID, this.ignoreBlock);
-                                if (candidatesMale.candidates.isEmpty() == false) {
+                                if (!candidatesMale.candidates.isEmpty()) {
                                     CandidateList candidatesFemale = indexFemale.searchForCandidate(mother, eventID, this.ignoreBlock);
 
-                                    if (candidatesFemale.candidates.isEmpty() == false) {
+                                    if (!candidatesFemale.candidates.isEmpty()) {
                                         Set<String> finalCandidatesList = candidatesFemale.findIntersectionCandidates(candidatesMale);
 
                                         for (String finalCandidate: finalCandidatesList) {
@@ -142,7 +141,7 @@ public class Between {
                                                 String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
                                                 int yearDifference = 0;
-                                                if (ignoreDate == false) {
+                                                if (!ignoreDate) {
                                                     int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
                                                     int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
                                                     yearDifference = checkTimeConsistency(eventADate, eventBDate);
@@ -185,7 +184,7 @@ public class Between {
                                 }
                             }
 						}
-                        if (cntAll % 1000 == 0) {
+                        if (cntAll % 5000 == 0) {
 							spinner.update(cntAll);
 						}
 					}
@@ -206,12 +205,12 @@ public class Between {
 	/**
 	 * Check whether the time span between related events is plausable
 	 */
-	public int checkTimeConsistency(int eventYear, int referenceYear) {
+	public int checkTimeConsistency(int eventADate, int eventBDate) {
         int diff;
         if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-            diff = referenceYear - eventYear;
+            diff = eventBDate - eventADate;
         } else {
-            diff = eventYear - referenceYear;
+            diff = eventADate - eventBDate;
         }
 
         Facts facts = new Facts();

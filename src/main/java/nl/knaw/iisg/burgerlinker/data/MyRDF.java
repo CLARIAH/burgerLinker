@@ -337,11 +337,11 @@ public class MyRDF {
         } else if (q.contains("Bride")) {
             String subject, partner;
             if (gender == "m") {
-                subject = "bride";
-                partner = "groom";
-            } else {  // "m"
                 subject = "groom";
                 partner = "bride";
+            } else {
+                subject = "bride";
+                partner = "groom";
             }
 
             q = q.replaceAll("(\\?[A-Za-z0-9]*)" + subject, "$1subject");

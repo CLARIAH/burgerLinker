@@ -126,54 +126,50 @@ public class Within {
 
                                 Set<String> finalCandidatesMother = candidatesSubjectB.findIntersectionCandidates(candidatesMother);
                                 for (String finalCandidate: finalCandidatesMother) {
-                                    boolean link = true;
-                                    if (father.isValidWithFullName()){
-                                        if(candidatesSubjectB.candidates.get(finalCandidate).individualsInCertificate.contains("F")) {
-                                            link = false; // if both have fathers, but their names did not match
-                                        }
+                                    if (father.isValidWithFullName()
+                                        && candidatesSubjectB.candidates.get(finalCandidate).individualsInCertificate.contains("F")) {
+                                        continue; // if both have fathers, but their names did not match
                                     }
 
-                                    if (link) { // if one of them does not have a father, we match on two individuals
-                                        Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                    Map<String, Value> bindings = new HashMap<>();
+                                    bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                        TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
-                                        for (BindingSet bindingSetB: qResultB) {
-                                            String subjectBEventURI = bindingSetB.getValue("event").stringValue();
+                                    TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
+                                    for (BindingSet bindingSetB: qResultB) {
+                                        String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
-                                            int yearDifference = 0;
-                                            if (!ignoreDate) {
-                                                int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
-                                                int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
-                                                yearDifference = checkTimeConsistency(eventADate, eventBDate);
-                                            }
-                                            if (yearDifference < 999) { // if it fits the time line
-                                                Person subjectB = new Person(subjectBEventURI,
-                                                                         bindingSetB.getValue("givenNameSubject"),
-                                                                         bindingSetB.getValue("familyNameSubject"),
-                                                                         bindingSetB.getValue("genderSubject"));
-                                                Person subjectBMother = new Person(subjectBEventURI,
-                                                                               bindingSetB.getValue("givenNameSubjectMother"),
-                                                                               bindingSetB.getValue("familyNameSubjectMother"),
-                                                                               bindingSetB.getValue("genderSubjectMother"));
+                                        int yearDifference = 0;
+                                        if (!ignoreDate) {
+                                            int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                            int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
+                                            yearDifference = checkTimeConsistency(eventADate, eventBDate);
+                                        }
+                                        if (yearDifference < 999) { // if it fits the time line
+                                            Person subjectB = new Person(subjectBEventURI,
+                                                                     bindingSetB.getValue("givenNameSubject"),
+                                                                     bindingSetB.getValue("familyNameSubject"),
+                                                                     bindingSetB.getValue("genderSubject"));
+                                            Person subjectBMother = new Person(subjectBEventURI,
+                                                                           bindingSetB.getValue("givenNameSubjectMother"),
+                                                                           bindingSetB.getValue("familyNameSubjectMother"),
+                                                                           bindingSetB.getValue("genderSubjectMother"));
 
-                                                if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
-                                                    int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectMother"));
-                                                    int subjectMotherAgeDiff = ageDifference(subjectAMotherAge, subjectBMotherAge);
-                                                    if (checkTimeConsistencyWithAge(yearDifference, subjectBAge) &&
-                                                        checkTimeConsistencyWithAge(yearDifference, subjectMotherAgeDiff)) {
-                                                        LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
-                                                                                      subjectB, subjectBMother, familyCode, yearDifference);
-                                                        }
-                                                } else {
+                                            if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
+                                                int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
+                                                int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectMother"));
+                                                int subjectMotherAgeDiff = ageDifference(subjectAMotherAge, subjectBMotherAge);
+                                                if (checkTimeConsistencyWithAge(yearDifference, subjectBAge) &&
+                                                    checkTimeConsistencyWithAge(yearDifference, subjectMotherAgeDiff)) {
                                                     LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
                                                                                   subjectB, subjectBMother, familyCode, yearDifference);
-                                                }
+                                                    }
+                                            } else {
+                                                LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
+                                                                              subjectB, subjectBMother, familyCode, yearDifference);
                                             }
                                         }
-                                        qResultB.close();
                                     }
+                                    qResultB.close();
                                 }
                             }
 
@@ -185,54 +181,50 @@ public class Within {
 
                                 Set<String> finalCandidatesFather = candidatesSubjectB.findIntersectionCandidates(candidatesFather);
                                 for (String finalCandidate: finalCandidatesFather) {
-                                    boolean link = true;
-                                    if (mother.isValidWithFullName()){
-                                        if(candidatesSubjectB.candidates.get(finalCandidate).individualsInCertificate.contains("M")) {
-                                            link = false; // if both have mothers, but their names did not match
-                                        }
+                                    if (mother.isValidWithFullName()
+                                        && candidatesSubjectB.candidates.get(finalCandidate).individualsInCertificate.contains("M")) {
+                                        continue; // if both have mothers, but their names did not match
                                     }
 
-                                    if (link) { // if one of them does not have a mother, we match on two individuals
-                                        Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                    Map<String, Value> bindings = new HashMap<>();
+                                    bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
 
-                                        TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
-                                        for (BindingSet bindingSetB: qResultB) {
-                                            String subjectBEventURI = bindingSetB.getValue("event").stringValue();
+                                    TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
+                                    for (BindingSet bindingSetB: qResultB) {
+                                        String subjectBEventURI = bindingSetB.getValue("event").stringValue();
 
-                                            int yearDifference = 0;
-                                            if (!ignoreDate) {
-                                                int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
-                                                int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
-                                                yearDifference = checkTimeConsistency(eventADate, eventBDate);
-                                            }
-                                            if (yearDifference < 999) { // if it fits the time line
-                                                Person subjectB = new Person(subjectBEventURI,
-                                                                         bindingSetB.getValue("givenNameSubject"),
-                                                                         bindingSetB.getValue("familyNameSubject"),
-                                                                         bindingSetB.getValue("genderSubject"));
-                                                Person subjectBFather = new Person(subjectBEventURI,
-                                                                               bindingSetB.getValue("givenNameSubjectFather"),
-                                                                               bindingSetB.getValue("familyNameSubjectFather"),
-                                                                               bindingSetB.getValue("genderSubjectFather"));
+                                        int yearDifference = 0;
+                                        if (!ignoreDate) {
+                                            int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
+                                            int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
+                                            yearDifference = checkTimeConsistency(eventADate, eventBDate);
+                                        }
+                                        if (yearDifference < 999) { // if it fits the time line
+                                            Person subjectB = new Person(subjectBEventURI,
+                                                                     bindingSetB.getValue("givenNameSubject"),
+                                                                     bindingSetB.getValue("familyNameSubject"),
+                                                                     bindingSetB.getValue("genderSubject"));
+                                            Person subjectBFather = new Person(subjectBEventURI,
+                                                                           bindingSetB.getValue("givenNameSubjectFather"),
+                                                                           bindingSetB.getValue("familyNameSubjectFather"),
+                                                                           bindingSetB.getValue("genderSubjectFather"));
 
-                                                if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
-                                                    int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectFather"));
-                                                    int subjectFatherAgeDiff = ageDifference(subjectAFatherAge, subjectBFatherAge);
-                                                    if (checkTimeConsistencyWithAge(yearDifference, subjectBAge) &&
-                                                        checkTimeConsistencyWithAge(yearDifference, subjectFatherAgeDiff)) {
-                                                        LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
-                                                                                      subjectB, subjectBFather, familyCode, yearDifference);
-                                                    }
-                                                } else {
+                                            if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
+                                                int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
+                                                int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectFather"));
+                                                int subjectFatherAgeDiff = ageDifference(subjectAFatherAge, subjectBFatherAge);
+                                                if (checkTimeConsistencyWithAge(yearDifference, subjectBAge) &&
+                                                    checkTimeConsistencyWithAge(yearDifference, subjectFatherAgeDiff)) {
                                                     LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
                                                                                   subjectB, subjectBFather, familyCode, yearDifference);
                                                 }
+                                            } else {
+                                                LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
+                                                                              subjectB, subjectBFather, familyCode, yearDifference);
                                             }
                                         }
-                                        qResultB.close();
                                     }
+                                    qResultB.close();
 								}
 							}
 
