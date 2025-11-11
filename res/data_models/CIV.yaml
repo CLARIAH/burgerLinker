@@ -33,14 +33,12 @@
 STATEMENTS: >
   PREFIX civ: <https://iisg.amsterdam/id/civ/>
 
-  SELECT ?s ?p ?o ?sPersonID ?oPersonID ?eventDate
+  SELECT ?s ?p ?o ?sPersonID ?oPersonID
   WHERE {
     ?s ?p ?o .
 
     OPTIONAL { ?s civ:personID ?sPersonID } .
     OPTIONAL { ?o civ:personID ?oPersonID } .
-    OPTIONAL { ?event ?q ?s;
-                      civ:eventDate ?eventDate . }
   }
 
 # Return all information pertaining to birth
@@ -124,20 +122,22 @@ MARRIAGES: >
 
   SELECT *
   WHERE {
-  ?event civ:bride ?brideID ;
-         civ:groom ?groomID ;
-         civ:eventDate ?eventDate ;
+  ?event civ:eventDate ?eventDate ;
          civ:registrationID ?eventID .
-  ?brideID civ:personID ?idBride .
-  OPTIONAL { ?brideID sdo:givenName ?givenNameBride }
-  OPTIONAL { ?brideID sdo:familyName ?familyNameBride }
-  OPTIONAL { ?brideID sdo:gender ?genderBride }
-  OPTIONAL { ?brideID civ:age ?ageBride }
-  ?groomID civ:personID ?idGroom .
-  OPTIONAL { ?groomID sdo:givenName ?givenNameGroom }
-  OPTIONAL { ?groomID sdo:familyName ?familyNameGroom }
-  OPTIONAL { ?groomID sdo:gender ?genderGroom }
-  OPTIONAL { ?groomID civ:age ?ageGroom }
+  OPTIONAL { ?event civ:bride ?brideID .
+             OPTIONAL { FILTER(BOUND(?brideID)) ?brideID civ:personID ?idBride }
+             OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:givenName ?givenNameBride }
+             OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:familyName ?familyNameBride }
+             OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:gender ?genderBride }
+             OPTIONAL { FILTER(BOUND(?brideID)) ?brideID civ:age ?ageBride }
+           }
+  OPTIONAL { ?event civ:groom ?groomID .
+             OPTIONAL { FILTER(BOUND(?groomID)) ?groomID civ:personID ?idGroom }
+             OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:givenName ?givenNameGroom }
+             OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:familyName ?familyNameGroom }
+             OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:gender ?genderGroom }
+             OPTIONAL { FILTER(BOUND(?groomID)) ?groomID civ:age ?ageGroom }
+           }
   OPTIONAL { ?event civ:fatherBride ?fatherBrideID .
              OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID civ:personID ?idBrideFather }
              OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID sdo:givenName ?givenNameBrideFather }

@@ -482,7 +482,7 @@ public class Controller {
 	// ========= functions =========
 
     public boolean initGraphStore() throws java.io.IOException {
-        if (input.startsWith("http")) {
+        if (input != null && input.startsWith("http")) {
             LOG.outputConsole(".: SPARQL Endpoint Provided. Preparing for remote query execution.");
             myRDF = new MyRDF(input);
 
@@ -588,11 +588,11 @@ public class Controller {
                                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
                 if (singleInd) {
-                    within.link_within_single("f", false);
-                    within.link_within_single("m", true);
+                    within.link_within_single("Female", false);
+                    within.link_within_single("Male", true);
                 } else {
-                    within.link_within("f", false); // false = do not close stream
-                    within.link_within("m", true); // true = close stream
+                    within.link_within("Female", false); // false = do not close stream
+                    within.link_within("Male", true); // true = close stream
                 }
             } else {
 				LOG.logError(process.toString(), "Error in creating the three sub output directories");

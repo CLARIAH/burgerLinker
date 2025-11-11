@@ -6,12 +6,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -132,7 +134,7 @@ public class Closure {
                     Value object = bindingSet.getValue("o");
 
 					// skip blank nodes
-					if(subject.isBNode()) {
+					if (subject.isBNode()) {
                         continue;
                     }
 
@@ -147,9 +149,6 @@ public class Closure {
                         if (subject.isIRI()) {
                             // URI of unlinked individual
                             sbjNew = "<" + subject.stringValue() + ">";
-                        } else {
-                            // literal
-                            sbjNew = subject.stringValue();
                         }
                     }
 
@@ -162,30 +161,39 @@ public class Closure {
                         if (object.isIRI()) {
                             // URI of unlinked individual
                             objNew = "<" + object.stringValue() + ">";
-                        } else {
+                        } else if (object.isLiteral()) {
                             // literal
-                            objNew = object.stringValue();
+                            objNew = '"' + object.stringValue() + '"';
+
+                            Optional<String> objLang = object.getLanguage();
+                            if (objLang.isPresent()) {
+                                objNew += "@" + objLang;
+                            } else {
+                                objNew += "^^<" + object.getDatatype().stringValue() + ">";
+                            }
                         }
                     }
 
                     String pStr = "<" + predicate.stringValue() + ">";
-                    if(object.isLiteral() && pStr.contains("age")) {
-                        Literal objLit = (Literal) object;
+                    // if (object.isLiteral() && pStr.contains("age")) {
+                    //     Literal objLit = (Literal) object;
 
-                        Value eventDate = bindingSet.getValue("eventDate");
-                        int dateYear = myRDF.yearFromDate(eventDate);
-                        if (dateYear >= 0) {
-                            int birthYear = dateYear - objLit.intValue();
+                    //     Value eventDate = bindingSet.getValue("eventDate");
+                    //     LocalDate date = myRDF.valueToDate(eventDate);
+                    //     if (date != null) {
+                    //         long age = (long) objLit.intValue();
+                    //         LocalDate birthYear = date.minusYears(age);
 
-                            String birthYearStr = "\"" + Integer.toString(birthYear) + "\""
-                                                 + "^^<http://www.w3.org/2001/XMLSchema#gYear>";
-                            stream.addToStream(sbjNew + " <" + BIRTH_YEAR + "> " + birthYearStr + " .");
-                        }
-                    } else {
-                        stream.addToStream(sbjNew + " " + predicate + " " + objNew + " .");
-					}
+                    //         String birthYearStr = "\"" + birthYear.getYear() + "\""
+                    //                              + "^^<http://www.w3.org/2001/XMLSchema#gYear>";
+                    //         stream.addToStream(sbjNew + " <" + BIRTH_YEAR + "> " + birthYearStr + " .");
+                    //     }
+                    // } else {
+                    //     stream.addToStream(sbjNew + " " + predicate + " " + objNew + " .");
+					// }
+                    stream.addToStream(sbjNew + " " + pStr + " " + objNew + " .");
 
-                    if (cntAll % 1000 == 0) {
+                    if (cntAll % 5000 == 0) {
                         spinner.update(cntAll);
                     }
 				}
@@ -229,10 +237,10 @@ public class Closure {
 
 	public void verifyClosure() {
 		int countIndivsClassToIndivs = 0, max = 0;
-		for(Entry<String, HashSet<String>> entry: dbClassToIndivs.entrySet()) {
+		for (Entry<String, HashSet<String>> entry: dbClassToIndivs.entrySet()) {
 			int n = entry.getValue().size();
 			countIndivsClassToIndivs = countIndivsClassToIndivs + n;
-			if(n > max) {
+			if (n > max) {
 				max = n;
 			}
 		}
@@ -392,7 +400,7 @@ public class Closure {
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
-                    if (countProgress % 1000 == 0) {
+                    if (countProgress % 5000 == 0) {
                         spinner.update(countProgress);
                     }
 				}
@@ -513,10 +521,10 @@ public class Closure {
 
 					String idSubjectA = qResultA.getValue("idSubject").stringValue();
                     String idSubjectAFather = null, idSubjectAMother = null;
-					if (!nextLine[7].equals("N.A")) { // if there is a match for the fathers
+					if (!nextLine[7].equals("N.A.")) { // if there is a match for the fathers
 						idSubjectAFather = qResultA.getValue("idSubjectFather").stringValue();
                     }
-                    if (!nextLine[5].equals("N.A")) { // if there is a match for the mothers
+                    if (!nextLine[5].equals("N.A.")) { // if there is a match for the mothers
 					    idSubjectAMother = qResultA.getValue("idSubjectMother").stringValue();
                     }
 
@@ -582,7 +590,7 @@ public class Closure {
 						LINKS.saveIndividualLink(idSubjectAMother, idSubjectBMother, meta_mothers);
 					}
 
-                    if (countProgress % 1000 == 0) {
+                    if (countProgress % 5000 == 0) {
                         spinner.update(countProgress);
                     }
 				}
@@ -681,7 +689,7 @@ public class Closure {
 					LINKS.saveIndividualLink(idMother, idSubjectFemale, meta_mother);
 					LINKS.saveIndividualLink(idFather, idSubjectMale, meta_father);
 
-                    if (countProgress % 1000 == 0) {
+                    if (countProgress % 5000 == 0) {
                         spinner.update(countProgress);
                     }
 				}

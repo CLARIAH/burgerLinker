@@ -5,7 +5,7 @@ condition: "diff >= 0 && diff <= 110"
 ---
 name: "within_b_d.consistencytolerance"
 description: "The allowed difference in years between the registered age at death and the time gap between the registration of birth and death events"
-condition: "diff < 2"
+condition: "diff <= 2"
 ---
 name: "within_b_m.timegapdiff"
 description: "The allowed difference in years between the birth and marriage of an individual"

@@ -33,7 +33,7 @@ public class Person {
 		this.URI = event;
         this.first_name = (firstName != null) ? firstName.stringValue() : "";
         this.last_name = (familyName != null) ? familyName.stringValue() : "";
-        this.gender = (gender != null) ? gender.stringValue() : "u";
+        this.gender = (gender != null) ? gender.stringValue() : "";
 
 		this.valid = (URI != null);
     }
@@ -132,15 +132,15 @@ public class Person {
 	}
 
 	public boolean isFemale() {
-		return gender.equals("f");
+		return gender.endsWith("Female");
     }
 
 	public boolean isMale() {
-		return gender.equals("m");
+		return gender.endsWith("Male");
     }
 
 	public boolean hasGender(String gender) {
-		return (this.gender.equals(gender) || this.gender.equals("u"));
+		return (this.gender.endsWith(gender) || this.gender.length() <= 0);
 	}
 
 	public boolean hasDoubleBarreledFirstName() {

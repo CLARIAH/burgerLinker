@@ -2,6 +2,8 @@ package nl.knaw.iisg.burgerlinker.processes;
 
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -142,8 +144,8 @@ public class Between {
 
                                                 int yearDifference = 0;
                                                 if (!ignoreDate) {
-                                                    int eventADate = myRDF.yearFromDate(bindingSetA.getValue("eventDate"));
-                                                    int eventBDate = myRDF.yearFromDate(bindingSetB.getValue("eventDate"));
+                                                    LocalDate eventADate = myRDF.valueToDate(bindingSetA.getValue("eventDate"));
+                                                    LocalDate eventBDate = myRDF.valueToDate(bindingSetB.getValue("eventDate"));
                                                     yearDifference = checkTimeConsistency(eventADate, eventBDate);
                                                 }
                                                 if (yearDifference < 999) { // if it fits the time line
@@ -205,12 +207,12 @@ public class Between {
 	/**
 	 * Check whether the time span between related events is plausable
 	 */
-	public int checkTimeConsistency(int eventADate, int eventBDate) {
+	public int checkTimeConsistency(LocalDate eventADate, LocalDate eventBDate) {
         int diff;
         if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-            diff = eventBDate - eventADate;
+            diff = (int) ChronoUnit.YEARS.between(eventADate, eventBDate);
         } else {
-            diff = eventADate - eventBDate;
+            diff = (int) ChronoUnit.YEARS.between(eventBDate, eventADate);
         }
 
         Facts facts = new Facts();

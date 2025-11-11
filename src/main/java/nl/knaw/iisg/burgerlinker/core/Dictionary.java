@@ -100,7 +100,6 @@ public class Dictionary {
             LinkedHashMap<String, String> summary = new LinkedHashMap<>();
             summary.put("Certificates Total", formatter.format(countAll));
             summary.put("Certificates Indexed", formatter.format(countInserts));
-            summary.put("Certificates Skipped", formatter.format(countNonIndexed));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {
@@ -195,7 +194,6 @@ public class Dictionary {
             LinkedHashMap<String, String> summary = new LinkedHashMap<>();
             summary.put("Certificates Total", formatter.format(countAll));
             summary.put("Certificates Indexed", formatter.format(countInserts));
-            summary.put("Certificates Skipped", formatter.format(countNonIndexed));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {
@@ -321,7 +319,6 @@ public class Dictionary {
             summary.put(" with both parents", formatter.format(count_Main_Mother_Father));
             summary.put(" with mother only", formatter.format(count_Main_Mother));
             summary.put(" with father only", formatter.format(count_Main_Father));
-            summary.put("Certificates Skipped", formatter.format(countNonIndexed));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {

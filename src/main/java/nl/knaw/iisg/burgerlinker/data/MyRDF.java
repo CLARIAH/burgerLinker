@@ -3,6 +3,7 @@ package nl.knaw.iisg.burgerlinker.data;
 
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -301,22 +302,36 @@ public class MyRDF {
         return out;
     }
 
-    public int yearFromDate(Value date) {
+//    public int yearFromDate(Value date) {
+//        // ISO 8601
+//        int out = -1;
+//        if (date != null && date.isLiteral()) {
+//            String[] dateArray = date.stringValue().split("-");  // YYYY-MM-DD
+//            if (dateArray.length == 3) {
+//                String yearStr = dateArray[0];
+//                try {
+//                    out = Integer.parseInt(yearStr);
+//                } catch (NumberFormatException e) {
+//                    LOG.logError("yearFromDate", "Error extracting year from literal: '" + yearStr + "'");
+//                }
+//            }
+//        }
+//
+//        return out;
+//    }
+
+    public LocalDate valueToDate(Value v) {
         // ISO 8601
-        int out = -1;
-        if (date != null && date.isLiteral()) {
-            String[] dateArray = date.stringValue().split("-");  // YYYY-MM-DD
-            if (dateArray.length == 3) {
-                String yearStr = dateArray[0];
-                try {
-                    out = Integer.parseInt(yearStr);
-                } catch (NumberFormatException e) {
-                    LOG.logError("yearFromDate", "Error extracting year from literal: '" + yearStr + "'");
-                }
+        LocalDate date = null;
+        if (v != null && v.isLiteral()) {
+            try {
+                date = LocalDate.parse(v.stringValue());
+            } catch (Exception e) {
+                LOG.logError("valueToDate", "Error extracting year from literal: '" + v.stringValue() + "'");
             }
         }
 
-        return out;
+        return date;
     }
 
     public static Literal mkLiteral(String value, String datatype) {
