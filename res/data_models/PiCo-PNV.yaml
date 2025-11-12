@@ -21,7 +21,7 @@
 
 # ============================================= #
 #                                               #
-# SPARQL Queries                           #
+# SPARQL Queries                                #
 #                                               #
 # ============================================= #
 
@@ -50,8 +50,9 @@ BIRTHS: >
                             pnv:baseSurname ?familyNameNewborn .
     }
     OPTIONAL { ?newbornID sdo:parent ?fatherNewbornID .
-               ?fatherNewbornID sdo:gender sdo:Male ;
-                                sdo:identifier ?idNewbornFather .
+               ?fatherNewbornID sdo:identifier ?idNewbornFather ;
+                                sdo:gender ?genderNewbornFather .
+               FILTER(?genderNewbornFather = sdo:Male)
                OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID picom:hasAge ?ageNewbornFather }
                OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID pnv:hasName ?nameNewbornFather .
                           OPTIONAL { FILTER(BOUND(?fatherNewbornID) && FILTER(BOUND(?nameNewbornFather))
@@ -61,8 +62,9 @@ BIRTHS: >
                }
              }
     OPTIONAL { ?newbornID sdo:parent ?motherNewbornID .
-               ?motherNewbornID sdo:gender sdo:Female ;
-                                sdo:identifier ?idNewbornMother .
+               ?motherNewbornID sdo:identifier ?idNewbornMother ;
+                                sdo:gender ?genderNewbornMother .
+               FILTER(?genderNewbornMother = sdo:Female)
                OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID picom:hasAge ?ageNewbornMother }
                OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID pnv:hasName ?nameNewbornMother .
                           OPTIONAL { FILTER(BOUND(?motherNewbornID) && FILTER(BOUND(?nameNewbornMother))
@@ -99,8 +101,9 @@ DEATHS: >
                              pnv:baseSurname ?familyNameDeceased .
     }
     OPTIONAL { ?deceasedID sdo:parent ?fatherDeceasedID .
-               ?fatherDeceasedID sdo:gender sdo:Male ;
-                                 sdo:identifier ?idDeceasedFather .
+               ?fatherDeceasedID sdo:identifier ?idDeceasedFather ;
+                                 sdo:gender ?genderDeceasedFather .                                 
+               FILTER(?genderDeceasedFather = sdo:Male)
                OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID picom:hasAge ?ageDeceasedFather }
                OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID pnv:hasName ?nameDeceasedFather .
                           OPTIONAL { FILTER(BOUND(?fatherDeceasedID) && BOUND(?nameDeceasedFather))
@@ -110,8 +113,9 @@ DEATHS: >
                }
     }
     OPTIONAL { ?deceasedID sdo:parent ?motherDeceasedID .
-               ?motherDeceasedID sdo:gender sdo:Female ;
-                                 sdo:identifier ?idDeceasedMother .
+               ?motherDeceasedID sdo:identifier ?idDeceasedMother ;
+                                 sdo:gender ?genderDeceasedMother .
+               FILTER(?genderDeceasedMother = sdo:Female)
                OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID picom:hasAge ?ageDeceasedMother }
                OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID pnv:hasName ?nameDeceasedMother .
                           OPTIONAL { FILTER(BOUND(?motherDeceasedID) && BOUND(?nameDeceasedMother))

@@ -1,0 +1,185 @@
+---
+# ********************************************* #
+#                                               #
+#  -------------------------------------------  #
+#  CBG BurgerLinker Persons in Context Model    #
+#  -------------------------------------------  #
+#                                               #
+#  This file specifies the data model used by   #
+#  the input data to BurgerLinker. All classes  #
+#  and properties in this file must be defined. #
+#                                               #
+#  The data model specified in this files is    #
+#  based upon the Persons in Context schema [1] #
+#                                               #
+#  [1] https://personsincontext.org             #
+#                                               #
+#  Version: AUG 2025                            #
+#                                               #
+# ********************************************* #
+
+
+# ============================================= #
+#                                               #
+# SPARQL Queries                                #
+#                                               #
+# ============================================= #
+
+# Return all information pertaining to birth
+# events, including information about the newborn
+# and its parents.
+BIRTHS: >
+  PREFIX picom: <https://personsincontext.org/model#>
+  PREFIX picot: <https://terms.personsincontext.org/>
+  PREFIX pnv: <https://w3id.org/pnv>
+  PREFIX prov: <http://www.w3.org/ns/prov#>
+  PREFIX sdo: <https://schema.org/>
+
+  SELECT *
+  WHERE {
+    ?event sdo:additionalType picot:sourcetypes/551 ;
+           sdo:dateCreated ?eventDate ;
+           sdo:identifier ?eventID .
+    ?newbornID prov:hadPrimarySource ?event ;
+               picom:hasRole picot:roles/575 ;
+               sdo:identifier ?idNewborn .
+    OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
+    OPTIONAL { ?newbornID picom:hasAge ?ageNewborn }
+    OPTIONAL { ?newbornID sdo:givenName ?givenNameNewborn }
+    OPTIONAL { ?newbornID sdo:familyName ?familyNameNewborn }
+    OPTIONAL { ?newbornID sdo:parent ?fatherNewbornID .
+               ?fatherNewbornID sdo:identifier ?idNewbornFather ;
+                                sdo:gender ?genderNewbornFather .
+               FILTER(?genderNewbornFather = sdo:Male)
+               OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID picom:hasAge ?ageNewbornFather }
+               OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID sdo:givenName ?givenNameNewbornFather }
+               OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID sdo:familyName ?familyNameNewbornFather }
+             }
+    OPTIONAL { ?newbornID sdo:parent ?motherNewbornID .
+               ?motherNewbornID sdo:identifier ?idNewbornMother ;
+                                sdo:gender ?genderNewbornMother .
+               FILTER(?genderNewbornMother = sdo:Female)
+               OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID picom:hasAge ?ageNewbornMother }
+               OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID sdo:givenName ?givenNameNewbornMother }
+               OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID sdo:familyName ?familyNameNewbornMother }
+             }
+    }
+
+# Return all information pertaining to death
+# events, including information about the
+# deceased, its partner, and its parents.
+DEATHS: >
+  PREFIX bio: <http://purl.org/vocab/bio/0.1/>
+  PREFIX picom: <https://personsincontext.org/model#>
+  PREFIX picot: <https://terms.personsincontext.org/>
+  PREFIX pnv: <https://w3id.org/pnv>
+  PREFIX prov: <http://www.w3.org/ns/prov#>
+  PREFIX sdo: <https://schema.org/>
+
+  SELECT *
+  WHERE {
+    ?event sdo:additionalType picot:sourcetypes/553 ;
+           sdo:dateCreated ?eventDate ;
+           sdo:identifier ?eventID .
+    ?deceasedID prov:hadPrimarySource ?event ;
+                picom:hasRole picot:roles/479 ;
+                sdo:identifier ?idDeceased .
+    OPTIONAL { ?deceasedID sdo:givenName ?givenNameDeceased }
+    OPTIONAL { ?deceasedID sdo:familyName ?familyNameDeceased }
+    OPTIONAL { ?deceasedID sdo:gender ?genderDeceased }
+    OPTIONAL { ?deceasedID picom:hasAge ?ageDeceased }
+    OPTIONAL { ?deceasedID sdo:parent ?fatherDeceasedID .
+               ?fatherDeceasedID sdo:identifier ?idDeceasedFather ;
+                                 sdo:gender ?genderDeceasedFather .                                 
+               FILTER(?genderDeceasedFather = sdo:Male)
+               OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID picom:hasAge ?ageDeceasedFather }
+               OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID sdo:givenName ?givenNameDeceasedFather }
+               OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID sdo:familyName ?familyNameDeceasedFather }
+    }
+    OPTIONAL { ?deceasedID sdo:parent ?motherDeceasedID .
+               ?motherDeceasedID sdo:identifier ?idDeceasedMother ;
+                                 sdo:gender ?genderDeceasedMother .
+               FILTER(?genderDeceasedMother = sdo:Female)
+               OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID picom:hasAge ?ageDeceasedMother }
+               OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID sdo:givenName ?givenNameDeceasedMother }
+               OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID sdo:familyName ?familyNameDeceasedMother }
+    }
+    OPTIONAL { ?deceasedID sdo:spouse ?partnerID .
+               ?partnerID sdo:identifier ?idPartner .
+               OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:gender ?genderPartner }
+               OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:givenName ?givenNamePartner }
+               OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:familyName ?familyNamePartner }
+    }
+ }
+
+# Return all information pertaining to marriage
+# events, including information about the
+# bride and groom, and of both their parents.
+MARRIAGES: >  
+  PREFIX bio: <http://purl.org/vocab/bio/0.1/>
+  PREFIX picom: <https://personsincontext.org/model#>
+  PREFIX picot: <https://terms.personsincontext.org/>
+  PREFIX pnv: <https://w3id.org/pnv>
+  PREFIX prov: <http://www.w3.org/ns/prov#>
+  PREFIX sdo: <https://schema.org/>
+
+  SELECT *
+  WHERE {
+    ?event sdo:additionalType picot:sourcetypes/552 ;
+           sdo:dateCreated ?eventDate ;
+           sdo:identifier ?eventID .
+    OPTIONAL { ?brideID prov:hadPrimarySource ?event ;
+                        picom:hasRole picot:roles/574 ;
+                        sdo:identifier ?idBride ;
+                        sdo:gender ?genderBride .
+               FILTER(?genderBride = sdo:Female)
+               OPTIONAL { FILTER(BOUND(?brideID)) ?brideID picom:hasAge ?ageBride }
+               OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:givenName ?givenNameBride }
+               OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:familyName ?familyNameBride }
+    }
+    OPTIONAL { ?brideID sdo:spouse ?groomID .
+               ?groomID prov:hadPrimarySource ?event ;
+                        picom:hasRole picot:roles/574 ;
+                        sdo:identifier ?idGroom ;
+                        sdo:gender ?genderGroom .
+               FILTER(?genderGroom = sdo:Male)
+               OPTIONAL { FILTER(BOUND(?groomID)) ?groomID picom:hasAge ?ageGroom }
+               OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:givenName ?givenNameGroom }
+               OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:familyName ?familyNameGroom }
+    }
+    OPTIONAL { ?brideID sdo:parent ?fatherBrideID .
+               ?fatherBrideID sdo:identifier ?idBrideFather ;
+                              sdo:gender ?genderBrideFather .
+               FILTER(?genderBrideFather = sdo:Male)
+               OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID picom:hasAge ?ageBrideFather }
+               OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID sdo:givenName ?givenNameBrideFather }
+               OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID sdo:familyName ?familyNameBrideFather }
+    }
+    OPTIONAL { ?brideID sdo:parent ?motherBrideID .
+               ?motherBrideID sdo:identifier ?idBrideMother ;
+                              sdo:gender ?genderBrideMother .                  
+               FILTER(?genderBrideMother = sdo:Female)
+               OPTIONAL { FILTER(BOUND(?motherBrideID)) ?motherBrideID picom:hasAge ?ageBrideMother }
+               OPTIONAL { FILTER(BOUND(?motherBrideID)) ?motherBrideID sdo:givenName ?givenNameBrideMother }
+               OPTIONAL { FILTER(BOUND(?motherBrideID)) ?motherBrideID sdo:familyName ?familyNameBrideMother }
+    }
+    OPTIONAL { ?groomID sdo:parent ?fatherGroomID .
+               ?fatherGroomID sdo:identifier ?idGroomFather ;
+                              sdo:gender ?genderGroomFather .
+               FILTER(?genderGroomFather = sdo:Male)
+               OPTIONAL { FILTER(BOUND(?fatherGroomID)) ?fatherGroomID picom:hasAge ?ageGroomFather }
+               OPTIONAL { FILTER(BOUND(?fatherGroomID)) ?fatherGroomID sdo:givenName ?givenNameGroomFather }
+               OPTIONAL { FILTER(BOUND(?fatherGroomID)) ?fatherGroomID sdo:familyName ?familyNameGroomFather }
+    }
+    OPTIONAL { ?groomID sdo:parent ?motherGroomID .
+               ?motherGroomID sdo:identifier ?idGroomMother ;
+                              sdo:gender ?genderGroomMother .                  
+               FILTER(?genderGroomMother = sdo:Female)
+               OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID picom:hasAge ?ageGroomMother }
+               OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID sdo:givenName ?givenNameGroomMother }
+               OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID sdo:familyName ?familyNameGroomMother }
+    }
+
+ }
+
+...  # EOF
