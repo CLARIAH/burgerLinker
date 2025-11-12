@@ -10,7 +10,6 @@ from rdf.namespaces import RDF, XSD
 from rdf.terms import BNode, Literal, IRIRef
 
 
-BIO_NS = IRIRef("http://purl.org/vocab/bio/0.1/")
 PICOM_NS = IRIRef("https://personsincontext.org/model#")
 PICOT_NS = IRIRef("https://terms.personsincontext.org/")
 PNV_NS = IRIRef("https://w3id.org/pnv#")
@@ -81,9 +80,7 @@ def getRole(role: str):
     match role:
         case "newborn":
             roleIRI = PICOT_NS + "roles/575"
-        case "mother" | "father" | "partner" |\
-             "bride" | "motherBride" | "fatherBride" |\
-             "groom" | "motherGroom" | "fatherGroom":
+        case "partner" | "bride" | "groom":
             roleIRI = PICOT_NS + "roles/574"
         case "deceased":
             roleIRI = PICOT_NS + "roles/479"
@@ -102,6 +99,7 @@ def convert(path_in: Path, base_ns: str, delim: str):
             person = None
             event = None
             name = None
+            surname_prefix = None
             for i, v in enumerate(line_array):
                 if v.startswith('"') and v.endswith('"'):
                     v = v[1: -1]
@@ -117,14 +115,20 @@ def convert(path_in: Path, base_ns: str, delim: str):
 
                         # PNV
                         name = BNode(uuid.uuid4().hex)
-                        yield Statement(person, PNV_NS + "hasName", name)
+                        yield Statement(person, SDO_NS + "additionalName", name)
                         yield Statement(name, RDF + "type", PNV_NS + "PersonName")
                     case "firstname" if name is not None:
+                        yield Statement(person, SDO_NS + "givenName", Literal(v, datatype=XSD+"string"))
                         yield Statement(name, PNV_NS + "givenName", Literal(v, datatype=XSD+"string"))
-                    case "familyname" if name is not None:
-                        yield Statement(name, PNV_NS + "baseSurname", Literal(v, datatype=XSD+"string"))
                     case "prefix" if name is not None:
+                        surname_prefix = v
                         yield Statement(name, PNV_NS + "surnamePrefix", Literal(v, datatype=XSD+"string"))
+                    case "familyname" if name is not None:
+                        fullname = v if surname_prefix is None\
+                                else surname_prefix + " " + v
+                        yield Statement(person, SDO_NS + "familyName", Literal(fullname, datatype=XSD+"string"))
+
+                        yield Statement(name, PNV_NS + "baseSurname", Literal(v, datatype=XSD+"string"))
                     case "sex" if person is not None:
                         gender = None
                         if v.lower() in ["f", "female"]:
@@ -152,6 +156,7 @@ def convert(path_in: Path, base_ns: str, delim: str):
                     case "role" if person is not None and event is not None:
                         try:
                             role = ROLES[int(v)-1]
+                            events[event][role] = person
                         except Exception:
                             continue
 
@@ -159,7 +164,6 @@ def convert(path_in: Path, base_ns: str, delim: str):
                         if roleIRI is not None:
                             yield Statement(person, PICOM_NS + "hasRole", roleIRI)
 
-                            events[event][role] = person
                             if role in ["newborn", "deceased", "bride"]:
                                 cert = getCert(role)
                                 if cert is not None:
@@ -184,14 +188,22 @@ def link_events(events):
                 mother = event["mother"]
 
                 yield Statement(subject, SDO_NS + "parent", mother)
+                yield Statement(mother, SDO_NS + "children", subject)
             if "father" in event.keys():
                 father = event["father"]
 
                 yield Statement(subject, SDO_NS + "parent", father)
+                yield Statement(father, SDO_NS + "children", subject)
 
             if mother is not None and father is not None:
                 yield Statement(mother, SDO_NS + "spouse", father)
                 yield Statement(father, SDO_NS + "spouse", mother)
+
+            if "partner" in event.keys():
+                partner = event["partner"]
+
+                yield Statement(subject, SDO_NS + "spouse", partner)
+                yield Statement(partner, SDO_NS + "spouse", subject)
 
             continue
 
@@ -230,12 +242,6 @@ def link_events(events):
         if bride is not None and groom is not None:
             yield Statement(bride, SDO_NS + "spouse", groom)
             yield Statement(groom, SDO_NS + "spouse", bride)
-
-            # Marriage
-            marriage = BNode(uuid.uuid4().hex)
-            yield Statement(marriage, RDF + "type", BIO_NS + "Marriage")
-            yield Statement(marriage, BIO_NS + "partner", bride)
-            yield Statement(marriage, BIO_NS + "partner", groom)
 
 
 def __main__():

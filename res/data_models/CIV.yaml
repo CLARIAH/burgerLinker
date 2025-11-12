@@ -23,23 +23,9 @@
 
 # ============================================= #
 #                                               #
-# SPARQL Queries                           #
+# SPARQL Queries                                #
 #                                               #
 # ============================================= #
-
-# Return all statements in the graph, and, if it
-# concerns information about a person, also
-# return the identifiers and event date.
-STATEMENTS: >
-  PREFIX civ: <https://iisg.amsterdam/id/civ/>
-
-  SELECT ?s ?p ?o ?sPersonID ?oPersonID
-  WHERE {
-    ?s ?p ?o .
-
-    OPTIONAL { ?s civ:personID ?sPersonID } .
-    OPTIONAL { ?o civ:personID ?oPersonID } .
-  }
 
 # Return all information pertaining to birth
 # events, including information about the newborn

@@ -18,7 +18,10 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -55,6 +58,7 @@ public class Closure {
 
     HashMap<String, HashSet<String>> dbClassToIndivs;
 	HashMap<String, String> dbIndivToClass;
+    HashMap<String, String> personIRIToID;
 
 	public Closure(MyRDF myRDF, Process process, String namespace,
                    File directoryPath, boolean formatCSV) throws java.io.IOException {
@@ -93,7 +97,9 @@ public class Closure {
 
 		try {
 			ArrayList<String> linkFiles = FILE_UTILS.getAllValidLinksFile(inputDirectoryPath.getParentFile(), false);
+            linkFiles.sort(null);
 
+            personIRIToID = new HashMap<String, String>();
 			for (String linkFile : linkFiles) {
 				success = success | saveIndividualLinksToFile(linkFile);
 			}
@@ -116,62 +122,61 @@ public class Closure {
 			int cntAll = 0;
 
 			LinksCSV reconstruction = new LinksCSV("dataset_reconstructed", outputDirectoryPath, true);
-			LinksCSV singletons = new LinksCSV("dataset_singletons", outputDirectoryPath, true);
 
-            TupleQueryResult qResult = null;
+            RepositoryResult<Statement> rResult = null;
             ActivityIndicator spinner = new ActivityIndicator(".: Reconstructing Individuals");
 			try {
                 spinner.start();
-
-                qResult = myRDF.getQueryResults(process.dataModel.get("STATEMENTS"));
-                for (BindingSet bindingSet: qResult) {
-                    LinksCSV stream = reconstruction;
+                rResult = myRDF.getStatements();
+                for (Statement statement: rResult) {
 					cntAll++;
 
                     // unpack nodes
-                    Value subject = bindingSet.getValue("s");
-                    Value predicate = bindingSet.getValue("p");
-                    Value object = bindingSet.getValue("o");
-
-					// skip blank nodes
-					if (subject.isBNode()) {
-                        continue;
-                    }
+                    Resource subject = statement.getSubject();
+                    IRI predicate = statement.getPredicate();
+                    Value object = statement.getObject();
 
                     String sbjNew = null;
-                    Value sbjPersonID = bindingSet.getValue("sPersonID");
-                    if (sbjPersonID != null) {
-                        sbjNew = getEqClassOfPerson(sbjPersonID.stringValue(), namespace);
-                    }
-                    if (sbjNew == null) {
-                        stream = singletons;
-
-                        if (subject.isIRI()) {
-                            // URI of unlinked individual
-                            sbjNew = "<" + subject.stringValue() + ">";
+                    String sbjStr = subject.stringValue();
+                    if (subject.isIRI()) {
+                        if (personIRIToID.containsKey(sbjStr)) {
+                            String sbjID = personIRIToID.get(sbjStr);
+                            sbjNew = getEqClassOfPerson(sbjID, namespace);
                         }
+
+                        if (sbjNew == null) {
+                            // URI of unlinked individual
+                            sbjNew = "<" + sbjStr + ">";
+                        }
+                    } else { // BNode
+                        sbjNew = "_:" + sbjStr;
                     }
 
                     String objNew = null;
-                    Value objPersonID = bindingSet.getValue("oPersonID");
-                    if (objPersonID != null) {
-                        objNew = getEqClassOfPerson(objPersonID.stringValue(), namespace);
-                    }
-                    if (objNew == null) {
-                        if (object.isIRI()) {
-                            // URI of unlinked individual
-                            objNew = "<" + object.stringValue() + ">";
-                        } else if (object.isLiteral()) {
-                            // literal
-                            objNew = '"' + object.stringValue() + '"';
-
-                            Optional<String> objLang = object.getLanguage();
-                            if (objLang.isPresent()) {
-                                objNew += "@" + objLang;
-                            } else {
-                                objNew += "^^<" + object.getDatatype().stringValue() + ">";
-                            }
+                    String objStr = object.stringValue();
+                    if (object.isIRI()) {
+                        if (personIRIToID.containsKey(objStr)) {
+                            String objID = personIRIToID.get(objStr);
+                            objNew = getEqClassOfPerson(objID, namespace);
                         }
+
+                        if (objNew == null) {
+                            // URI of unlinked individual
+                            objNew = "<" + objStr + ">";
+                        }
+                    } else if (object.isLiteral()) {
+                        // literal
+                        objNew = '"' + objStr + '"';
+
+                        Literal objLit = (Literal) object;
+                        Optional<String> objLang = objLit.getLanguage();
+                        if (objLang.isPresent()) {
+                            objNew += "@" + objLang;
+                        } else {
+                            objNew += "^^<" + objLit.getDatatype().stringValue() + ">";
+                        }
+                    } else { // BNode
+                        objNew = "_:" + objStr;
                     }
 
                     String pStr = "<" + predicate.stringValue() + ">";
@@ -191,16 +196,15 @@ public class Closure {
                     // } else {
                     //     stream.addToStream(sbjNew + " " + predicate + " " + objNew + " .");
 					// }
-                    stream.addToStream(sbjNew + " " + pStr + " " + objNew + " .");
+                    reconstruction.addToStream(sbjNew + " " + pStr + " " + objNew + " .");
 
                     if (cntAll % 5000 == 0) {
                         spinner.update(cntAll);
                     }
 				}
             } finally {
-                qResult.close();
+                rResult.close();
 				reconstruction.closeStream();
-                singletons.closeStream();
                 spinner.terminate();
                 spinner.join();
 			}
@@ -520,12 +524,21 @@ public class Closure {
                     BindingSet qResultA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
 					String idSubjectA = qResultA.getValue("idSubject").stringValue();
+                    String subjectA = qResultA.getValue("subjectID").stringValue();
+                    personIRIToID.put(subjectA, idSubjectA);
+
                     String idSubjectAFather = null, idSubjectAMother = null;
 					if (!nextLine[7].equals("N.A.")) { // if there is a match for the fathers
 						idSubjectAFather = qResultA.getValue("idSubjectFather").stringValue();
+
+                        String subjectAFather = qResultA.getValue("fatherSubjectID").stringValue();
+                        personIRIToID.put(subjectAFather, idSubjectAFather);
                     }
                     if (!nextLine[5].equals("N.A.")) { // if there is a match for the mothers
 					    idSubjectAMother = qResultA.getValue("idSubjectMother").stringValue();
+
+                        String subjectAMother = qResultA.getValue("motherSubjectID").stringValue();
+                        personIRIToID.put(subjectAMother, idSubjectAMother);
                     }
 
                     // event B participants
@@ -534,36 +547,46 @@ public class Closure {
                     bindingsB.put("eventID", MyRDF.mkLiteral(idEventB, "int"));
                     BindingSet qResultB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
-                    String idSubjectB;
+                    String idSubjectB, subjectB;
                     if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
                         idSubjectB = qResultB.getValue("idSubject").stringValue();
+                        subjectB = qResultB.getValue("subjectID").stringValue();
                     } else {  // familyLine.equals("22")
                         idSubjectB = qResultB.getValue("idPartner").stringValue();
+                        subjectB = qResultB.getValue("partnerID").stringValue();
                     }
+                    personIRIToID.put(subjectB, idSubjectB);
 
-					String idSubjectBFather = null, idSubjectBMother = null;
+					String subjectBFather = null, idSubjectBFather = null;
 					if(idSubjectAFather != null) { // if there is a match for the fathers
                         if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
                             idSubjectBFather = qResultB.getValue("idSubjectFather").stringValue();
+                            subjectBFather = qResultB.getValue("fatherSubjectID").stringValue();
                         } else {
                             idSubjectBFather = qResultB.getValue("idPartnerFather").stringValue();
+                            subjectBFather = qResultB.getValue("fatherPartnerID").stringValue();
                         }
 
-                        if(idSubjectBFather != null) {
+                        if (idSubjectBFather != null) {
+                            personIRIToID.put(subjectBFather, idSubjectBFather);
                             matchedIndiv++;
 
                             fatherMatched = true;
                         }
 					}
 
+					String subjectBMother = null, idSubjectBMother = null;
                     if(idSubjectAMother != null) { // if there is a match for the mothers
                         if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
                             idSubjectBMother = qResultB.getValue("idSubjectMother").stringValue();
+                            subjectBMother = qResultB.getValue("motherSubjectID").stringValue();
                         } else {
                             idSubjectBMother = qResultB.getValue("idPartnerMother").stringValue();
+                            subjectBMother = qResultB.getValue("motherPartnerID").stringValue();
                         }
 
-                        if(idSubjectBMother != null) {
+                        if (idSubjectBMother != null) {
+                            personIRIToID.put(subjectBMother, idSubjectBMother);
                             matchedIndiv++;
 
                             motherMatched = true;
@@ -635,19 +658,23 @@ public class Closure {
                     bindingsA.put("eventID", MyRDF.mkLiteral(idEventA, "int"));
                     BindingSet bindingSetA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
-                    String idFather, idMother;
-                    if (this.process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
-                        if (familyLine.equals("21")) {  // bride
-                            idFather = bindingSetA.getValue("idSubjectFather").stringValue();
-                            idMother = bindingSetA.getValue("idSubjectMother").stringValue();
-                        } else {  // familyLine == 22 // groom
-                            idFather = bindingSetA.getValue("idPartnerFather").stringValue();
-                            idMother = bindingSetA.getValue("idPartnerMother").stringValue();
-                        }
-                    } else {
+                    String idFather, idMother, fatherIRI, motherIRI;
+                    if (this.process.type != Process.ProcessType.MARRIAGE_MARRIAGE
+                        || familyLine.equals("21")) {
                         idFather = bindingSetA.getValue("idSubjectFather").stringValue();
-    					idMother = bindingSetA.getValue("idSubjectMother").stringValue();
+                        idMother = bindingSetA.getValue("idSubjectMother").stringValue();
+
+                        fatherIRI = bindingSetA.getValue("fatherSubjectID").stringValue();
+                        motherIRI = bindingSetA.getValue("motherSubjectID").stringValue();
+                    } else {  // familyLine == 22 // groom
+                        idFather = bindingSetA.getValue("idPartnerFather").stringValue();
+                        idMother = bindingSetA.getValue("idPartnerMother").stringValue();
+
+                        fatherIRI = bindingSetA.getValue("fatherPartnerID").stringValue();
+                        motherIRI = bindingSetA.getValue("motherPartnerID").stringValue();
                     }
+                    personIRIToID.put(fatherIRI, idFather);
+                    personIRIToID.put(motherIRI, idMother);
 
                     // event B participants
 					String idEventB = nextLine[1];
@@ -656,7 +683,12 @@ public class Closure {
                     BindingSet bindingSetB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
 					String idSubjectB = bindingSetB.getValue("idSubject").stringValue();
+					String subjectBIRI = bindingSetB.getValue("subjectID").stringValue();
+                    personIRIToID.put(subjectBIRI, idSubjectB);
+
 					String idSubjectBPartner = bindingSetB.getValue("idPartner").stringValue();
+					String subjectBPartnerIRI = bindingSetB.getValue("partnerID").stringValue();
+                    personIRIToID.put(subjectBPartnerIRI, idSubjectBPartner);
 
                     // metadata
 					String meta = linktype + "," + linkProv + "," + familyLine + ","
