@@ -136,7 +136,7 @@ public class Between {
 
                                         for (String finalCandidate: finalCandidatesList) {
                                             Map<String, Value> bindings = new HashMap<>();
-                                            bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                            bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
 
                                             TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                             for (BindingSet bindingSetB: qResultB) {

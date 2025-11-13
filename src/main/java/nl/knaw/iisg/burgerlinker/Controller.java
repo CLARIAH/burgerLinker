@@ -33,6 +33,7 @@ import nl.knaw.iisg.burgerlinker.processes.Between;
 import nl.knaw.iisg.burgerlinker.processes.Closure;
 import nl.knaw.iisg.burgerlinker.processes.Process;
 import nl.knaw.iisg.burgerlinker.processes.Within;
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.*;
 
 
@@ -86,7 +87,7 @@ public class Controller {
         }
 		this.workdir = new File(output);
         if (!this.workdir.isDirectory()) {
-            System.out.println("Creating working directory '" + this.workdir.getName() + "/'");
+            System.out.println(".: Creating working directory '" + this.workdir.getName() + "/'");
             this.workdir.mkdirs();
         } else {
             System.out.println(".: Found working directory '" + this.workdir.getName() + "/'");
@@ -183,7 +184,7 @@ public class Controller {
         switch (function) {
 			case "within_b_m":
                 rules = ruleMap.get(function);
-				if(checkAllUserInputs()) {
+				if (checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Within Births-Marriages (newborn -> bride/groom)");
 
@@ -196,7 +197,7 @@ public class Controller {
 				break;
 			case "within_b_d":
                 rules = ruleMap.get(function);
-				if(checkAllUserInputs()) {
+				if (checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Within Births-Deaths (newborn -> deceased)");
 
@@ -209,7 +210,7 @@ public class Controller {
 				break;
 			case "between_b_m":
                 rules = ruleMap.get(function);
-				if(checkAllUserInputs()) {
+				if (checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Births-Marriages (newborn parents -> bride + groom)");
 
@@ -222,7 +223,7 @@ public class Controller {
 				break;
 			case "between_b_d":
                 rules = ruleMap.get(function);
-				if(checkAllUserInputs()) {
+				if (checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Births-Deaths (parents of newborn -> deceased + partner)");
 
@@ -235,7 +236,7 @@ public class Controller {
 				break;
 			case "between_d_m":
                 rules = ruleMap.get(function);
-				if(checkAllUserInputs()) {
+				if (checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Deaths-Marriages (parents of deceased -> bride + groom)");
 
@@ -248,7 +249,7 @@ public class Controller {
 				break;
 			case "between_m_m":
                 rules = ruleMap.get(function);
-				if(checkAllUserInputs()) {
+				if (checkAllUserInputs()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
 
@@ -260,7 +261,7 @@ public class Controller {
 
 				break;
 			case "closure":
-				if(checkInputDataset() && checkInputDirectoryContents()) {
+				if (checkInputDirectoryContents()) {
 					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Computing Transitive Closure");
 
@@ -527,6 +528,7 @@ public class Controller {
         }
 
         LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
+        LOG.outputConsole(".: NOTE: Parsing a new dataset for the first time might take a while.");
         myRDF = new MyRDF(dir);
         return myRDF.parse(paths);
     }
@@ -588,11 +590,11 @@ public class Controller {
                                            ignoreDate, ignoreBlock, singleInd, outputFormatCSV);
 
                 if (singleInd) {
-                    within.link_within_single("Female", false);
-                    within.link_within_single("Male", true);
+                    within.link_within_single(Person.Gender.FEMALE, false);
+                    within.link_within_single(Person.Gender.MALE, true);
                 } else {
-                    within.link_within("Female", false); // false = do not close stream
-                    within.link_within("Male", true); // true = close stream
+                    within.link_within(Person.Gender.FEMALE, false); // false = do not close stream
+                    within.link_within(Person.Gender.MALE, true); // true = close stream
                 }
             } else {
 				LOG.logError(process.toString(), "Error in creating the three sub output directories");

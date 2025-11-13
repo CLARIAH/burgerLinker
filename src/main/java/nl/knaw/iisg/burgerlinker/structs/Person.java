@@ -12,28 +12,32 @@ import org.eclipse.rdf4j.model.Value;
 
 
 public class Person {
+    public enum Gender {
+        MALE,
+        FEMALE,
+        UNKNOWN
+    }
 	private String URI;
 	private String role;
 	private String first_name = null;
 	private String last_name = null;
-	private String gender = null;
+	private Gender gender = null;
 	private Boolean valid;
 	public final String names_separator = " ", compound_name_separator = "_";
-
-    public Person(String event, String firstName, String familyName, String gender) {
-		this.URI = event;
-        this.first_name = firstName;
-        this.last_name = familyName;
-        this.gender = gender;
-
-		this.valid = true;
-    }
 
     public Person(String event, Value firstName, Value familyName, Value gender) {
 		this.URI = event;
         this.first_name = (firstName != null) ? firstName.stringValue() : "";
         this.last_name = (familyName != null) ? familyName.stringValue() : "";
-        this.gender = (gender != null) ? gender.stringValue() : "";
+        this.gender = Gender.UNKNOWN;
+        if (gender != null) {
+            String gStr = gender.stringValue();
+            if (gStr.endsWith("Male") || gStr.toLowerCase().equals("m") || gStr.toLowerCase().equals("male")) {
+                this.gender = Gender.MALE;
+            } else if (gStr.endsWith("Female") || gStr.toLowerCase().equals("f") || gStr.toLowerCase().equals("female")) {
+                this.gender = Gender.FEMALE;
+            }
+        }
 
 		this.valid = (URI != null);
     }
@@ -46,7 +50,7 @@ public class Person {
 		this.last_name = last_name;
 	}
 
-	public void setGender(String gender){
+	public void setGender(Gender gender){
 		this.gender = gender;
 	}
 
@@ -117,7 +121,7 @@ public class Person {
 		return result;
 	}
 
-	public String getGender() {
+	public Gender getGender() {
 		return gender;
 	}
 
@@ -132,15 +136,15 @@ public class Person {
 	}
 
 	public boolean isFemale() {
-		return gender.endsWith("Female");
+		return gender == Gender.FEMALE;
     }
 
 	public boolean isMale() {
-		return gender.endsWith("Male");
+		return gender == Gender.MALE;
     }
 
-	public boolean hasGender(String gender) {
-		return (this.gender.endsWith(gender) || this.gender.length() <= 0);
+	public boolean hasGender(Gender gender) {
+		return (this.gender == gender || this.gender == Gender.UNKNOWN);
 	}
 
 	public boolean hasDoubleBarreledFirstName() {

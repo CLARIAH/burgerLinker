@@ -520,7 +520,7 @@ public class Closure {
                     // event A participants
 					String idEventA = nextLine[0];
                     Map<String, Value> bindingsA = new HashMap<>();
-                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA, "int"));
+                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA));
                     BindingSet qResultA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
 					String idSubjectA = qResultA.getValue("idSubject").stringValue();
@@ -544,7 +544,7 @@ public class Closure {
                     // event B participants
 					String idEventB = nextLine[1];
                     Map<String, Value> bindingsB = new HashMap<>();
-                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB, "int"));
+                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB));
                     BindingSet qResultB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
                     String idSubjectB, subjectB;
@@ -655,7 +655,7 @@ public class Closure {
                     // event A participants
 					String idEventA = nextLine[0];
                     Map<String, Value> bindingsA = new HashMap<>();
-                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA, "int"));
+                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA));
                     BindingSet bindingSetA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
                     String idFather, idMother, fatherIRI, motherIRI;
@@ -679,7 +679,7 @@ public class Closure {
                     // event B participants
 					String idEventB = nextLine[1];
                     Map<String, Value> bindingsB = new HashMap<>();
-                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB, "int"));
+                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB));
                     BindingSet bindingSetB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
 					String idSubjectB = bindingSetB.getValue("idSubject").stringValue();
@@ -708,9 +708,9 @@ public class Closure {
                     if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
                         String eventB = bindingSetB.getValue("event").stringValue();
                         Person subjectB = new Person(eventB,
-                                                 bindingSetB.getValue("givenNameSubject").stringValue(),
-                                                 bindingSetB.getValue("familyNameSubject").stringValue(),
-                                                 bindingSetB.getValue("genderSubject").stringValue());
+                                                 bindingSetB.getValue("givenNameSubject"),
+                                                 bindingSetB.getValue("familyNameSubject"),
+                                                 bindingSetB.getValue("genderSubject"));
 
                         if (subjectB.isMale()) {
                             idSubjectMale = idSubjectB;

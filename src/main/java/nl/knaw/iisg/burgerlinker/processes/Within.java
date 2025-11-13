@@ -63,8 +63,8 @@ public class Within {
 		}
 	}
 
-	public void link_within(String gender, boolean closeStream) {
-        String familyCode = (gender.equals("Male")) ? "22" : "21";
+	public void link_within(Person.Gender gender, boolean closeStream) {
+        String familyCode = (gender == Person.Gender.MALE) ? "22" : "21";
 
         String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
         String queryEventB = MyRDF.generalizeQuery(process.queryEventB, gender);
@@ -130,7 +130,7 @@ public class Within {
                                         }
 
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
@@ -183,7 +183,7 @@ public class Within {
                                         }
 
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
@@ -231,7 +231,7 @@ public class Within {
                                                                                                                             candidatesFather);
                                     for (String finalCandidate: finalCandidatesMotherFather) {
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
@@ -304,12 +304,12 @@ public class Within {
 		}
 	}
 
-	public void link_within_single(String gender, boolean closeStream) {
-        String familyCode = (gender.equals("Male")) ? "22" : "21";
+	public void link_within_single(Person.Gender gender, boolean closeStream) {
+        String familyCode = (gender == Person.Gender.MALE) ? "22" : "21";
 
         String queryEventA = MyRDF.generalizeQuery(process.queryEventA);
         String queryEventB = MyRDF.generalizeQuery(process.queryEventB, gender);
-        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED) ? true : false;
+        boolean genderFilter = (this.process.type == Process.ProcessType.BIRTH_DECEASED);
 
 		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
                                          this.maxLev, this.fixedLev);
@@ -342,7 +342,7 @@ public class Within {
                             if (!candidatesSubjectB.candidates.isEmpty()) {
                                 for (String finalCandidate: candidatesSubjectB.candidates.keySet()) {
                                     Map<String, Value> bindings = new HashMap<>();
-                                    bindings.put("eventID", MyRDF.mkLiteral(finalCandidate, "int"));
+                                    bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
 
                                     TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                     for (BindingSet bindingSetB: qResultB) {

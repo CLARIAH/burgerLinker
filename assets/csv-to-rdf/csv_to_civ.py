@@ -120,6 +120,12 @@ def convert(path_in: Path, base_ns: str, delim: str):
                             continue
 
                         yield Statement(event, CIV_NS + role, person)
+                        if role == "newborn":
+                            yield Statement(event, RDF + "type", CIV_NS + "Birth")
+                        elif role == "deceased":
+                            yield Statement(event, RDF + "type", CIV_NS + "Death")
+                        elif role == "bride":
+                            yield Statement(event, RDF + "type", CIV_NS + "Marriage")
 
                         date = getDate(line_array, header, role)
                         if date is not None:

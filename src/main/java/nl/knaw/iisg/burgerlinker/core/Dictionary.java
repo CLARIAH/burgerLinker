@@ -36,7 +36,7 @@ public class Dictionary {
 		this.fixedLev = fixedLev;
 	}
 
-	public boolean generateDictionaryOneWay(MyRDF myRDF, String query, boolean genderFilter, String gender) {
+	public boolean generateDictionaryOneWay(MyRDF myRDF, String query, boolean genderFilter, Person.Gender gender) {
 		indexMain = new Index("subject-"+gender, mainDirectoryPath, maxLev, fixedLev);
 
 		long startTime = System.currentTimeMillis();
@@ -45,9 +45,9 @@ public class Dictionary {
         int countAll = 0;
         int count_No_Main = 0;
 
-		LOG.outputConsole(".: Generating Dictionary for process: " + processName);
+		LOG.outputConsole(".: Generating Dictionary for process: " + processName + " (" + gender + ")");
 		try {
-			String taskName = ".: Indexing " + processName;
+			String taskName = ".: Indexing " + processName + " (" + gender + ")";
 
 			indexMain.openIndex();
 
@@ -217,7 +217,7 @@ public class Dictionary {
         return true;
     }
 
-    public boolean generateDictionaryThreeWay(MyRDF myRDF, String query, boolean genderFilter, String gender) {
+    public boolean generateDictionaryThreeWay(MyRDF myRDF, String query, boolean genderFilter, Person.Gender gender) {
         indexMain = new Index("subject-"+gender, mainDirectoryPath, maxLev, fixedLev);
         indexMother = new Index("subjectMother-"+gender, mainDirectoryPath, maxLev, fixedLev);
         indexFather = new Index("subjectFather-"+gender, mainDirectoryPath, maxLev, fixedLev);
@@ -230,9 +230,9 @@ public class Dictionary {
         int count_Main_Mother = 0;
         int count_Main_Father = 0;
 
-        LOG.outputConsole(".: Generating Dictionary for process: " + processName);
+        LOG.outputConsole(".: Generating Dictionary for process: " + processName + " (" + gender + ")");
         try {
-            String taskName = ".: Indexing " + processName;
+            String taskName = ".: Indexing " + processName + " (" + gender + ")";
 
             indexMain.openIndex();
             indexMother.openIndex();

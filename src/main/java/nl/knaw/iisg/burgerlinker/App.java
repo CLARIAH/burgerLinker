@@ -110,7 +110,7 @@ public class App {
 			String formatting =  "%-18s %15s %n";
 
 			System.out.println("Parameters that can be provided as input to the linking tool:");
-			System.out.printf(formatting, "--input:", "(required) Comma-separated path to one or more RDF graphs, or a web address to a SPARQL endpoint.");
+			System.out.printf(formatting, "--input:", "(optional) Comma-separated path to one or more RDF graphs, or a web address to a SPARQL endpoint.");
 			System.out.printf(formatting, "--output:", "(required) Path of the directory for saving the indices and the detected links");
 			System.out.printf(formatting, "--function:", "(optional) One of the functionalities listed below, or all functions in sequence if omitted.");
 			System.out.printf(formatting, "--model:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");

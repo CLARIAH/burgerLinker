@@ -34,6 +34,7 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 
+import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.ActivityIndicator;
 import nl.knaw.iisg.burgerlinker.utilities.FileUtilities;
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
@@ -334,15 +335,19 @@ public class MyRDF {
         return date;
     }
 
+    public static Literal mkLiteral(String value) {
+        return mkLiteral(value, "string");
+    }
+
     public static Literal mkLiteral(String value, String datatype) {
         return literal(value, iri(XSD.NAMESPACE, datatype));
     }
 
     public static String generalizeQuery(String q) {
-        return generalizeQuery(q, "");
+        return generalizeQuery(q, null);
     }
 
-    public static String generalizeQuery(String q, String gender) {
+    public static String generalizeQuery(String q, Person.Gender gender) {
         if (q.contains("Newborn")) {
             q = q.replaceAll("(\\?[A-Za-z0-9]*)newborn", "$1subject");
             q = q.replaceAll("(\\?[A-Za-z0-9]*)Newborn", "$1Subject");
@@ -351,7 +356,7 @@ public class MyRDF {
             q = q.replaceAll("(\\?[A-Za-z0-9]*)Deceased", "$1Subject");
         } else if (q.contains("Bride")) {
             String subject, partner;
-            if (gender == "m") {
+            if (gender == Person.Gender.MALE) {
                 subject = "groom";
                 partner = "bride";
             } else {

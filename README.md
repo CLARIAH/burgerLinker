@@ -20,6 +20,22 @@
 
     $ java -jar target/BurgerLinker-0.8.0.jar --help
 
+**To make your data suitable for use by this version of BurgerLinker:**
+
+**1. Obtain a LINKS dataset with person data (eg person_c.csv)**
+
+**2. Install pyRDF (optionally in a python virtual environment)**
+
+    $ pip install pyRDF
+
+**3. Convert the LINKS dataset and pipe the output to a file**
+
+    $ python assets/csv-to-rdf/csv_to_civ.py person_c.csv > person_c-civ.nt
+
+**To run BurgerLinker (all processes):**
+
+    $ java -jar target/burgerlinker-0.8.0-uber.jar --input person_c-civ.nt --output civ/  --maxLev 1 --fixedLev
+
 ---
 
 Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki) or via the [burgerLinker lecture](https://vimeo.com/573950112). Also see the paper on the [application of burgerLinker](https://hlcs.nl/article/view/14685/16325) in academia (LINKS).
