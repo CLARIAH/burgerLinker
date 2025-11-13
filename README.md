@@ -18,7 +18,7 @@
 
 **4. Run BurgerLinker (the jar file is stored in the `target` directory)**
 
-    $ java -jar target/BurgerLinker-0.8.0.jar --help
+    $ java -jar target/burgerlinker-0.8.0-uber.jar --help
 
 **To make your data suitable for use by this version of BurgerLinker:**
 
