@@ -198,6 +198,9 @@ public class MyRDF {
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             out = QueryResults.asList(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOG.outputConsole("Query:\n" + query);
         }
 
         return out;
@@ -205,11 +208,24 @@ public class MyRDF {
 
     public TupleQueryResult getQueryResults(String query) {
         if (!conn.isOpen()) {
-            LOG.logError("parse", "Error connecting to RDF store");
+            LOG.logError("getQueryResults", "Error connecting to RDF store");
 
             return null;
         }
-        TupleQuery tupleQuery = conn.prepareTupleQuery(query);
+
+        TupleQuery tupleQuery = null;
+        try {
+            tupleQuery = conn.prepareTupleQuery(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOG.outputConsole("Query:\n" + query);
+        }
+
+        if (tupleQuery == null) {
+            LOG.logError("getQueryResults", "Error executing query");
+
+            return null;
+        }
 
         return tupleQuery.evaluate();
     }

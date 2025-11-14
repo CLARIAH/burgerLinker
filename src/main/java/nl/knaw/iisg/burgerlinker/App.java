@@ -57,6 +57,9 @@ public class App {
 	@Parameter(names = "--format")
 	String format = "CSV"; // or "RDF"
 
+    @Parameter(names = "--query")
+    String query = null;
+
 	@Parameter(names = "--help", help = true)
 	boolean help;
 
@@ -102,7 +105,7 @@ public class App {
 			}
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
                                               ignoreBlock, singleInd, input, output,
-                                              format, model, ruleset, namespace,
+                                              format, model, ruleset, namespace, query,
                                               reload);
 			cntrl.runProgram();
 		} else {

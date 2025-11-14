@@ -31,17 +31,17 @@
 BIRTHS: >
   PREFIX picom: <https://personsincontext.org/model#>
   PREFIX picot: <https://terms.personsincontext.org/>
-  PREFIX pnv: <https://w3id.org/pnv>
+  PREFIX pnv: <https://w3id.org/pnv#>
   PREFIX prov: <http://www.w3.org/ns/prov#>
   PREFIX sdo: <https://schema.org/>
 
   SELECT *
   WHERE {
-    ?event sdo:additionalType picot:sourcetypes/551 ;
+    ?event sdo:additionalType picot:sourcetypes\/551 ;
            sdo:dateCreated ?eventDate ;
            sdo:identifier ?eventID .
     ?newbornID prov:hadPrimarySource ?event ;
-               picom:hasRole picot:roles/575 ;
+               picom:hasRole picot:roles\/575 ;
                sdo:identifier ?idNewborn .
     OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
     OPTIONAL { ?newbornID picom:hasAge ?ageNewborn }
@@ -54,7 +54,7 @@ BIRTHS: >
                OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID picom:hasAge ?ageNewbornFather }
                OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID sdo:givenName ?givenNameNewbornFather }
                OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID sdo:familyName ?familyNameNewbornFather }
-             }
+    }
     OPTIONAL { ?newbornID sdo:parent ?motherNewbornID .
                ?motherNewbornID sdo:identifier ?idNewbornMother ;
                                 sdo:gender ?genderNewbornMother .
@@ -62,8 +62,8 @@ BIRTHS: >
                OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID picom:hasAge ?ageNewbornMother }
                OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID sdo:givenName ?givenNameNewbornMother }
                OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID sdo:familyName ?familyNameNewbornMother }
-             }
     }
+  }
 
 # Return all information pertaining to death
 # events, including information about the
@@ -72,17 +72,17 @@ DEATHS: >
   PREFIX bio: <http://purl.org/vocab/bio/0.1/>
   PREFIX picom: <https://personsincontext.org/model#>
   PREFIX picot: <https://terms.personsincontext.org/>
-  PREFIX pnv: <https://w3id.org/pnv>
+  PREFIX pnv: <https://w3id.org/pnv#>
   PREFIX prov: <http://www.w3.org/ns/prov#>
   PREFIX sdo: <https://schema.org/>
 
   SELECT *
   WHERE {
-    ?event sdo:additionalType picot:sourcetypes/553 ;
+    ?event sdo:additionalType picot:sourcetypes\/553 ;
            sdo:dateCreated ?eventDate ;
            sdo:identifier ?eventID .
     ?deceasedID prov:hadPrimarySource ?event ;
-                picom:hasRole picot:roles/479 ;
+                picom:hasRole picot:roles\/479 ;
                 sdo:identifier ?idDeceased .
     OPTIONAL { ?deceasedID sdo:givenName ?givenNameDeceased }
     OPTIONAL { ?deceasedID sdo:familyName ?familyNameDeceased }
@@ -110,7 +110,7 @@ DEATHS: >
                OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:givenName ?givenNamePartner }
                OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:familyName ?familyNamePartner }
     }
- }
+  }
 
 # Return all information pertaining to marriage
 # events, including information about the
@@ -119,7 +119,7 @@ MARRIAGES: >
   PREFIX bio: <http://purl.org/vocab/bio/0.1/>
   PREFIX picom: <https://personsincontext.org/model#>
   PREFIX picot: <https://terms.personsincontext.org/>
-  PREFIX pnv: <https://w3id.org/pnv>
+  PREFIX pnv: <https://w3id.org/pnv#>
   PREFIX prov: <http://www.w3.org/ns/prov#>
   PREFIX sdo: <https://schema.org/>
 
@@ -129,7 +129,7 @@ MARRIAGES: >
            sdo:dateCreated ?eventDate ;
            sdo:identifier ?eventID .
     OPTIONAL { ?brideID prov:hadPrimarySource ?event ;
-                        picom:hasRole picot:roles/574 ;
+                        picom:hasRole picot:roles\/574 ;
                         sdo:identifier ?idBride ;
                         sdo:gender ?genderBride .
                FILTER(?genderBride = sdo:Female)
@@ -139,7 +139,7 @@ MARRIAGES: >
     }
     OPTIONAL { ?brideID sdo:spouse ?groomID .
                ?groomID prov:hadPrimarySource ?event ;
-                        picom:hasRole picot:roles/574 ;
+                        picom:hasRole picot:roles\/574 ;
                         sdo:identifier ?idGroom ;
                         sdo:gender ?genderGroom .
                FILTER(?genderGroom = sdo:Male)
@@ -179,7 +179,6 @@ MARRIAGES: >
                OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID sdo:givenName ?givenNameGroomMother }
                OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID sdo:familyName ?familyNameGroomMother }
     }
-
- }
+  }
 
 ...  # EOF

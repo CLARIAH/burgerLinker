@@ -20,6 +20,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 
 import org.jeasy.rules.api.Rule;
 import org.jeasy.rules.api.Rules;
@@ -49,7 +51,7 @@ public class Controller {
     private String rulesetDir = "./res/rule_sets/";
     private String rulesetExt = "yaml";
 
-	private String dataModelPath, rulesetPath, function, input, namespace;
+	private String dataModelPath, rulesetPath, function, input, namespace, query;
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
                     singleInd = false, outputFormatCSV = true, doubleInputs = false,
@@ -66,7 +68,7 @@ public class Controller {
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
                       String input, String output, String outputFormat,
                       String dataModelPath, String ruleset, String namespace,
-                      boolean reload) {
+                      String query, boolean reload) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -75,6 +77,7 @@ public class Controller {
 		this.singleInd = singleInd;
 		this.input = input;
         this.reload = reload;
+        this.query = query;
 
         if (output == null) {
             System.out.println("An output directory must be provided");
@@ -148,9 +151,30 @@ public class Controller {
                 } catch (Exception e) {
                     LOG.logError("runProgram", "Error initiating graph store: " + e);
                 }
+                if (myRDF.size() <= 0) {
+                    LOG.outputConsole("Error accessing graph store. Use the '--reload' flag to reload the data.");
+                    return;
+                }
 
                 outputDatasetStatistics(this.dataModel);
-                if (this.function == null) {
+                if (this.query != null) {
+                    ActivityIndicator spinner = new ActivityIndicator(".: Executing custom query on RDF store");
+                    spinner.start();
+
+                    TupleQueryResult qResult = myRDF.getQueryResults(query);
+
+                    spinner.terminate();
+                    spinner.join();
+                    for (BindingSet bindingSet: qResult) {
+                        for (Binding binding: bindingSet) {
+                            LOG.outputConsole(binding.getName() + ": " + binding.getValue().stringValue());
+                        }
+                        LOG.outputConsole("-");
+                    }
+
+                    qResult.close();
+
+                } else if (this.function == null) {
                     LOG.outputConsole(".: No function specified: looping over all functions.");
                     for (String func: FUNCTIONS) {
                         if (func.equals("closure")) {
