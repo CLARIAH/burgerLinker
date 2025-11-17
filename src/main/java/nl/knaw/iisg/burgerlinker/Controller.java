@@ -66,7 +66,7 @@ public class Controller {
 
 	public Controller(String function, int maxlev, boolean fixedLev,
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
-                      String input, String output, String outputFormat,
+                      String input, String workdir, String outputFormat,
                       String dataModelPath, String ruleset, String namespace,
                       String query, boolean reload) {
 		this.function = function;
@@ -79,16 +79,16 @@ public class Controller {
         this.reload = reload;
         this.query = query;
 
-        if (output == null) {
-            System.out.println("An output directory must be provided");
+        if (workdir == null) {
+            System.out.println("An work directory must be provided using '--workdir <workdir>'");
 
             return;
         }
 
-        if (!output.endsWith("/")){
-            output += "/";
+        if (!workdir.endsWith("/")){
+            workdir += "/";
         }
-		this.workdir = new File(output);
+		this.workdir = new File(workdir);
         if (!this.workdir.isDirectory()) {
             System.out.println(".: Creating working directory '" + this.workdir.getName() + "/'");
             this.workdir.mkdirs();
@@ -621,10 +621,10 @@ public class Controller {
                     within.link_within(Person.Gender.MALE, true); // true = close stream
                 }
             } else {
-				LOG.logError(process.toString(), "Error in creating the three sub output directories");
+				LOG.logError(process.toString(), "Error in creating the three sub workdir directories");
 			}
 		} else {
-			LOG.logError(process.toString(), "Error in creating the main output directory");
+			LOG.logError(process.toString(), "Error in creating the main work directory");
 		}
 	}
 
@@ -645,10 +645,10 @@ public class Controller {
 
                 between.link_between();
             } else {
-				LOG.logError(process.toString(), "Error in creating the three sub output directories");
+				LOG.logError(process.toString(), "Error in creating the three sub work directories");
 			}
 		} else {
-			LOG.logError(process.toString(), "Error in creating the main output directory");
+			LOG.logError(process.toString(), "Error in creating the main work directory");
 		}
 	}
 
@@ -664,7 +664,7 @@ public class Controller {
 
                 closure.computeClosure();
 			} else {
-				LOG.logError("Closure", "Error in creating the main output directory");
+				LOG.logError("Closure", "Error in creating the main work directory");
 			}
 		}
 	}

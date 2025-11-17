@@ -18,52 +18,73 @@ public class App {
                    namespaceDefault = "_:";
 
 
-	@Parameter(names = "--function")
+	@Parameter(names = {"-f", "--function"}, required=false,
+               description="""One of the functionalities listed below or all functions in sequence if omitted.
+
+                              FUNCTIONS:
+                              - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates
+                              - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates
+                              - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
+                              - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates
+                              - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates
+                              - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates
+                           """)
 	String function = null;
 
-	@Parameter(names = "--input")
+	@Parameter(names = {"-i", "--input"}, required=false,
+               description="Comma-separated path(s) to one or more RDF graphs, or a web address to a SPARQL endpoint.")
 	String input = null;
 
-	@Parameter(names = "--output")
-	String output = null;
+	@Parameter(names = {"-wd", "--workdir"}, required=true,
+               description="Path of the directory for storing intermediate and final results.")
+	String workdir = null;
 
-    @Parameter(names = "--model")
+    @Parameter(names = {"-m", "--model"}, required=false,
+               description="Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to " + modelDefault + ".")
     String model = modelDefault;
 
-    @Parameter(names = "--namespace")
+    @Parameter(names = {"-ns", "--namespace"}, required=false,
+               description="Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.")
     String namespace = namespaceDefault;
 
-    @Parameter(names = "--ruleset")
+    @Parameter(names = {"-rs", "--ruleset"}, required=false,
+               description="Path to a rule set definition (YAML) or its filename (shorthand). Defaults to " + rulesetDefault + ".")
     String ruleset = rulesetDefault;
 
-    @Parameter(names = "--reload")
+    @Parameter(names = "--reload", required=false,
+               description="Reload RDF data from graph(s) instead of reusing an existing RDF store.")
     boolean reload = false;
 
-	@Parameter(names = "--maxLev")
+	@Parameter(names = "--maxLev", required=false,
+               description="Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link. Defaults to 4.")
 	int maxLev = 4;
 
-	@Parameter(names = "--fixedLev")
+	@Parameter(names = "--fixedLev", required=false,
+               description="Disable automatic adjustment of maximum Levenshtein distance to string length")
 	boolean fixedLev = false;
 
-	@Parameter(names = "--ignoreDate")
+	@Parameter(names = "--ignoreDate", required=false,
+               description"Disable temporal validation checks between candidate links.")
 	boolean ignoreDate = false;
 
-	@Parameter(names = "--ignoreBlock")
+	@Parameter(names = "--ignoreBlock", required=false)
 	boolean ignoreBlock = false;
 
-	@Parameter(names = "--singleInd")
+	@Parameter(names = "--singleInd", required=false,
+               description="Link individuals by their names only.")
 	boolean singleInd = false;
 
-	@Parameter(names = "--format")
+	@Parameter(names = "--format", required=false)
 	String format = "CSV"; // or "RDF"
 
-    @Parameter(names = "--query")
+    @Parameter(names = "--query", required=false,
+               description="Execute a custom SPARQL query on the RDF store and print the results.")
     String query = null;
 
-	@Parameter(names = "--help", help = true)
+	@Parameter(names = {"-h", "--help", required=false}, help = true)
 	boolean help;
 
-	@Parameter(names = "--debug")
+	@Parameter(names = "--debug", required=false)
 	String debug = "error";
 
 
@@ -104,7 +125,7 @@ public class App {
 				Configurator.setRootLevel(Level.DEBUG);
 			}
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
-                                              ignoreBlock, singleInd, input, output,
+                                              ignoreBlock, singleInd, input, workdir,
                                               format, model, ruleset, namespace, query,
                                               reload);
 			cntrl.runProgram();
@@ -113,16 +134,17 @@ public class App {
 			String formatting =  "%-18s %15s %n";
 
 			System.out.println("Parameters that can be provided as input to the linking tool:");
-			System.out.printf(formatting, "--input:", "(optional) Comma-separated path to one or more RDF graphs, or a web address to a SPARQL endpoint.");
-			System.out.printf(formatting, "--output:", "(required) Path of the directory for saving the indices and the detected links");
-			System.out.printf(formatting, "--function:", "(optional) One of the functionalities listed below, or all functions in sequence if omitted.");
-			System.out.printf(formatting, "--model:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
-            System.out.printf(formatting, "--ruleSet:", "(optional) Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.");
-			System.out.printf(formatting, "--namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
+			System.out.printf(formatting, "-i, --input:", "(optional) Comma-separated path to one or more RDF graphs, or a web address to a SPARQL endpoint.");
+			System.out.printf(formatting, "-wd, --workdir:", "(required) Path of the directory for storing intermediate and final results.");
+			System.out.printf(formatting, "-f, --function:", "(optional) One of the functionalities listed below, or all functions in sequence if omitted.");
+			System.out.printf(formatting, "-m, --model:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
+            System.out.printf(formatting, "-rs, --ruleSet:", "(optional) Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.");
+			System.out.printf(formatting, "-ns, --namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
 			System.out.printf(formatting, "--maxLev:", "(optional, default = 4) Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link");
 			System.out.printf(formatting, "--fixedLev:", "(optional, default = False) Add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths");
 			System.out.printf(formatting, "--format:", "(optional, default = CSV) One of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates");
 			System.out.printf(formatting, "--reload:", "(optional) Reload RDF data from graph(s) instead of reusing an existing RDF store.");
+			System.out.printf(formatting, "--query:", "(optional) Execute a custom SPARQL query on the RDF store and print the results.");
 			System.out.printf(formatting, "--debug:", "(optional, default = error) One of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)");
 			System.out.println("\n");
 
