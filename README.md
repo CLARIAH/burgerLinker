@@ -34,7 +34,7 @@
 
 **To run BurgerLinker (all processes):**
 
-    java -jar target/burgerlinker-0.8.0-uber.jar --input person_c-civ.nt --output civ/  --maxLev 1 --fixedLev
+    java -jar target/burgerlinker-0.8.0-uber.jar --input person_c-civ.nt --workdir civ/  --maxLev 1 --fixedLev
 
 ---
 
