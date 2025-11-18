@@ -33,6 +33,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.explanation.Explanation;
 
 import nl.knaw.iisg.burgerlinker.structs.Person;
 import nl.knaw.iisg.burgerlinker.utilities.ActivityIndicator;
@@ -50,6 +51,7 @@ public class MyRDF {
     // temporary on-disk triple store
     private Repository store;
     private RepositoryConnection conn;
+    private boolean debug = false;
 
     public static final Logger lg = LogManager.getLogger(MyRDF.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -57,7 +59,8 @@ public class MyRDF {
 
     public MyRDF(File dataDir) {
         try{
-            store = new SailRepository(new NativeStore(dataDir));
+            String indexes = "spoc,posc,opsc";
+            store = new SailRepository(new NativeStore(dataDir, indexes));
             conn = store.getConnection();
         } catch (Exception e) {
             e.printStackTrace();
@@ -181,6 +184,12 @@ public class MyRDF {
     public List<BindingSet> getQueryResultsAsList(String query) {
         List<BindingSet> out = null;
         TupleQuery tupleQuery = conn.prepareTupleQuery(query);
+
+        if (debug) {
+            String explanation = tupleQuery.explain(Explanation.Level.Timed).toString();
+            LOG.outputConsole(explanation);
+        }
+
         try (TupleQueryResult result = tupleQuery.evaluate()) {
             out = QueryResults.asList(result);
         }
@@ -194,6 +203,11 @@ public class MyRDF {
         for (String key: bindings.keySet()) {
             Value value = bindings.get(key);
             tupleQuery.setBinding(key, value);
+        }
+
+        if (debug) {
+            String explanation = tupleQuery.explain(Explanation.Level.Timed).toString();
+            LOG.outputConsole(explanation);
         }
 
         try (TupleQueryResult result = tupleQuery.evaluate()) {
@@ -227,6 +241,11 @@ public class MyRDF {
             return null;
         }
 
+        if (debug) {
+            String explanation = tupleQuery.explain(Explanation.Level.Timed).toString();
+            LOG.outputConsole(explanation);
+        }
+
         return tupleQuery.evaluate();
     }
 
@@ -240,6 +259,11 @@ public class MyRDF {
         for (String key: bindings.keySet()) {
             Value value = bindings.get(key);
             tupleQuery.setBinding(key, value);
+        }
+
+        if (debug) {
+            String explanation = tupleQuery.explain(Explanation.Level.Timed).toString();
+            LOG.outputConsole(explanation);
         }
 
         return tupleQuery.evaluate();
@@ -387,5 +411,9 @@ public class MyRDF {
         }
 
         return q;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }

@@ -13,22 +13,23 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 public class App {
     // default arguments
-    private String modelDefault = "CIV",  // use shorthand
-                   rulesetDefault = "default",  // use shorthand
-                   namespaceDefault = "_:";
+    private final String modelDefault = "CIV",  // use shorthand
+                  rulesetDefault = "default",  // use shorthand
+                  namespaceDefault = "_:";
 
 
 	@Parameter(names = {"-f", "--function"}, required=false,
-               description="""One of the functionalities listed below or all functions in sequence if omitted.
+               description = """
+               One of the functionalities listed below or all functions in sequence if omitted.
 
-                              FUNCTIONS:
-                              - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates
-                              - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates
-                              - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
-                              - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates
-                              - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates
-                              - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates
-                           """)
+               FUNCTIONS:
+               - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates
+               - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates
+               - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
+               - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates
+               - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates
+               - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates
+                """)
 	String function = null;
 
 	@Parameter(names = {"-i", "--input"}, required=false,
@@ -64,7 +65,7 @@ public class App {
 	boolean fixedLev = false;
 
 	@Parameter(names = "--ignoreDate", required=false,
-               description"Disable temporal validation checks between candidate links.")
+               description="Disable temporal validation checks between candidate links.")
 	boolean ignoreDate = false;
 
 	@Parameter(names = "--ignoreBlock", required=false)
@@ -81,11 +82,12 @@ public class App {
                description="Execute a custom SPARQL query on the RDF store and print the results.")
     String query = null;
 
-	@Parameter(names = {"-h", "--help", required=false}, help = true)
+	@Parameter(names = {"-h", "--help"}, required=false, help = true)
 	boolean help;
 
-	@Parameter(names = "--debug", required=false)
-	String debug = "error";
+	@Parameter(names = "--debug", required=false,
+               description = "Enable debug messages.")
+	boolean debug = false;
 
 
 	public static final Logger lg = LogManager.getLogger(App.class);
@@ -105,29 +107,17 @@ public class App {
 		LOG.outputConsole(".: Documentation is available at www.github.com/CLARIAH/burgerLinker");
 		long startTime = System.currentTimeMillis();
 
-
-	//	// BasicConfigurator.configure();
-	//	ClassLoader.getSystemResource("/res/log4j.properties");
-
-	//	// default option is to show only errors
-	//	Configurator.setRootLevel(Level.ERROR);
-	//	Configurator.setAllLevels("com.github.liblevenshtein", Level.OFF);
-	//	Configurator.setAllLevels("com.github.liblevenshtein.transducer.factory.TransducerBuilder", Level.OFF);
-
-
+		Configurator.setRootLevel(Level.ERROR);
 		if(help == false) {
-			// show only error and warning logs if user enters: --debug warn
-			if(debug.equals("warn")) {
-				Configurator.setRootLevel(Level.ERROR);
-			}
-			// show all type of logs if user enters: --debug all
-			if(debug.equals("all")) {
+			// show all type of logs
+			if (debug) {
 				Configurator.setRootLevel(Level.DEBUG);
 			}
+
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
                                               ignoreBlock, singleInd, input, workdir,
                                               format, model, ruleset, namespace, query,
-                                              reload);
+                                              reload, debug);
 			cntrl.runProgram();
 		} else {
 			// do not run program and show some help message if user enter: --help

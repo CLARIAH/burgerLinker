@@ -69,7 +69,6 @@ BIRTHS: >
 # events, including information about the
 # deceased, its partner, and its parents.
 DEATHS: >
-  PREFIX bio: <http://purl.org/vocab/bio/0.1/>
   PREFIX picom: <https://personsincontext.org/model#>
   PREFIX picot: <https://terms.personsincontext.org/>
   PREFIX pnv: <https://w3id.org/pnv#>
@@ -116,7 +115,6 @@ DEATHS: >
 # events, including information about the
 # bride and groom, and of both their parents.
 MARRIAGES: >  
-  PREFIX bio: <http://purl.org/vocab/bio/0.1/>
   PREFIX picom: <https://personsincontext.org/model#>
   PREFIX picot: <https://terms.personsincontext.org/>
   PREFIX pnv: <https://w3id.org/pnv#>
@@ -125,7 +123,7 @@ MARRIAGES: >
 
   SELECT *
   WHERE {
-    ?event sdo:additionalType picot:sourcetypes/552 ;
+    ?event sdo:additionalType picot:sourcetypes\/552 ;
            sdo:dateCreated ?eventDate ;
            sdo:identifier ?eventID .
     OPTIONAL { ?brideID prov:hadPrimarySource ?event ;

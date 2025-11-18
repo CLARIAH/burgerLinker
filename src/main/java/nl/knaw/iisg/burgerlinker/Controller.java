@@ -55,7 +55,7 @@ public class Controller {
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
                     singleInd = false, outputFormatCSV = true, doubleInputs = false,
-                    reload;
+                    reload = false, debug = false;
     private Map<String, String> dataModel;
     private File workdir;
     private MyRDF myRDF;
@@ -68,7 +68,7 @@ public class Controller {
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
                       String input, String workdir, String outputFormat,
                       String dataModelPath, String ruleset, String namespace,
-                      String query, boolean reload) {
+                      String query, boolean reload, boolean debug) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -78,6 +78,7 @@ public class Controller {
 		this.input = input;
         this.reload = reload;
         this.query = query;
+        this.debug = debug;
 
         if (workdir == null) {
             System.out.println("An work directory must be provided using '--workdir <workdir>'");
@@ -510,6 +511,7 @@ public class Controller {
         if (input != null && input.startsWith("http")) {
             LOG.outputConsole(".: SPARQL Endpoint Provided. Preparing for remote query execution.");
             myRDF = new MyRDF(input);
+            myRDF.setDebug(debug);
 
             return true;
         }
@@ -523,6 +525,7 @@ public class Controller {
 
             // load data from existing store
             myRDF = new MyRDF(dir);
+            myRDF.setDebug(debug);
 
             spinner.terminate();
             try {
@@ -547,6 +550,7 @@ public class Controller {
                 dir.delete();
 
                 myRDF = new MyRDF(dir);
+                myRDF.setDebug(debug);
                 return myRDF.parse(paths);
             }
         }
@@ -554,6 +558,7 @@ public class Controller {
         LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
         LOG.outputConsole(".: NOTE: Parsing a new dataset for the first time might take a while.");
         myRDF = new MyRDF(dir);
+        myRDF.setDebug(debug);
         return myRDF.parse(paths);
     }
 
