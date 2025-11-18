@@ -10,15 +10,15 @@
 
 **2. Go to the source directory**
 
-    $ cd burgerLinker/
+    cd burgerLinker/
 
 **3. Compile the code and create a `jar` file**
 
-    $ mvn package
+    mvn package
 
 **4. Run BurgerLinker (the jar file is stored in the `target` directory)**
 
-    $ java -jar target/burgerlinker-0.8.0-uber.jar --help
+    java -jar target/burgerlinker-0.8.0-uber.jar --help
 
 **To make your data suitable for use by this version of BurgerLinker:**
 
@@ -26,15 +26,15 @@
 
 **2. Install pyRDF (optionally in a python virtual environment)**
 
-    $ pip install pyRDF
+    pip install pyRDF
 
 **3. Convert the LINKS dataset and pipe the output to a file**
 
-    $ python assets/csv-to-rdf/csv_to_civ.py person_c.csv > person_c-civ.nt
+    python assets/csv-to-rdf/csv_to_civ.py person_c.csv > person_c-civ.nt
 
 **To run BurgerLinker (all processes):**
 
-    $ java -jar target/burgerlinker-0.8.0-uber.jar --input person_c-civ.nt --output civ/  --maxLev 1 --fixedLev
+    java -jar target/burgerlinker-0.8.0-uber.jar --input person_c-civ.nt --output civ/  --maxLev 1 --fixedLev
 
 ---
 
