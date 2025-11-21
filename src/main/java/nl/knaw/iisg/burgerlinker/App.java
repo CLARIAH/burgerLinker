@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterDescription;
 
 import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
@@ -19,74 +20,74 @@ public class App {
 
 
 	@Parameter(names = {"-f", "--function"}, required=false,
-               description = """
-               One of the functionalities listed below or all functions in sequence if omitted.
-
-               FUNCTIONS:
-               - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates
-               - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates
-               - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
-               - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates
-               - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates
-               - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates
-                """)
+               description = "One of the functionalities listed below or all functions in sequence if omitted.\n"
+                           + "\t  FUNCTIONS:\n"
+                           + "\t  - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates\n"
+                           + "\t  - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates\n"
+                           + "\t  - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates\n"
+                           + "\t  - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates\n"
+                           + "\t  - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates\n"
+                           + "\t  - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates")
 	String function = null;
 
 	@Parameter(names = {"-i", "--input"}, required=false,
-               description="Comma-separated path(s) to one or more RDF graphs, or a web address to a SPARQL endpoint.")
+               description="[OPTIONAL] Comma-separated path(s) to one or more RDF graphs, or a web address to a SPARQL endpoint.")
 	String input = null;
 
 	@Parameter(names = {"-wd", "--workdir"}, required=true,
-               description="Path of the directory for storing intermediate and final results.")
+               description="[REQUIRED] Path of the directory for storing intermediate and final results.")
 	String workdir = null;
 
     @Parameter(names = {"-m", "--model"}, required=false,
-               description="Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to " + modelDefault + ".")
+               description="[OPTIONAL] Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to " + modelDefault + ".")
     String model = modelDefault;
 
     @Parameter(names = {"-ns", "--namespace"}, required=false,
-               description="Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.")
+               description="[OPTIONAL] Namespace to use for reconstructed individuals. Defaults to blank nodes: '" + namespaceDefault +"'.")
     String namespace = namespaceDefault;
 
     @Parameter(names = {"-rs", "--ruleset"}, required=false,
-               description="Path to a rule set definition (YAML) or its filename (shorthand). Defaults to " + rulesetDefault + ".")
+               description="[OPTIONAL] Path to a rule set definition (YAML) or its filename (shorthand). Defaults to " + rulesetDefault + ".")
     String ruleset = rulesetDefault;
 
     @Parameter(names = "--reload", required=false,
-               description="Reload RDF data from graph(s) instead of reusing an existing RDF store.")
+               description="[OPTIONAL] Reload RDF data from graph(s) instead of reusing an existing RDF store.")
     boolean reload = false;
 
-	@Parameter(names = "--maxLev", required=false,
-               description="Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link. Defaults to 4.")
+	@Parameter(names = "--max-lev", required=false,
+               description="[OPTIONAL] Integer between 0 and 4 (default) indicating the maximum Levenshtein distance per first or last name allowed for accepting a link.")
 	int maxLev = 4;
 
-	@Parameter(names = "--fixedLev", required=false,
-               description="Disable automatic adjustment of maximum Levenshtein distance to string length")
+	@Parameter(names = "--fixed-lev", required=false,
+               description="[OPTIONAL] Disable automatic adjustment of maximum Levenshtein distance to string length.")
 	boolean fixedLev = false;
 
-	@Parameter(names = "--ignoreDate", required=false,
-               description="Disable temporal validation checks between candidate links.")
+	@Parameter(names = "--ignore-date", required=false,
+               description="[OPTIONAL] Disable temporal validation checks between candidate links.")
 	boolean ignoreDate = false;
 
-	@Parameter(names = "--ignoreBlock", required=false)
+	@Parameter(names = "--ignore-block", required=false,
+               description="[OPTIONAL] Disable filtering on first letter of family name prior to lexical comparison.")
 	boolean ignoreBlock = false;
 
-	@Parameter(names = "--singleInd", required=false,
-               description="Link individuals by their names only.")
+	@Parameter(names = "--ignore-relations", required=false,
+               description="[OPTIONAL] Disable lexical comparison of related individuals (eg, parents of subject).")
 	boolean singleInd = false;
 
-	@Parameter(names = "--format", required=false)
+	@Parameter(names = "--format", required=false,
+               description="[OPTIONAL] Store the intermediate results as CSV (default) or RDF")
 	String format = "CSV"; // or "RDF"
 
     @Parameter(names = "--query", required=false,
-               description="Execute a custom SPARQL query on the RDF store and print the results.")
+               description="[OPTIONAL] Execute a custom SPARQL query on the RDF store and print the results.")
     String query = null;
 
-	@Parameter(names = {"-h", "--help"}, required=false, help = true)
+	@Parameter(names = {"-h", "--help"}, required=false, help = true,
+               description="[OPTIONAL] Print this help and exit.")
 	boolean help;
 
 	@Parameter(names = "--debug", required=false,
-               description = "Enable debug messages.")
+               description = "[OPTIONAL] Enable debug messages.")
 	boolean debug = false;
 
 
@@ -95,20 +96,25 @@ public class App {
 
 	public static void main(String[] argv) {
 		App main = new App();
-		JCommander.newBuilder()
-		.addObject(main)
-		.build()
-		.parse(argv);
-		main.run();
+		JCommander jc = JCommander.newBuilder().addObject(main).build();
+		jc.parse(argv);
+		main.run(jc);
 	}
 
-	public void run() {
-		LOG.outputConsole(".: Welcome to BurgerLinker");
-		LOG.outputConsole(".: Documentation is available at www.github.com/CLARIAH/burgerLinker");
-		long startTime = System.currentTimeMillis();
-
+	public void run(JCommander jc) {
 		Configurator.setRootLevel(Level.ERROR);
-		if(help == false) {
+        if (help) {
+            LOG.outputConsole("USAGE  : java -jar burgerlinker<VERSION>.jar [OPTIONS]");
+            LOG.outputConsole("OPTIONS:");
+            for (ParameterDescription param: jc.getParameters()) {
+                LOG.outputConsole("\t" + param.getNames());
+                LOG.outputConsole("\t  " + param.getDescription());
+            }
+            LOG.outputConsole("WWW    : www.github.com/CLARIAH/burgerLinker");
+        } else {
+            LOG.outputConsole(".: Welcome to BurgerLinker");
+            LOG.outputConsole(".: Documentation is available at www.github.com/CLARIAH/burgerLinker");
+
 			// show all type of logs
 			if (debug) {
 				Configurator.setRootLevel(Level.DEBUG);
@@ -119,60 +125,6 @@ public class App {
                                               format, model, ruleset, namespace, query,
                                               reload, debug);
 			cntrl.runProgram();
-		} else {
-			// do not run program and show some help message if user enter: --help
-			String formatting =  "%-18s %15s %n";
-
-			System.out.println("Parameters that can be provided as input to the linking tool:");
-			System.out.printf(formatting, "-i, --input:", "(optional) Comma-separated path to one or more RDF graphs, or a web address to a SPARQL endpoint.");
-			System.out.printf(formatting, "-wd, --workdir:", "(required) Path of the directory for storing intermediate and final results.");
-			System.out.printf(formatting, "-f, --function:", "(optional) One of the functionalities listed below, or all functions in sequence if omitted.");
-			System.out.printf(formatting, "-m, --model:", "(optional) Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.");
-            System.out.printf(formatting, "-rs, --ruleSet:", "(optional) Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.");
-			System.out.printf(formatting, "-ns, --namespace:", "(optional) Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.");
-			System.out.printf(formatting, "--maxLev:", "(optional, default = 4) Integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link");
-			System.out.printf(formatting, "--fixedLev:", "(optional, default = False) Add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths");
-			System.out.printf(formatting, "--format:", "(optional, default = CSV) One of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates");
-			System.out.printf(formatting, "--reload:", "(optional) Reload RDF data from graph(s) instead of reusing an existing RDF store.");
-			System.out.printf(formatting, "--query:", "(optional) Execute a custom SPARQL query on the RDF store and print the results.");
-			System.out.printf(formatting, "--debug:", "(optional, default = error) One of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)");
-			System.out.println("\n");
-
-			System.out.println("Functionalities that are supported in the current version: (case insensitive)");
-			System.out.printf(formatting, "Within_B_M:", "Link newborns in Birth Certificates to brides/grooms in Marriage Certificates (reconstructs life course)");
-			System.out.printf(formatting, "Within_B_D:", "Link newborns in Birth Certificates to deceased individuals in Death Certificates (reconstructs life course)");
-			System.out.printf(formatting, "Between_B_M:", "Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
-			System.out.printf(formatting, "Between_B_D:", "Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates (reconstructs family ties)");
-			System.out.printf(formatting, "Between_M_M:", "Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
-			System.out.printf(formatting, "Between_D_M:", "Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates (reconstructs family ties)");
-			System.out.printf(formatting, "Closure:", "Compute the transitive closure of all detected links to get a unique identifier per individual");
-
-			System.out.println("\n");
-			System.out.println("------------------------");
-
-			System.out.println("Example 1. Linking parents of newborns to brides and grooms:");
-			System.out.println("--function Between_B_M --inputData data/myData.nq --output out/ --format CSV  --maxLev 3 --fixedLev");
-			System.out.println("\nThese arguments indicate that the user wants to:\n "
-					+ "\t \t [Between_B_M] link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates,\n "
-					+ "\t \t [data/myData.nq] described in the dataset myData.nq,\n "
-					+ "\t \t [.] save the detected links in the current directory,\n "
-					+ "\t \t [CSV] as a CSV file,\n "
-					+ "\t \t [3] allowing a maximum Levenshtein of 3 per name (first name or last name),\n "
-					+ "\t \t [fixedLev] independently from the length of the name.");
-
-			System.out.println("\n");
-			System.out.println("------------------------");
-
-			System.out.println("Example 2. Family Reconstruction:");
-			System.out.println("--function closure --inputData data/myDataPart1.nq,data/myDataPart2.nq --outputDir myResultsDirectory ");
-			System.out.println("\nThis command computes the transitive closure of all links existing in the directory myResultsDirectory, and generates a new finalDataset.nt.gz dataset in this directory "
-					+ "\n by replacing all matched individuals' identifiers from the input datasets with the same unique identifier)");
-
-			System.out.println("\n");
-			System.out.println("------------------------");
-
-
-			System.out.println("For further details, visit https://github.com/CLARIAH/burgerLinker");
 		}
 	}
 }
