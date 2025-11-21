@@ -59,8 +59,7 @@ public class MyRDF {
 
     public MyRDF(File dataDir) {
         try{
-            String indexes = "spoc,posc,opsc";
-            store = new SailRepository(new NativeStore(dataDir, indexes));
+            store = new SailRepository(new NativeStore(dataDir));
             conn = store.getConnection();
         } catch (Exception e) {
             e.printStackTrace();

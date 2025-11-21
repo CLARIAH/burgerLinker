@@ -11,10 +11,11 @@
 #                                               #
 #  The data model specified in this files is    #
 #  based upon the Persons in Context schema [1] #
+#  with person names modelled using PNV.        #
 #                                               #
 #  [1] https://personsincontext.org             #
 #                                               #
-#  Version: AUG 2025                            #
+#  Version: NOV 2025                            #
 #                                               #
 # ********************************************* #
 
@@ -37,12 +38,17 @@ BIRTHS: >
 
   SELECT DISTINCT *
   WHERE {
-    ?event sdo:additionalType picot:sourcetypes\/551 ;
-           sdo:dateCreated ?eventDate ;
-           sdo:identifier ?eventID .
-    ?newbornID prov:hadPrimarySource ?event ;
-               picom:hasRole picot:roles\/575 ;
-               sdo:identifier ?idNewborn .
+    {
+      SELECT DISTINCT *
+      WHERE {
+        ?event sdo:additionalType picot:sourcetypes\/551 ;
+               sdo:identifier ?eventID ;
+               sdo:dateCreated ?eventDate .
+        ?newbornID prov:hadPrimarySource ?event ;
+                   picom:hasRole picot:roles\/575 ;
+                   sdo:identifier ?idNewborn .
+        }
+    }
     OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
     OPTIONAL { ?newbornID picom:hasAge ?ageNewborn }
     OPTIONAL { ?newbornID sdo:additionalName ?nameNewborn .
@@ -81,12 +87,17 @@ DEATHS: >
 
   SELECT DISTINCT *
   WHERE {
-    ?event sdo:additionalType picot:sourcetypes\/553 ;
-           sdo:dateCreated ?eventDate ;
-           sdo:identifier ?eventID .
-    ?deceasedID prov:hadPrimarySource ?event ;
-                picom:hasRole picot:roles\/479 ;
-                sdo:identifier ?idDeceased .
+    {
+      SELECT DISTINCT *
+      WHERE {
+      ?event sdo:additionalType picot:sourcetypes\/553 ;
+             sdo:identifier ?eventID ;
+             sdo:dateCreated ?eventDate .
+      ?deceasedID prov:hadPrimarySource ?event ;
+                  picom:hasRole picot:roles\/479 ;
+                  sdo:identifier ?idDeceased .
+      }
+    }
     OPTIONAL { ?deceasedID sdo:gender ?genderDeceased }
     OPTIONAL { ?deceasedID picom:hasAge ?ageDeceased }
     OPTIONAL { ?deceasedID sdo:additionalName ?nameDeceased .
@@ -120,9 +131,6 @@ DEATHS: >
     }
   }
 
-# Return all information pertaining to marriage
-# events, including information about the
-# bride and groom, and of both their parents.
 MARRIAGES: >  
   PREFIX picom: <https://personsincontext.org/model#>
   PREFIX picot: <https://terms.personsincontext.org/>
@@ -132,31 +140,35 @@ MARRIAGES: >
 
   SELECT DISTINCT *
   WHERE {
-    ?event sdo:additionalType picot:sourcetypes\/552 ;
-           sdo:dateCreated ?eventDate ;
-           sdo:identifier ?eventID .
+    { 
+      SELECT DISTINCT *
+      WHERE {
+        ?event sdo:additionalType picot:sourcetypes\/552 ;
+               sdo:identifier ?eventID .
+        ?event sdo:dateCreated ?eventDate .
+       
+        ?brideID prov:hadPrimarySource ?event ;
+                 picom:hasRole picot:roles\/574 ;
+                 sdo:gender ?genderBride .
+        FILTER(?genderBride = sdo:Female)
+        ?brideID sdo:identifier ?idBride ;
+                 sdo:additionalName ?nameBride .
+        ?nameBride pnv:givenName ?givenNameBride ;
+                   pnv:baseSurname ?familyNameBride .
 
-    ?brideID prov:hadPrimarySource ?event ;
-             picom:hasRole picot:roles\/574 ;
-             sdo:gender ?genderBride .
-             FILTER(?genderBride = sdo:Female)
-    ?brideID sdo:identifier ?idBride ;
-             sdo:additionalName ?nameBride .
-    ?nameBride pnv:givenName ?givenNameBride ;
-               pnv:baseSurname ?familyNameBride .
-    OPTIONAL { ?brideID picom:hasAge ?ageBride }
-
-    ?brideID sdo:spouse ?groomID .
-    ?groomID prov:hadPrimarySource ?event ;
-             picom:hasRole picot:roles\/574 ;
-             sdo:gender ?genderGroom .
-    FILTER(?genderGroom = sdo:Male)
-    ?groomID sdo:identifier ?idGroom ;
-             sdo:additionalName ?nameGroom .
-    ?nameGroom pnv:givenName ?givenNameGroom ;
-               pnv:baseSurname ?familyNameGroom .
-    OPTIONAL { ?groomID picom:hasAge ?ageGroom }
-
+        ?brideID sdo:spouse ?groomID .
+        ?groomID prov:hadPrimarySource ?event ;
+                 picom:hasRole picot:roles\/574 ;
+                 sdo:gender ?genderGroom .
+        FILTER(?genderGroom = sdo:Male)
+        ?groomID sdo:identifier ?idGroom ;
+                 sdo:additionalName ?nameGroom .
+        ?nameGroom pnv:givenName ?givenNameGroom ;
+                   pnv:baseSurname ?familyNameGroom .
+        }
+      }
+    OPTIONAL { FILTER(BOUND(?brideID)) ?brideID picom:hasAge ?ageBride }
+    OPTIONAL { FILTER(BOUND(?groomID)) ?groomID picom:hasAge ?ageGroom }
     OPTIONAL { ?brideID sdo:parent ?fatherBrideID .
                ?fatherBrideID prov:hadPrimarySource ?event ;
                               sdo:gender ?genderBrideFather .
@@ -198,5 +210,4 @@ MARRIAGES: >
                OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID picom:hasAge ?ageGroomMother }
     }
   }
-
 ...  # EOF

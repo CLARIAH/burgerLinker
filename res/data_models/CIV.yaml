@@ -34,12 +34,17 @@ BIRTHS: >
   PREFIX civ: <https://iisg.amsterdam/id/civ/>
   PREFIX sdo: <https://schema.org/>
 
-  SELECT *
+  SELECT DISTINCT *
   WHERE {
-  ?event civ:newborn ?newbornID ;
-         civ:eventDate ?eventDate ;
-         civ:registrationID ?eventID .
-  ?newbornID civ:personID ?idNewborn .
+    {
+      SELECT DISTINCT *
+      WHERE {
+              ?event civ:registrationID ?eventID ;
+                     civ:newborn ?newbornID ;
+                     civ:eventDate ?eventDate .
+              ?newbornID civ:personID ?idNewborn .
+      }
+    }
   OPTIONAL { ?newbornID sdo:givenName ?givenNameNewborn }
   OPTIONAL { ?newbornID sdo:familyName ?familyNameNewborn }
   OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
@@ -67,12 +72,17 @@ DEATHS: >
   PREFIX civ: <https://iisg.amsterdam/id/civ/>
   PREFIX sdo: <https://schema.org/>
 
-  SELECT *
+  SELECT DISTINCT *
   WHERE {
-  ?event civ:deceased ?deceasedID ;
-         civ:eventDate ?eventDate ;
-         civ:registrationID ?eventID .
-  ?deceasedID civ:personID ?idDeceased .
+    {
+      SELECT DISTINCT *
+      WHERE {
+              ?event civ:registrationID ?eventID ;
+                     civ:deceased ?deceasedID ;
+                     civ:eventDate ?eventDate .                    
+             ?deceasedID civ:personID ?idDeceased .
+      }
+    }
   OPTIONAL { ?deceasedID sdo:givenName ?givenNameDeceased }
   OPTIONAL { ?deceasedID sdo:familyName ?familyNameDeceased }
   OPTIONAL { ?deceasedID sdo:gender ?genderDeceased }
@@ -106,19 +116,24 @@ MARRIAGES: >
   PREFIX civ: <https://iisg.amsterdam/id/civ/>
   PREFIX sdo: <https://schema.org/>
 
-  SELECT *
+  SELECT DISTINCT *
   WHERE {
-  ?event civ:eventDate ?eventDate ;
-         civ:registrationID ?eventID .
-  OPTIONAL { ?event civ:bride ?brideID .
-             ?brideID civ:personID ?idBride ;
+    {
+      SELECT DISTINCT *
+      WHERE {
+              ?event civ:registrationID ?eventID ;
+                     civ:eventDate ?eventDate ;
+                     civ:bride ?brideID ;
+                     civ:groom ?groomID .
+      }
+    }
+  OPTIONAL { ?brideID civ:personID ?idBride ;
                       sdo:givenName ?givenNameBride ;
                       sdo:familyName ?familyNameBride .
              OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:gender ?genderBride }
              OPTIONAL { FILTER(BOUND(?brideID)) ?brideID civ:age ?ageBride }
            }
-  OPTIONAL { ?event civ:groom ?groomID .
-             ?groomID civ:personID ?idGroom ;
+  OPTIONAL { ?groomID civ:personID ?idGroom ;
                       sdo:givenName ?givenNameGroom ;
                       sdo:familyName ?familyNameGroom .
              OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:gender ?genderGroom }
