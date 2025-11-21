@@ -42,15 +42,15 @@ or, to use PiCo
 
 When using CIV
 
-    java -jar target/burgerlinker-0.8.0-uber.jar --model CIV --input person_c-civ.nt --workdir civ/  --maxLev 1 --fixedLev
+    java -jar target/burgerlinker-0.8.0-uber.jar --model CIV --input person_c-civ.nt --workdir civ/  --max-lev 1 --fixed-lev
 
 or, when using PiCo base
 
-    java -jar target/burgerlinker-0.8.0-uber.jar --model PiCo-SDO --input person_c-pico.nt --workdir pico/  --maxLev 1 --fixedLev
+    java -jar target/burgerlinker-0.8.0-uber.jar --model PiCo-SDO --input person_c-pico.nt --workdir pico/  --max-lev 1 --fixed-lev
 
 or, when using PiCo PNV
 
-    java -jar target/burgerlinker-0.8.0-uber.jar --model PiCo-PNV --input person_c-pico.nt --workdir pico/  --maxLev 1 --fixedLev
+    java -jar target/burgerlinker-0.8.0-uber.jar --model PiCo-PNV --input person_c-pico.nt --workdir pico/  --max-lev 1 --fixed-lev
 
 ---
 
