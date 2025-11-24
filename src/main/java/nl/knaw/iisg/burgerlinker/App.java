@@ -14,7 +14,7 @@ import nl.knaw.iisg.burgerlinker.utilities.LoggingUtilities;
 
 public class App {
     // default arguments
-    private final String modelDefault = "CIV",  // use shorthand
+    private final String modelDefault = "PiCo-SDO",  // use shorthand
                   rulesetDefault = "default",  // use shorthand
                   namespaceDefault = "_:";
 

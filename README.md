@@ -1,4 +1,4 @@
-## **burgerLinker -** Civil Registries Linking Tool
+# **burgerLinker -** Civil Registries Linking Tool
 
 **This branch is undergoing active development. The instructions in this README might therefore not apply to the latest commits to this branch.**
 
@@ -54,67 +54,130 @@ or, when using PiCo PNV
 
 ---
 
-Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki) or via the [burgerLinker lecture](https://vimeo.com/573950112). Also see the paper on the [application of burgerLinker](https://hlcs.nl/article/view/14685/16325) in academia (LINKS).
+BurgerLinker is a tool for linking civil registry data by matching individuals
+across life events. Matches are made by lexical comparison of person names
+(using dynamic Levenshtein distance) while also taking into account that of a
+person's parents, partner, or spouse. Temporal information (e.g. event dates
+and person age) and domain knowledge (expert rules) are used to further improve
+results. 
 
+BurgerLinker is designed to work on datasets that are modelled using the
+Resource Description Framework (RDF) in which data are stored as *statements*
+of three elements: *subject*, *predicate*, and *object*. These three elements
+are given as International Resource Identifiers (IRI) or, in the case of the
+*object*, as a raw value called a literal with an optional datatype or language
+tag. Datasets of this form are also called Linked Data.
 
-### Purpose
-This tool is being developed to improve and replace the current [LINKS](https://iisg.amsterdam/en/hsn/projects/links) software. Points of improvement are:
-- extremely fast and scalable matching procedure (using Levenshtein automaton and HDT);
-- searches candidate matches based on main individuals and relations, or if need be, allows for matching of the main individual only. (Thus the focus is on finding candidate matches (recall), not the quality of possible matches (precision), that is being developed via another CLARIAH tool);
-- when matching two individuals with multiple first names, at least two names need to be similar in order to find a candidate match; when matching individuals with multiple first names to individuals with only one first name any first name that is identical results in a match(!);
-- blocking is not required (i.e. all candidate records can be considered for matching, with no restrictions on their registration date or location, and no requirements on blocking parts of their individual names);
-- candidate matches contain detailed metadata on why they are suggested, and can be saved in different formats (CSV and RDF are covered in the current version);
-- allows family and life course reconstruction (by computing the transitive closure over all detected links);
+## Use Case
+
+Historians use archival records to describe persons' lives. Each record (e.g. a
+marriage record) just describes a point in time. Hence historians try to link
+multiple records on the same person to describe a life course. This tool
+focuses on "just" the linkage of civil records. By doing so, pedigrees of
+humans can be created over multiple generations for research on social
+inequality, especially in the part of health sciences where the focus is on
+gene-social contact interactions.
+
+BurgerLinker is being developed to improve and replace the current
+[LINKS](https://iisg.amsterdam/en/hsn/projects/links) software. Points of
+improvement are:
+- extremely fast and scalable matching procedure (using Levenshtein automaton);
+- searches candidate matches based on main individuals and relations, or if
+  need be, allows for matching of the main individual only. (Thus the focus is
+  on finding candidate matches (recall), not the quality of possible matches
+  (precision), that is being developed via another CLARIAH tool);
+- when matching two individuals with multiple first names, at least two names
+  need to be similar in order to find a candidate match; when matching
+  individuals with multiple first names to individuals with only one first name
+  any first name that is identical results in a match(!);
+- blocking is not required (i.e. all candidate records can be considered for
+  matching, with no restrictions on their registration date or location, and no
+  requirements on blocking parts of their individual names);
+- candidate matches contain detailed metadata on why they are suggested, and
+  can be saved in different formats (CSV and RDF are covered in the current
+  version);
+- allows family and life course reconstruction (by computing the transitive
+  closure over all detected links);
 - open software.
 
-To download the latest version of the tool click [releases](https://github.com/CLARIAH/burgerLinker/releases) on the right of the screen.
-
-### Use case
-Historians use archival records to describe persons' lives. Each record (e.g. a marriage record) just describes a point in time. Hence historians try to link multiple records on the same person to describe a life course. This tool focuses on "just" the linkage of civil records. By doing so, pedigrees of humans can be created over multiple generations for research on social inequality, especially in the part of health sciences where the focus is on gene-social contact interactions.
-
-### User profile
-The software is designed for the so called "digital historians" (e.g. humanities scholars with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
-
-### Data
-In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to the [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) or [Civil Registries schema](assets/CIV.ttl) data model. A custom data model can also be used by modifying the queries located in the `res/data_models` directory.
+To download the latest version of the tool click
+[releases](https://github.com/CLARIAH/burgerLinker/releases) on the right of
+the screen.
 
 ### Previous work
-So far, (Dutch) civil records have been linked by bespoke programming by researchers, sometimes supported by engineers. Specifically the IISG-LINKS program has a pipeline to link these records and provide them to the Central Bureau of Genealogy (CBG). Because the number of records has grown over time and the IISG-LINKS takes an enormous amount of time (weeks) to LINK all records currently present, *burgerLinker* is designed to do this much faster (full sample takes less than 48 hours).
 
-The Golden Agents project has brought about [Lenticular Lenses](https://www.goldenagents.org/tools/lenticular-lenses/) a tool designed to link persons across sources of various nature. We have engaged with the Lenticular Lenses team on multiple occasions (a demo-presentation, two person-vocabulary workshops, and a specific between-teams-workshop). From those meetings we have adopted the [ROAR vocabulary](https://leonvanwissen.nl/vocab/roar/docs/) for work in CLARIAH-WP4. On the specific *burgerLinker* and lenticular lenses tool, however we found that the prerequisite in Lenticular Lenses to allow for heterogenous sources, conflicted with the *burgerLinker* prerequisite to be fast: one reason for it to be fast is the limited set of sources that *burgerLinker* allows for.
+So far, (Dutch) civil records have been linked by bespoke programming by
+researchers, sometimes supported by engineers. Specifically the IISG-LINKS
+program has a pipeline to link these records and provide them to the Central
+Bureau of Genealogy (CBG). Because the number of records has grown over time
+and the IISG-LINKS takes an enormous amount of time (weeks) to LINK all records
+currently present, *burgerLinker* is designed to do this much faster (full
+sample takes less than 48 hours).
 
-The only other set of initiatives that we are aware of are bespoke programming initiatives by domain specific researchers, with country and time specific rules for linking in for example R. These linkage tools are on the whole slow. What we did do is make our own rule set for linking modular, to allow in the future for country and time specific rule sets to be incorporated in *burgerLinker*.
+The Golden Agents project has brought about [Lenticular
+Lenses](https://www.goldenagents.org/tools/lenticular-lenses/) a tool designed
+to link persons across sources of various nature. We have engaged with the
+Lenticular Lenses team on multiple occasions (a demo-presentation, two
+person-vocabulary workshops, and a specific between-teams-workshop). From those
+meetings we have adopted the [ROAR
+vocabulary](https://leonvanwissen.nl/vocab/roar/docs/) for work in CLARIAH-WP4.
+On the specific *burgerLinker* and lenticular lenses tool, however we found
+that the prerequisite in Lenticular Lenses to allow for heterogenous sources,
+conflicted with the *burgerLinker* prerequisite to be fast: one reason for it
+to be fast is the limited set of sources that *burgerLinker* allows for.
 
-**Update** At the ESSHC 2023 we learned of [population-linkage](https://github.com/stacs-srg/population-linkage) and [hope](https://github.com/stacs-srg/population-linkage/issues/4) to set up talks to discuss the similarities and differences in our approaches. Also at the ESSHC 2023, we learned of the Norwegian effort for historical record linking: [https://github.com/uit-hdl/rhd-linking](https://github.com/uit-hdl/rhd-linking) (for documentation see: [https://munin.uit.no/handle/10037/28399](https://munin.uit.no/handle/10037/28399)).
+The only other set of initiatives that we are aware of are bespoke programming
+initiatives by domain specific researchers, with country and time specific
+rules for linking in for example R. These linkage tools are on the whole slow.
+What we did do is make our own rule set for linking modular, to allow in the
+future for country and time specific rule sets to be incorporated in
+*burgerLinker*.
+
+**Update** At the ESSHC 2023 we learned of
+[population-linkage](https://github.com/stacs-srg/population-linkage) and
+[hope](https://github.com/stacs-srg/population-linkage/issues/4) to set up
+talks to discuss the similarities and differences in our approaches. Also at
+the ESSHC 2023, we learned of the Norwegian effort for historical record
+linking:
+[https://github.com/uit-hdl/rhd-linking](https://github.com/uit-hdl/rhd-linking)
+(for documentation see:
+[https://munin.uit.no/handle/10037/28399](https://munin.uit.no/handle/10037/28399)).
+
+Further details regarding the data standardisation and the data model are
+available in the [burgerLinker
+Wiki](https://github.com/CLARIAH/burgerLinker/wiki) or via the [burgerLinker
+lecture](https://vimeo.com/573950112). Also see the paper on the [application
+of burgerLinker](https://hlcs.nl/article/view/14685/16325) in academia (LINKS).
+
 
 ---
 
-### Operating Systems
+## Installation
 
-- This tool is tested on Linux and Mac OS.
-- Windows users are advised to use the Docker image.
+BurgerLinker is written in the JAVA programming language which can run on
+(nearly) any device and operating system. To run JAVA programs on a device,
+ensure that the (free) [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html)
+is installed on your system or download and install the JRE from [here](https://www.oracle.com/java/technologies/javase-jre8-downloads.html).
 
-### Installation requirements
+Next, obtain the latest [BurgerLinker JAR file](https://github.com/CLARIAH/burgerLinker/releases)
+(JAVA executable) from the [GitHub repository](https://github.com/CLARIAH/burgerLinker)
+and place it in an appropriate directory on your device. BurgerLinker can now
+be run by opening a terminal in the same directory as the JAR file, and by
+running the following command:
 
-- Only the [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), which is free and installed on almost every computer these days.
+    java -jar burgerlinker.jar --help
 
-### Input requirements
+## Usage
 
-- An RDF dataset with civil registry data, in any W3C recommended serialization format (e.g. N-Triples, N-Quads, JSON-LD, HDT) and modelled according to the [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) or [Civil Registries schema](assets/CIV.ttl) data model. A custom data model can also be used by modifying the queries located in the `res/data_models` directory.
-
-### Output format
-
-Two possible output formats to represent the detected links:
-- CSV file (default if no output format is specified by the user)
-- N-QUADS file (it can be specified in the parameters of the tool using `--format RDF`)
-
-### Usage
+BurgerLinker offers numerous options. The complete set of options is shown
+below. As evident by the *[REQUIRED]* keyword, all invocations of the
+BurgerLinker tool require specifying a work directory. All other options are
+optional.
 
 ```
-USAGE  : java -jar burgerlinker<VERSION>.jar [OPTIONS]
-OPTIONS:
         -wd, --workdir
           [REQUIRED] Path of the directory for storing intermediate and final results.
+
         -i, --input
           [OPTIONAL] Comma-separated path(s) to one or more RDF graphs, or a web address to a SPARQL endpoint.
         -f, --function
@@ -131,6 +194,7 @@ OPTIONS:
           [OPTIONAL] Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.
         -rs, --ruleset
           [OPTIONAL] Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.
+
         --max-lev
           [OPTIONAL] Integer between 0 and 4 (default) indicating the maximum Levenshtein distance per first or last name allowed for accepting a link.
         --fixed-lev
@@ -145,6 +209,7 @@ OPTIONS:
           [OPTIONAL] Disable filtering on first letter of family name prior to lexical comparison.
         --format
           [OPTIONAL] Store the intermediate results as CSV (default) or RDF
+
         --query
           [OPTIONAL] Execute a custom SPARQL query on the RDF store and print the results.
         --reload
@@ -189,12 +254,12 @@ These arguments indicate that the user wants to:
 
 - Example 3. Parse a new dataset (modelled with CIV) and Link *parents of newborns* to *brides & grooms*:
 
-`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 3 --ruleSet myRules`
+`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries1.nq,dataDirectory/myCivilRegistries2.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 3 --ruleSet myRules`
 
 These arguments indicate that the user wants to:
 
-    [--input dataDirectory/myCivilRegistries.nq] 
-       parse the myCivilRegistries.nt dataset (N-Quads format) modelled according to the IISG's Civil Registries data model
+    [--input dataDirectory/myCivilRegistries1.nq,dataDirectory/myCivilRegistries2.nq] 
+       parse both input datasets (N-Quads format) which are modelled according to the IISG's Civil Registries data model
 
     [--model CIV]
        tell the parses to use the CIV data model
@@ -231,11 +296,70 @@ These arguments indicate that the user wants to:
     [--namespace https://data.iisg.nl/myProject#]
        use the provided IRI as base namespace for the new identifiers given to reconstructed individuals
 
+## Data Requirements
+
+BurgerLinker expects the input dataset(s) to conform to the Resource
+Description Framework (RDF) and to be formatted in one of many W3C recommended
+serialization formats (e.g. N-Triples, N-Quads, JSON-LD, or HDT).
+
+BurgerLinker accommodates different data modelling practices by moving the
+data model specification from the tool's internals to the user. This is
+achieved by deferring the retrieval of relevant information to a SPARQL query
+engine. User-provided queries tell the query engine how the data is modelled.
+
+BurgerLinker ships with several pre-made data model specifications:
+
+- **PiCo-SDO** [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) data model with names modelled using *schema.org* (SDO)
+- **PiCo-PNV** [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) data model with names modelled using *Person Name Vocabulary* (PNV)
+- **CIV** [Civil Registries schema](assets/CIV.ttl) data model created by the IISG (deprecated)
+
+Run BurgerLinker with the `--model <name of data model>` option to set the preferred data model.
+
+### Custom Data Model
+
+Support for a custom data model can be added by creating a new *yaml* file in the
+`res/data_model` directory and by writing queries for birth, death, and
+marriage certificates. The three queries should be valid SPARQL queries and must
+be saved in the same *yaml* file.
+
+A minimal data model specification takes the following form:
+
+    ---
+    BIRTHS: >
+      SELECT *
+      WHERE {
+          ?s ?p ?o .
+      }
+
+    DEATHS: >
+      SELECT *
+      WHERE {
+          ?s ?p ?o .
+      }
+
+    MARRIAGES: >
+      SELECT *
+      WHERE {
+          ?s ?p ?o .
+      }
+    
+    ...
+
+Be aware that the queries must define all variables required by BurgerLinker.
+Inspect the queries of the pre-made data model specifications to see all
+required variables.
+
 ## How BurgerLinker Works
 
-BurgerLinker uses lexical comparisons on person names to find candidate links. To improve accuracy, the names of relations (parents, partner, etc) are likewise matched and taken into account. Temporal consistencies and domain knowledge are exploited to further improve accuracy. 
+BurgerLinker uses lexical comparisons on person names to find candidate links.
+To improve accuracy, the names of relations (parents, partner, etc) are
+likewise matched and taken into account. Temporal consistencies and domain
+knowledge are exploited to further improve accuracy. 
 
-Each execution of a *within* or *between* function will produce a CSV file containing linked events. These files are stored in the provided working directory (`<workdir>/<function>/results/`) and are named according to their function and used options:
+Each execution of a *within* or *between* function will produce a CSV file
+containing linked events. These files are stored in the provided working
+directory (`<workdir>/<function>/results/`) and are named according to their
+function and used options:
 
 - within-B-M-maxLev-X.csv
 - within-B-D-maxLev-X.csv
@@ -244,13 +368,22 @@ Each execution of a *within* or *between* function will produce a CSV file conta
 - between-M-M-maxLev-X.csv
 - between-D-M-maxLev-X.csv
 
-Once the link sets are generated, the *closure* function will use the links in these files to match individuals across events. Since identity links are transitive and symmetric this function boils downs to computing transitive closure. Newly matched individuals are given new identifiers which link to all found matches. The output is a new N-Triple file located in `<workdir>/closure/results/`.
+Once the link sets are generated, the *closure* function will use the links in
+these files to match individuals across events. Since identity links are
+transitive and symmetric this function boils downs to computing transitive
+closure. Newly matched individuals are given new identifiers which link to all
+found matches. The output is a new N-Triple file located in
+`<workdir>/closure/results/`.
 
 ---
 
 ## Post-processing rules
 
-Links created by the execution of a *between* and *within* function can be filtered to exclude unlikely matched. Filtering is done post processing and works by comparing event dates. For example, whether one's registered age at death (roughly) matches the difference between the date on the person's birth and death certificate.
+Links created by the execution of a *between* and *within* function can be
+filtered to exclude unlikely matched. Filtering is done post processing and
+works by comparing event dates. For example, whether one's registered age at
+death (roughly) matches the difference between the date on the person's birth
+and death certificate.
 
 The default rules are as following:
 
@@ -268,12 +401,25 @@ The default rule set is located in the `res/rule_sets/` directory.
 
 ### Custom rule set
 
-A custom rule set can be used to tailor the filtering step. To use custom rules for filtering, copy the default rule set (`default.yaml`), using a different name (e.g. `myRules.yaml`), and edit the conditions. Next, run BurgerLinker with the `--ruleSet myRules` option.
+A custom rule set can be used to tailor the filtering step. To use custom rules
+for filtering, copy the default rule set (`default.yaml`) under a different
+name (e.g. `myRules.yaml`) and open the file in your preferred text editor.
 
----
+Each rule contains three lines: a *name*, a *description*, and a *condition*.
+An example rule is shown below:
 
-## Possible direct extensions
-It would be possible to add more general matching functionalities that are not dependent on the Civil Registries schema.
-One possible way would be to provide a JSON Schema as an additional input to any given dataset, specifying the (i) Classes that the user wish to match their instances (e.g. sourceClass: iisg:Newborn ; targetClass: iisg:Groom), and the (ii) Properties that should be considered in the matching (e.g. schema:givenName; schema:familyName).
+    name: "within_b_d.timegapdiff"
+    description: "The allowed difference in years between the birth and death of an individual"
+    condition: "diff >= 0 && diff <= 110"
 
-Subsequently, the fast matching algorithm could be used for many other linkage purposes (in Digital Humanities), e.g. places, occupations and products.
+This rule ensures that the difference between the birth and death of an individual
+must not exceed 110 years, and that the death should always be preceded by the
+birth.
+
+Rules can be customized by modifying the conditions. Valid conditions are
+logical comparisons between `diff` and a numerical value (e.g. `<`, `>=`, `==`,
+and `!=`) either solitary or paired with one more comparisons via logical
+operators (`&&` for *AND* or `||` for *OR*).
+
+Run BurgerLinker with the `--ruleSet myRules` option to use the custom rule set
+during post processing.

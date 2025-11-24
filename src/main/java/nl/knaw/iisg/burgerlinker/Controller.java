@@ -159,22 +159,7 @@ public class Controller {
 
                 outputDatasetStatistics(this.dataModel);
                 if (this.query != null) {
-                    ActivityIndicator spinner = new ActivityIndicator(".: Executing custom query on RDF store");
-                    spinner.start();
-
-                    TupleQueryResult qResult = myRDF.getQueryResults(query);
-
-                    spinner.terminate();
-                    spinner.join();
-                    for (BindingSet bindingSet: qResult) {
-                        for (Binding binding: bindingSet) {
-                            LOG.outputConsole(binding.getName() + ": " + binding.getValue().stringValue());
-                        }
-                        LOG.outputConsole("-");
-                    }
-
-                    qResult.close();
-
+                    execQuery(query);
                 } else if (this.function == null) {
                     LOG.outputConsole(".: No function specified: looping over all functions.");
                     for (String func: FUNCTIONS) {
@@ -202,6 +187,24 @@ public class Controller {
     		myRDF.shutdown();
         }
 	}
+
+    public void execQuery(String query) throws InterruptedException {
+        ActivityIndicator spinner = new ActivityIndicator(".: Executing custom query on RDF store");
+        spinner.start();
+
+        TupleQueryResult qResult = myRDF.getQueryResults(query);
+
+        spinner.terminate();
+        spinner.join();
+        for (BindingSet bindingSet: qResult) {
+            for (Binding binding: bindingSet) {
+                LOG.outputConsole(binding.getName() + ": " + binding.getValue().stringValue());
+            }
+            LOG.outputConsole("-");
+        }
+
+        qResult.close();
+    }
 
     public void execProcess(String function, Map<String, Map<String, Rule>> ruleMap) throws java.io.IOException {
         Map<String, Rule> rules;
