@@ -76,7 +76,7 @@ Historians use archival records to describe persons' lives. Each record (e.g. a 
 The software is designed for the so called "digital historians" (e.g. humanities scholars with basic command line skills) who are interested in using the Dutch civil registries for their studies, or for linking their data to it.
 
 ### Data
-In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to our [Civil Registries schema](assets/CIV.ttl). An overview of the Civil Registries schema is available as a [PNG file](/assets/CIV.png), and you can browse it on [Druid](https://druid.datalegend.net/LINKS/civ).
+In its current version, the tool cannot be used to match entities from just any source. The current tool is solely focused on the linkage of civil records, relying on the sanguineous relations on the civil record, modelled according to the [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) or [Civil Registries schema](assets/CIV.ttl) data model. A custom data model can also be used by modifying the queries located in the `res/data_models` directory.
 
 ### Previous work
 So far, (Dutch) civil records have been linked by bespoke programming by researchers, sometimes supported by engineers. Specifically the IISG-LINKS program has a pipeline to link these records and provide them to the Central Bureau of Genealogy (CBG). Because the number of records has grown over time and the IISG-LINKS takes an enormous amount of time (weeks) to LINK all records currently present, *burgerLinker* is designed to do this much faster (full sample takes less than 48 hours).
@@ -90,65 +90,70 @@ The only other set of initiatives that we are aware of are bespoke programming i
 ---
 
 ### Operating Systems
+
 - This tool is tested on Linux and Mac OS.
 - Windows users are advised to use the Docker image.
 
-
 ### Installation requirements
+
 - Only the [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), which is free and installed on almost every computer these days.
 
 ### Input requirements
-- Only one RDF dataset, describing the civil registries that are modelled according to our simple [Civil Registries schema](assets/CIV.png) (see [Wiki](https://github.com/CLARIAH/burgerLinker/wiki/Adapting-the-data-model) for more details regarding the data model and the conversion to RDF).
 
-- For efficient querying (i.e. lower memory usage with fast search), the matching tool requires the dataset to be compressed and given as an [HDT](http://www.rdfhdt.org/what-is-hdt/) file with its index. The tool allows the conversion of any valid RDF file to HDT using the `--function convertToHDT` (see Example 2 below).
+- An RDF dataset with civil registry data, in any W3C recommended serialization format (e.g. N-Triples, N-Quads, JSON-LD, HDT) and modelled according to the [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) or [Civil Registries schema](assets/CIV.ttl) data model. A custom data model can also be used by modifying the queries located in the `res/data_models` directory.
 
 ### Output format
+
 Two possible output formats to represent the detected links:
 - CSV file (default if no output format is specified by the user)
 - N-QUADS file (it can be specified in the parameters of the tool using `--format RDF`)
 
-### Main dependencies
-This tool mainly rely on two open-source libraries:
-- [Levenshtein automata](https://github.com/universal-automata/liblevenshtein-java) (MIT License)
-- [RDF-HDT](https://github.com/rdfhdt/hdt-java) (LGPL License)
+### Usage
 
-### Tool functionalities
-
-Functionalities that are supported in the current version: (case insensitive)
-
-- `ConvertToHDT`: compress an RDF dataset given as input to an HDT file that will be generated in the same directory. This function can also be used for merging two HDT files into one (see Example 3 below)
-
-- `ShowDatasetStats`: display some general stats about the HDT dataset, given as input.
-
-- `Within_B_M`: link *newborns* in Birth Certificates to *brides/grooms* in Marriage Certificates (reconstructs life course)
-
-- `Within_B_D`: link *newborns* in Birth Certificates to *deceased* individuals in Death Certificates (reconstructs life course)
-
-- `Between_B_M`: link *parents of newborns* in Birth Certificates to *brides & grooms* in Marriage Certificates (reconstructs family ties)
-
-- `Between_B_D`: link *parents of newborns* in Birth Certificates to *deceased & partner* in Death Certificates (reconstructs family ties)
-
-- `Between_M_M`: link *parents of brides/grooms* in Marriage Certificates to *brides & grooms* in Marriage Certificates (reconstructs family ties)
-
-- `Between_D_M`: link *parents of deceased* in Death Certificates to *brides & grooms* in Marriage Certificates (reconstructs family ties)
-
-- `Closure`: compute the transitive closure, that is, assign a single id to observations that refer to each other, to get a unique identifier per 'individual'. The output of this function is a new RDF dataset, where linked observations of individuals are replaced by the same identifier in the civil registries dataset. Note: no extra filtering is done in this step.
-
-
-### Tool parameters
-Parameters that can be provided as input to the linking tool:
-- `--function`:        *(required)* one of the functionalities listed below
-
-- `--inputData`:       *(required)* path of the HDT dataset
-- `--outputDir`:       *(required)* path of the directory for saving the indices and the detected links
-- `--maxLev`:          *(optional, default = 4)* integer between 0 and 4, indicating the maximum Levenshtein distance per first or last name allowed for accepting a link
-- `--fixedLev`:        *(optional, default = False)* add this flag without a value (i.e. True) for applying the same maximum Levenshtein distance independently from the string lengths
-- `--ignoreDate`:        *(optional, default = False)* add this flag without a value (i.e. True) for ignoring the date consistency check before saving a link. By default, the tool only saves links that are  temporally consistent (e.g. when linking newborns to deceased individuals, the tool checks whether the date of death is later than the individual's date of birth)
-- `--ignoreBlock`:        *(optional, default = False)* add this flag without a value (i.e. True) for not requiring the equality of the last names' first letter of the matched individuals. By default, the tool only saves links between individuals that at least have the same first letter of their last names
-- `--singleInd`:        *(optional, default = False)* add this flag without a value (i.e. True) for allowing the match of the main individual, without the requirement of matching their parents as well
-- `--format`:          *(optional, default = CSV)* one of the two Strings: 'RDF' or 'CSV', indicating the desired format for saving the detected links between certificates
-- `--debug`:           *(optional, default = error)* one of the two Strings: 'error' (only display error messages in console) or 'all' (show all warning in console)
-
+```
+USAGE  : java -jar burgerlinker<VERSION>.jar [OPTIONS]
+OPTIONS:
+        -wd, --workdir
+          [REQUIRED] Path of the directory for storing intermediate and final results.
+        -i, --input
+          [OPTIONAL] Comma-separated path(s) to one or more RDF graphs, or a web address to a SPARQL endpoint.
+        -f, --function
+          One of the functionalities listed below or all functions in sequence if omitted.
+          FUNCTIONS:
+          - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates
+          - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates
+          - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
+          - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates
+          - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates
+          - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates
+          - Closure:     Compute the transitive closure between the found links. The output is a set of reconstructed individuals
+        -m, --model
+          [OPTIONAL] Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.
+        -rs, --ruleset
+          [OPTIONAL] Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.
+        --max-lev
+          [OPTIONAL] Integer between 0 and 4 (default) indicating the maximum Levenshtein distance per first or last name allowed for accepting a link.
+        --fixed-lev
+          [OPTIONAL] Disable automatic adjustment of maximum Levenshtein distance to string length.
+        -ns, --namespace
+          [OPTIONAL] Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.
+        --ignore-relations
+          [OPTIONAL] Disable lexical comparison of related individuals (eg, parents of subject).
+        --ignore-date
+          [OPTIONAL] Disable temporal validation checks between candidate links.
+        --ignore-block
+          [OPTIONAL] Disable filtering on first letter of family name prior to lexical comparison.
+        --format
+          [OPTIONAL] Store the intermediate results as CSV (default) or RDF
+        --query
+          [OPTIONAL] Execute a custom SPARQL query on the RDF store and print the results.
+        --reload
+          [OPTIONAL] Reload RDF data from graph(s) instead of reusing an existing RDF store.
+        -h, --help
+          [OPTIONAL] Print this help and exit.
+        --debug
+          [OPTIONAL] Enable debug messages.
+```
 ---
 
 ### Examples
@@ -159,59 +164,79 @@ Parameters that can be provided as input to the linking tool:
 
 ---
 
-- Example 2. Generate an HDT file and its index from an RDF dataset:
+- Example 2. Parse a new dataset (modelled with PiCo) and execute all functions in sequence:
 
-`java -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
-
-This will generate the HDT file 'myCivilRegistries.hdt' and its index 'myCivilRegistries.hdt.index' in the same directory.
-The index should be kept in the same directory of the HDT file to speed up all queries.
-
-:warning:
-
-This is the most memory-intensive step of the tool. Therefore, for avoiding running out of memory for larger datasets, we recommend (i) running this step on a machine with enough memory, and (ii) changing the initial lower bound and upper bound of the JAVA heap memory size, by adding the `-Xms` and `-Xmx` flags.
-
-As an example, here are the flags used for generating the HDT file of all Dutch birth and marriage certificates:
-
-`java -Xms64g -Xmx96g -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/myCivilRegistries.nq --outputDir .`
-
----
-
-- Example 3. Merge two HDT files into one:
-
-`java -jar burgerLinker.jar --function ConvertToHDT --inputData dataDirectory/hdt1.hdt,dataDirectory/hdt2.hdt --outputDir . `
-
-This will generate a third HDT file 'merged-dataset.hdt' and its index 'merged-dataset.hdt.index' in the same directory.
-
-:warning:
-
-The two HDT files given as input are only separated by `,` (without empty space)
-
----
-
-- Example 4. Link *parents of newborns* to *brides & grooms*:
-
-`java -jar burgerLinker.jar --function Between_B_M --inputData dataDirectory/myCivilRegistries.hdt --outputDir . --format CSV  --maxLev 3 --fixedLev`
+`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries.nt --model PiCo-SDO --workdir myProject/  --max-lev 3 --fixed-lev`
 
 These arguments indicate that the user wants to:
 
-    [Between_B_M] link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates,
-    [dataDirectory/myCivilRegistries.hdt] in the civil registries dataset myCivilRegistries.hdt modelled according to our civil registries RDF schema,
-    [.] save the detected links in the current directory,
-    [CSV] as a CSV file,
-    [3] allowing a maximum Levenshtein of 3 per name (first name or last name),
-    [fixedLev] independently from the length of the name.
+    [--input dataDirectory/myCivilRegistries.nt] 
+       parse the myCivilRegistries.nt dataset (N-Triples format) modelled according to the Persons-in-Context data model
+
+    [--model PiCo-SDO]
+       tell the parses to use the PiCo-SDO data model (with names modelled using schema.org)
+
+    [--workdir myProject/]
+       create (if needed) and use the `myProject/` directory to store intermediate and final results
+
+    [--max-lev 3]
+       allowing a maximum Levenshtein distance of 3 per name (first name or last name)
+
+    [--fixed-lev]
+       disable automatic adjustment of maximum Levenshtein distance to name length
 
 ---
 
-- Example 5. Family Reconstruction
+- Example 3. Parse a new dataset (modelled with CIV) and Link *parents of newborns* to *brides & grooms*:
 
-`java -jar burgerLinker.jar --function closure --inputData dataDirectory/myCivilRegistries.hdt --outputDir myResultsDirectory `
+`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 3 --ruleSet myRules`
 
-This command computes the transitive closure of all links existing in the directory `myResultsDirectory`, and generates a new `finalDataset.nt.gz` dataset in this directory by replacing all matched individuals' identifiers from the `myCivilRegistries.hdt` input dataset with the same unique identifier.
+These arguments indicate that the user wants to:
 
-**How?**
+    [--input dataDirectory/myCivilRegistries.nq] 
+       parse the myCivilRegistries.nt dataset (N-Quads format) modelled according to the IISG's Civil Registries data model
 
-The directory `myResultsDirectory` must contain the CSV files that resulted from the linking functions described above, without changing the file names (the tool finds these files using a regular expression search in this directory). It can contain one, or all of the following CSV files, with X being any integer from 0 to 4:
+    [--model CIV]
+       tell the parses to use the CIV data model
+
+    [--workdir myProject/]
+       create (if needed) and use the `myProject/` directory to store intermediate and final results
+
+    [--function between_b_m]
+       link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
+
+    [--max-lev 4]
+       allowing a maximum Levenshtein distance of 4 per name (first name or last name)
+
+    [--ruleSet myRules]
+       use a custom rule set to filter the links
+
+---
+
+- Example 4. Create Family Reconstruction (using an existing RDF data store)
+
+`java -jar burgerLinker.jar --model PiCo-PNV --workdir myProject/ --function closure --namespace https://data.iisg.nl/myProject#`
+
+These arguments indicate that the user wants to:
+
+    [--model PiCo-PNV]
+       tell the tool to use the PiCo-PNV data model (with names modelled using Person Name Vocabulary)
+
+    [--workdir myProject/]
+       load the RDF data store in the `myProject/` directory and to store intermediate and final results there
+
+    [--function closure]
+       compute the transitive closure between the found links. The output is a set of reconstructed individuals
+
+    [--namespace https://data.iisg.nl/myProject#]
+       use the provided IRI as base namespace for the new identifiers given to reconstructed individuals
+
+## How BurgerLinker Works
+
+BurgerLinker uses lexical comparisons on person names to find candidate links. To improve accuracy, the names of relations (parents, partner, etc) are likewise matched and taken into account. Temporal consistencies and domain knowledge are exploited to further improve accuracy. 
+
+Each execution of a *within* or *between* function will produce a CSV file containing linked events. These files are stored in the provided working directory (`<workdir>/<function>/results/`) and are named according to their function and used options:
+
 - within-B-M-maxLev-X.csv
 - within-B-D-maxLev-X.csv
 - between-B-M-maxLev-X.csv
@@ -219,35 +244,16 @@ The directory `myResultsDirectory` must contain the CSV files that resulted from
 - between-M-M-maxLev-X.csv
 - between-D-M-maxLev-X.csv
 
-The function will first transform the links in these CSV files, that are asserted between identifiers of certificates, into links between individuals. Since identity links are transitive and symmetric, this function computes the transitive closure of all these transformed individual links, and generates new identifiers for each resulted equivalence class.
-
-Example:
-- :newborn1 owl:sameAs :bride1
-- :bride1 owl:sameAs :mother1
-
-This means that all these identifiers (:newborn1, :bride1, and :mother1) refer to the same individual, appearing in different roles in different civil certificates. This function generates a new dataset, replacing all occurrences of these three identifiers with a single unique identifier (e.g. :i-1). This process allows the reconstruction of historical families, without the need of writing complex queries or following a large number of identity links across the dataset.
-
-- Example 6. Link individuals without the requirement of linking one of the parents
-
-Convert a file hkh-maids.nt to HDT
-`java -jar burgerLinker.jar --function convertToHDT --inputData maids/maids-dataset/maids.nt --outputDir maids/maids-dataset/`
-
-Merge the resulting HDT dataset of hkh-maids to the HDT file of the marriages:
-`nohup java -Xms128g -Xmx192g -jar burgerLinker.jar --function convertToHDT --inputData maids/maids-dataset/maids.hdt,civ-reg-2021/HDT/marriages.hdt --outputDir maids/maids-and-marriages-dataset/ &`
-
-Run Within_B_M with the singleInd flag on the resulted mergedDataset:
-`nohup java -Xms128g -Xmx192g -jar burgerLinker.jar --function within_B_M --inputData maids/maids-and-marriages-dataset/merged-dataset.hdt --outputDir maids/results/ --maxLev 1 --ignoreDate --singleInd &`
-
-Links are saved in the following CSV file (around 100K links detected with the above parameters):
-`maids/results/within_b_m-maxLev-1-singleInd-ignoreDate/results/within-B-M-maxLev-1-singleInd-ignoreDate.csv`
-
-NB: when running burgerLinker with nohup, the progress of the linking is saved in the nohup.out file. You can track the progress using `tail -f :
-tail -f nohup.out`.
+Once the link sets are generated, the *closure* function will use the links in these files to match individuals across events. Since identity links are transitive and symmetric this function boils downs to computing transitive closure. Newly matched individuals are given new identifiers which link to all found matches. The output is a new N-Triple file located in `<workdir>/closure/results/`.
 
 ---
+
 ## Post-processing rules
 
-### Date filtering assumptions
+Links created by the execution of a *between* and *within* function can be filtered to exclude unlikely matched. Filtering is done post processing and works by comparing event dates. For example, whether one's registered age at death (roughly) matches the difference between the date on the person's birth and death certificate.
+
+The default rules are as following:
+
 - Persons will not become older than 110 years of age
 - Persons can marry at age 13
 - Children are born to: 
@@ -257,6 +263,12 @@ tail -f nohup.out`.
     4. up to 10 years before the parents married IF acknowledged by the father from birth
 - Women can give birth to children between age 14 and 50 years 
 - Men can become father at age 14, and stop reproducing after their wife turns 50
+
+The default rule set is located in the `res/rule_sets/` directory.
+
+### Custom rule set
+
+A custom rule set can be used to tailor the filtering step. To use custom rules for filtering, copy the default rule set (`default.yaml`), using a different name (e.g. `myRules.yaml`), and edit the conditions. Next, run BurgerLinker with the `--ruleSet myRules` option.
 
 ---
 

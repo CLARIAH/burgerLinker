@@ -27,7 +27,8 @@ public class App {
                            + "\t  - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates\n"
                            + "\t  - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates\n"
                            + "\t  - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates\n"
-                           + "\t  - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates")
+                           + "\t  - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates\n"
+                           + "\t  - Closure:     Compute the transitive closure between the found links. The output is a set of reconstructed individuals")
 	String function = null;
 
 	@Parameter(names = {"-i", "--input"}, required=false,
