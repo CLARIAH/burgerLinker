@@ -254,7 +254,7 @@ These arguments indicate that the user wants to:
 
 - Example 3. Parse a new dataset (modelled with CIV) and Link *parents of newborns* to *brides & grooms*:
 
-`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries1.nq,dataDirectory/myCivilRegistries2.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 3 --ruleSet myRules`
+`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries1.nq,dataDirectory/myCivilRegistries2.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 3 --ruleset myRules`
 
 These arguments indicate that the user wants to:
 
@@ -273,7 +273,7 @@ These arguments indicate that the user wants to:
     [--max-lev 4]
        allowing a maximum Levenshtein distance of 4 per name (first name or last name)
 
-    [--ruleSet myRules]
+    [--ruleset myRules]
        use a custom rule set to filter the links
 
 ---
@@ -421,5 +421,5 @@ logical comparisons between `diff` and a numerical value (e.g. `<`, `>=`, `==`,
 and `!=`) either solitary or paired with one more comparisons via logical
 operators (`&&` for *AND* or `||` for *OR*).
 
-Run BurgerLinker with the `--ruleSet myRules` option to use the custom rule set
+Run BurgerLinker with the `--ruleset myRules` option to use the custom rule set
 during post processing.
