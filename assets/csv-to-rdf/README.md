@@ -6,7 +6,7 @@ BurgerLinker is designed to operate on data that conforms to the *Resource Descr
 
 The conversion scripts require a working [Python](https://www.python.org/) installation and the latest version of the [pyRDF](https://gitlab.com/wxwilcke/pyRDF) library. The *pyRDF* library can be installed using [PIP](https://pip.pypa.io/en/stable/), the package installer for Python. Instructions on how to do so are given next. These instructions assume that the system has a working and updated [Python](https://www.python.org/) installation. *It is strongly recommended to first set up a clean [virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments) before continuing with the installation (see next header).*
 
-1) To install *pyRDF* 
+1) To install *pyRDF*:
 
     $ python -m pip install pyRDF
 
