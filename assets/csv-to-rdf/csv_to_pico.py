@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import argparse
+import json
 from pathlib import Path
+import re
 import uuid
 
 from rdf.formats import NTriples
@@ -15,51 +17,6 @@ PICOT_NS = IRIRef("https://terms.personsincontext.org/")
 PNV_NS = IRIRef("https://w3id.org/pnv#")
 PROV_NS = IRIRef("http://www.w3.org/ns/prov#")
 SDO_NS = IRIRef("https://schema.org/")
-
-ROLES = ["newborn", "mother", "father",
-         "bride", "motherBride", "fatherBride",
-         "groom", "motherGroom", "fatherGroom",
-         "deceased", "partner"]
-
-
-def getDate(line_array: list[str], header: list[str], role: str):
-    pre = ""
-    match role:
-        case "newborn":  # newborn
-            pre = "birth_"
-        case "bride":  # bride/groom
-            pre = "mar_"
-        case "deceased":  # deceased
-            pre = "death_"
-
-    year, month, day = None, None, None
-    for i, v in enumerate(line_array):
-        if v.startswith('"') and v.endswith('"'):
-            v = v[1: -1]
-        if v in ["NULL", "0", ""]:
-            continue
-
-        k = header[i]
-        if k == pre + "year":
-            year = v.zfill(4)
-
-            continue
-        if k == pre + "month":
-            month = v.zfill(2)
-
-            continue
-        if k == pre + "day":
-            day = v.zfill(2)
-
-            continue
-
-    if year is not None\
-       and month is not None\
-       and day is not None:
-        return Literal("%s-%s-%s" % (year, month, day),
-                       datatype=XSD+"date")
-
-    return None
 
 
 def getCert(role: str):
@@ -88,90 +45,250 @@ def getRole(role: str):
     return roleIRI
 
 
-def convert(path_in: Path, base_ns: str, delim: str):
+def getElemOfLine(base_value: str, prop_name: str, mapping: dict):
+    for prop, value in mapping.items():
+        if prop == prop_name:
+            return value
+
+        if prop == "notes" and isinstance(value, list) and len(value) > 0:
+            for note in value:
+                if "type" not in note.keys() or note["type"] != "Annotation":
+                    continue
+
+                body = note.get("body")
+                if body is None:
+                    continue
+                if not isinstance(body, dict) or "type" not in body.keys() or body["type"] != "Choice":
+                    continue
+
+                items = body.get("items")
+                if items is None or not isinstance(items, list) or len(items) <= 0:
+                    continue
+                for item in items:
+                    if "rdfs:label" in item.keys() and item["rdfs:label"] == base_value:
+                        return getElemOfLine("", prop_name, item)
+
+    return None
+
+
+def translateValue(value: str, mapping: dict):
+    notes = mapping.get("notes")
+    if notes is not None and isinstance(notes, list) and len(notes) > 0:
+        for note in notes:
+            if "type" not in note.keys() or note["type"] != "Annotation":
+                continue
+
+            body = note.get("body")
+            if body is None:
+                continue
+            if not isinstance(body, dict) or "type" not in body.keys() or body["type"] != "Choice":
+                continue
+
+            items = body.get("items")
+            if items is None or not isinstance(items, list) or len(items) <= 0:
+                continue
+            for item in items:
+                if "rdf:value" in item.keys() and item["rdf:value"] == value:
+                    label = item.get("rdfs:label")
+                    if label is not None:
+                        return label
+
+    return value
+
+
+def modifyValue(value: str, name: str):
+    if name == "eventYear":
+        return value.zfill(4)
+    if name in ["eventDay", "eventMonth"]:
+        return value.zfill(2)
+
+    return value
+
+
+def expandVar(line: list[str], name: str, mapping: dict, index: dict[str, int]):
+    for column_name_var in re.findall("{[0-9A-Za-z:._]+}", name):
+        column_name = column_name_var[1:-1]
+
+        if '.' in column_name:
+            column_name_parts = column_name.split('.')
+            assert len(column_name_parts) > 1
+
+            base_name = column_name_parts[0]
+            base_value = getValue(line, base_name, mapping, index)
+            if base_value is None:
+                continue
+
+            replacement = "NULL"
+            submap = mapping[base_name]
+            for column_name_part in column_name_parts[1:]:
+                replacement = getElemOfLine(base_value, column_name_part, submap)
+                if isinstance(replacement, dict):
+                    submap = replacement
+
+                    continue
+
+            name = name.replace(column_name_var, replacement)
+
+            continue
+
+        value_part = getValue(line, column_name, mapping, index)
+        if value_part is not None:
+            name = name.replace(column_name_var, value_part)
+
+    return name
+
+
+def getValueFromLine(line: list[str], column_name: str, index: dict[str, int]):
+    if column_name is not None and column_name in index.keys():
+        column_idx = index[column_name]
+        if len(line) > column_idx:
+            return line[column_idx]
+
+    return None
+
+
+def getValue(line: list[str], name: str, mapping: dict,
+             index: dict[str, int]):
+    if name in mapping.keys():
+        nmap = mapping[name]
+        if "virtual" in nmap.keys() and nmap["virtual"]:
+            # virtual column
+            value = nmap.get("value")
+            if value is not None:
+                if '{' in value and '}' in value:
+                    value = expandVar(line, value, mapping, index)
+
+                value = translateValue(value, nmap)
+                if value == "NULL":
+                    return None
+
+                return modifyValue(value, name)
+
+        column_name = nmap.get("titles")
+        if column_name is not None:
+            if '{' in column_name and '}' in column_name:
+                column_name = expandVar(line, column_name, mapping, index)
+
+            value = getValueFromLine(line, column_name, index)
+            if value == "NULL":
+                return None
+            if value is not None:
+                value = translateValue(value, nmap)
+
+            return modifyValue(value, name)
+
+    return None
+
+
+def prepLine(line: str, delim: str):
+    line_array = list()
+    for e in line.split(delim):
+        e = e.strip()
+        if e.startswith('"') and e.endswith('"'):
+            e = e[1: -1]
+
+        if len(e) <= 0:
+            e = "NULL"
+
+        line_array.append(e)
+
+    return line_array
+
+
+def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
     events = dict()
     header = None
     with open(path_in, "r") as f_in:
-        header = [e.strip()[1: -1] for e in f_in.readline().split(delim)]
+        header = prepLine(f_in.readline(), delim)
+        header_to_idx = {v: i for i, v in enumerate(header)}
         for line in f_in:
-            line_array = [e.strip() for e in line.split(delim)]
+            line_array = prepLine(line, delim)
 
-            person = None
-            event = None
             name = None
-            surname_prefix = None
-            for i, v in enumerate(line_array):
-                if v.startswith('"') and v.endswith('"'):
-                    v = v[1: -1]
-                if v == "NULL" or len(v) <= 0:
-                    continue
+            person = None
+            person_value = getValue(line_array, "subjectID", mapping, header_to_idx)
+            if person_value is not None:
+                person = base_ns + "person/p-" + person_value
+                yield Statement(person, RDF + "type", PICOM_NS + "PersonObservation")
+                yield Statement(person, SDO_NS + "identifier", Literal(person_value))
 
-                k = header[i]
-                match k:
-                    case "id_person":
-                        person = base_ns + "person/p-" + v
-                        yield Statement(person, RDF + "type", PICOM_NS + "PersonObservation")
-                        yield Statement(person, SDO_NS + "identifier", Literal(v))
+                # PNV
+                name = BNode(uuid.uuid4().hex)
+                yield Statement(person, SDO_NS + "additionalName", name)
+                yield Statement(name, RDF + "type", PNV_NS + "PersonName")
 
-                        # PNV
-                        name = BNode(uuid.uuid4().hex)
-                        yield Statement(person, SDO_NS + "additionalName", name)
-                        yield Statement(name, RDF + "type", PNV_NS + "PersonName")
-                    case "firstname" if name is not None:
-                        yield Statement(person, SDO_NS + "givenName", Literal(v, datatype=XSD+"string"))
-                        yield Statement(name, PNV_NS + "givenName", Literal(v, datatype=XSD+"string"))
-                    case "prefix" if name is not None:
-                        surname_prefix = v
-                        yield Statement(name, PNV_NS + "surnamePrefix", Literal(v, datatype=XSD+"string"))
-                    case "familyname" if name is not None:
-                        fullname = v if surname_prefix is None\
-                                else surname_prefix + " " + v
-                        yield Statement(person, SDO_NS + "familyName", Literal(fullname, datatype=XSD+"string"))
+            if person is None:
+                continue
 
-                        yield Statement(name, PNV_NS + "baseSurname", Literal(v, datatype=XSD+"string"))
-                    case "sex" if person is not None:
-                        gender = None
-                        if v.lower() in ["f", "female"]:
-                            gender = SDO_NS + "Female"
-                        elif v.lower() in ["m", "male"]:
-                            gender = SDO_NS + "Male"
+            # person name
+            first_name = getValue(line_array, "subjectFirstName", mapping, header_to_idx)
+            if first_name is not None:
+                yield Statement(person, SDO_NS + "givenName", Literal(first_name, datatype=XSD+"string"))
+                if name is not None:
+                    yield Statement(name, PNV_NS + "givenName", Literal(first_name, datatype=XSD+"string"))
 
-                        if gender is not None:
-                            yield Statement(person, SDO_NS + "gender", gender)
-                    case "age_year" if person is not None:
-                        dtype = XSD + "nonNegativeInteger"
-                        yield Statement(person, PICOM_NS + "hasAge", Literal(v, datatype=dtype))
-                    case "id_registration" if person is not None:
-                        event = base_ns + "event/e-" + v
-                        if event in events.keys():
-                            yield Statement(person, PROV_NS + "hadPrimarySource", event)
+            surname_prefix = getValue(line_array, "subjectFamilyNamePrefix", mapping, header_to_idx)
+            if surname_prefix is not None:
+                yield Statement(name, PNV_NS + "surnamePrefix", Literal(surname_prefix, datatype=XSD+"string"))
 
-                            continue
+            family_name = getValue(line_array, "subjectFamilyName", mapping, header_to_idx)
+            if family_name is not None:
+                fullname = family_name if surname_prefix is None else surname_prefix + " " + family_name
+                yield Statement(person, SDO_NS + "familyName", Literal(fullname, datatype=XSD+"string"))
+                if name is not None:
+                    yield Statement(name, PNV_NS + "baseSurname", Literal(family_name, datatype=XSD+"string"))
 
-                        yield Statement(event, RDF + "type", SDO_NS + "ArchiveComponent")
-                        yield Statement(event, SDO_NS + "identifier", Literal(v))
-                        yield Statement(person, PROV_NS + "hadPrimarySource", event)
+            # person gender
+            gender_value = getValue(line_array, "subjectGender", mapping, header_to_idx)
+            if gender_value is not None:
+                gender = None
+                if gender_value.lower() == "female":
+                    gender = SDO_NS + "Female"
+                elif gender_value.lower() == "male":
+                    gender = SDO_NS + "Male"
 
-                        events[event] = dict()
-                    case "role" if person is not None and event is not None:
-                        try:
-                            role = ROLES[int(v)-1]
-                            events[event][role] = person
-                        except Exception:
-                            continue
+                if gender is not None:
+                    yield Statement(person, SDO_NS + "gender", gender)
 
-                        roleIRI = getRole(role)
-                        if roleIRI is not None:
-                            yield Statement(person, PICOM_NS + "hasRole", roleIRI)
+            # person age
+            age = getValue(line_array, "subjectAge", mapping, header_to_idx)
+            if age is not None:
+                dtype = XSD + "nonNegativeInteger"
+                yield Statement(person, PICOM_NS + "hasAge", Literal(age, datatype=dtype))
 
-                            if role in ["newborn", "deceased", "bride"]:
-                                cert = getCert(role)
-                                if cert is not None:
-                                    yield Statement(event, SDO_NS + "additionalType", cert)
+            # event
+            event = None
+            event_value = getValue(line_array, "eventID", mapping, header_to_idx)
+            if event_value is not None:
+                event = base_ns + "event/e-" + event_value
+                if event in events.keys():
+                    yield Statement(person, PROV_NS + "hadPrimarySource", event)
+                else:
+                    yield Statement(event, RDF + "type", SDO_NS + "ArchiveComponent")
+                    yield Statement(event, SDO_NS + "identifier", Literal(event_value))
+                    yield Statement(person, PROV_NS + "hadPrimarySource", event)
 
-                                date = getDate(line_array, header, role)
-                                if date is not None:
-                                    yield Statement(event, SDO_NS + "dateCreated", date)
+                    events[event] = dict()
+
+            if event is None:
+                continue
+
+            role = getValue(line_array, "subjectRole", mapping, header_to_idx)
+            if role is not None:
+                events[event][role] = person
+
+                roleIRI = getRole(role)
+                if roleIRI is not None:
+                    yield Statement(person, PICOM_NS + "hasRole", roleIRI)
+
+                if role in ["newborn", "deceased", "bride"]:
+                    cert = getCert(role)
+                    if cert is not None:
+                        yield Statement(event, SDO_NS + "additionalType", cert)
+
+                    date = getValue(line_array, "eventDate", mapping, header_to_idx)
+                    if date is not None:
+                        yield Statement(event, SDO_NS + "dateCreated", Literal(date, datatype=XSD+"date"))
 
     for triple in link_events(events):
         yield triple
@@ -244,10 +361,27 @@ def link_events(events):
             yield Statement(groom, SDO_NS + "spouse", bride)
 
 
+def mkMapping(config: dict):
+    mapping = dict()
+    if "tableSchema" in config.keys()\
+            and "columns" in config["tableSchema"].keys():
+        for column in config["tableSchema"]["columns"]:
+            if "name" not in column.keys():
+                continue
+
+            name = column["name"]
+            if name not in mapping.keys():
+                mapping[name] = column
+
+    return mapping
+
+
 def __main__():
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=str, default=None,
                         help="CSV file with data about individuals")
+    parser.add_argument("-c", "--config", type=str, default=None, required=True,
+                        help="A CSV to RDF mapping in CSVW metadata format")
     parser.add_argument("-d", "--delimiter", type=str, default=";",
                         help="Delimiter to use when processing lines")
     parser.add_argument("--namespace", type=str, default="http://example.org/",
@@ -257,8 +391,13 @@ def __main__():
     if flags.input is not None:
         path_in = Path(flags.input)
         if path_in.exists():
+            config = json.load(open(flags.config, 'r'))
+            if "url" not in config.keys() or config["url"] != path_in.name:
+                return
+
+            tmap = mkMapping(config)
             with NTriples(mode='w') as g:
-                for triple in convert(path_in, IRIRef(flags.namespace),
+                for triple in convert(path_in, tmap, IRIRef(flags.namespace),
                                       flags.delimiter):
                     g.write(triple)
 

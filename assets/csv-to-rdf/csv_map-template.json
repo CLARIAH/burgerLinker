@@ -1,0 +1,61 @@
+{
+  "@context": "http://www.w3.org/ns/csvw",
+  "dc:title": "CSV to RDF header map",
+  "dc:description": "A CSVW metadata specification that defines a mapping between the headers of a CSV file and the necessary variables in a BurgerLinker conversion script.",
+  "dc:creator": "",
+  "dc:date": "",
+  "url": "",
+  "tableSchema": {
+    "columns": [{
+      "titles": "",
+      "name": "eventID"
+    },{
+      "titles": "",
+      "name": "subjectID"
+    },{
+      "titles": "",
+      "name": "subjectFirstName"
+    },{
+      "titles": "",
+      "name": "subjectFamilyName"
+    },{
+      "titles": "",
+      "name": "subjectFamilyNamePrefix"
+    },{
+      "titles": "",
+      "name": "subjectGender",
+      "notes": [{
+          "type": "Annotation",
+          "body": {
+              "type": "Choice",
+              "items": [{
+                  "rdf:value": "f",
+                  "rdfs:label": "female"
+              },{
+                  "rdf:value": "m",
+                  "rdfs:label": "male"
+              }]
+          }
+      }]
+    },{
+      "titles": "",
+      "name": "subjectAge"
+    },{
+      "titles": "",
+      "name": "subjectRole"
+    },{
+      "titles": "",
+      "name": "eventYear"
+    },{
+      "titles": "",
+      "name": "eventMonth"
+    },{
+      "titles": "",
+      "name": "eventDay"
+    },{
+      "value": "{eventYear}-{eventMonth}-{eventDay}",
+      "virtual": true,
+      "name": "eventDate"
+    }]
+  }
+}

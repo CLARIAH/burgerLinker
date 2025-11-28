@@ -1,0 +1,104 @@
+{
+  "@context": "http://www.w3.org/ns/csvw",
+  "dc:title": "CSV to RDF header map",
+  "dc:description": "A CSVW metadata specification that defines a mapping between the headers of a CSV file and the necessary variables in a BurgerLinker conversion script.",
+  "dc:creator": "Wilcke, WX",
+  "dc:date": "2025-11-01",
+  "url": "persons.csv",
+  "tableSchema": {
+    "columns": [{
+      "titles": "id_registration",
+      "name": "eventID"
+    },{
+      "titles": "id_person",
+      "name": "subjectID"
+    },{
+      "titles": "firstname",
+      "name": "subjectFirstName"
+    },{
+      "titles": "familyname",
+      "name": "subjectFamilyName"
+    },{
+      "titles": "prefix",
+      "name": "subjectFamilyNamePrefix"
+    },{
+      "titles": "sex",
+      "name": "subjectGender",
+      "notes": [{
+          "type": "Annotation",
+          "body": {
+              "type": "Choice",
+              "items": [{
+                  "rdf:value": "f",
+                  "rdfs:label": "female"
+              },{
+                  "rdf:value": "m",
+                  "rdfs:label": "male"
+              }]
+          }
+      }]
+    },{
+      "titles": "age_year",
+      "name": "subjectAge"
+    },{
+      "titles": "role",
+      "name": "subjectRole",    
+      "notes": [{
+          "type": "Annotation",
+          "body": {
+              "type": "Choice",
+              "items": [{
+                  "rdf:value": "1",
+                  "rdfs:label": "newborn",
+                  "sdo:alternateName": "birth"
+              },{
+                  "rdf:value": "2",
+                  "rdfs:label": "mother"
+              },{
+                  "rdf:value": "3",
+                  "rdfs:label": "father"
+              },{
+                  "rdf:value": "4",
+                  "rdfs:label": "bride",
+                  "sdo:alternateName": "mar"
+              },{
+                  "rdf:value": "5",
+                  "rdfs:label": "motherBride"
+              },{
+                  "rdf:value": "6",
+                  "rdfs:label": "fatherBride"
+              },{
+                  "rdf:value": "7",
+                  "rdfs:label": "groom"
+              },{
+                  "rdf:value": "8",
+                  "rdfs:label": "motherGroom"
+              },{
+                  "rdf:value": "9",
+                  "rdfs:label": "fatherGroom"
+              },{
+                  "rdf:value": "10",
+                  "rdfs:label": "deceased",
+                  "sdo:alternateName": "death"
+              },{
+                  "rdf:value": "11",
+                  "rdfs:label": "partner"
+              }]
+          }
+      }]
+    },{
+      "titles": "{subjectRole.sdo:alternateName}_year",
+      "name": "eventYear"
+    },{
+      "titles": "{subjectRole.sdo:alternateName}_month",
+      "name": "eventMonth"
+    },{
+      "titles": "{subjectRole.sdo:alternateName}_day",
+      "name": "eventDay"
+    },{
+      "value": "{eventYear}-{eventMonth}-{eventDay}",
+      "virtual": true,
+      "name": "eventDate"
+    }]
+  }
+}
