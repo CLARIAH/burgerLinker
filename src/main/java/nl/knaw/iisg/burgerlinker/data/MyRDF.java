@@ -75,7 +75,7 @@ public class MyRDF {
         }
     }
 
-    public boolean parse(String[] paths) {
+    public boolean parse(List<String> paths) {
         boolean success = false;
         if (store != null && conn.isOpen()) {
             for (String path: paths) {

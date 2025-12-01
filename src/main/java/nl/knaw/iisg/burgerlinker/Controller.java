@@ -8,9 +8,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -511,16 +517,36 @@ public class Controller {
 	// ========= functions =========
 
     public boolean initGraphStore() throws java.io.IOException {
-        if (input != null && input.startsWith("http")) {
-            LOG.outputConsole(".: SPARQL Endpoint Provided. Preparing for remote query execution.");
-            myRDF = new MyRDF(input);
-            myRDF.setDebug(debug);
+        List<String> paths = new ArrayList<>();
+        if (input != null) {
+            if (input.startsWith("http")) {
+                LOG.outputConsole(".: SPARQL Endpoint Provided. Preparing for remote query execution.");
+                myRDF = new MyRDF(input);
+                myRDF.setDebug(debug);
 
-            return true;
+                return true;
+            } else {
+                checkInputDataset();
+                for (String path: input.split(",")) {
+                    paths.add(path);
+                }
+                Collections.sort(paths);
+            }
         }
 
         File dir = new File(this.workdir.getCanonicalPath() + "/store");
+        Path infoFile = Paths.get(dir.getCanonicalPath() + "/metadata.info");
         if (!this.reload && dir.isDirectory() && dir.listFiles().length > 0) {
+            if (paths.size() > 0) {
+                List<String> pathsRegistered = Files.readAllLines(infoFile);
+                Collections.sort(pathsRegistered);
+
+                if (!paths.equals(pathsRegistered) &&
+                    !askConfirmation("Provided input files are not associated with this work directory. Continue anyway?")) {
+                    return false;
+                }
+            }
+
             LOG.outputConsole(".: Found existing RDF store. Trying to establish connection.");
 
             ActivityIndicator spinner = new ActivityIndicator(".: Loading RDF Store");
@@ -542,24 +568,21 @@ public class Controller {
             return true;
         }
 
-        checkInputDataset();
-        String[] paths = {input};
-        if (doubleInputs) {
-            paths = input.split(",");
-        }
-
         if (this.reload && dir.isDirectory() && dir.listFiles().length > 0) {
-            if (askConfirmation("Found existing RDF store. Overwrite?")) {
-                dir.delete();
-
-                myRDF = new MyRDF(dir);
-                myRDF.setDebug(debug);
-                return myRDF.parse(paths);
+            if (!askConfirmation("Found existing RDF store. Overwrite?")) {
+                return false;
             }
+
+            dir.delete();
         }
+        Files.createDirectory(dir.toPath());
 
         LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
         LOG.outputConsole(".: NOTE: Parsing a new dataset for the first time might take a while.");
+
+        // store file names
+        Files.write(infoFile, paths, StandardCharsets.UTF_8);
+
         myRDF = new MyRDF(dir);
         myRDF.setDebug(debug);
         return myRDF.parse(paths);
