@@ -16,7 +16,7 @@ public class App {
     // default arguments
     private final String modelDefault = "PiCo-SDO",  // use shorthand
                   rulesetDefault = "default",  // use shorthand
-                  namespaceDefault = "_:";
+                  namespaceDefault = "https://www.example.org/";
 
 
 	@Parameter(names = {"-f", "--function"}, required=false,
