@@ -20,8 +20,8 @@ public class Process {
     public RelationType rtype;
     public Map<String, String> dataModel;
     public String queryEventA, queryEventB;
-    public final String csvHeader = "id_certificate_A,"
-                                  + "id_certificate_B,"
+    public final String csvHeader = "certificate_A,"
+                                  + "certificate_B,"
                                   + "family_line,"
                                   + "levenshtein_total_AB,"
                                   + "levenshtein_max_AB,"
