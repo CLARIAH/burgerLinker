@@ -210,7 +210,6 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
             if person_value is not None:
                 person = base_ns + "person/p-" + person_value
                 yield Statement(person, RDF + "type", PICOM_NS + "PersonObservation")
-                yield Statement(person, SDO_NS + "identifier", Literal(person_value))
 
                 # PNV
                 name = BNode(uuid.uuid4().hex)
@@ -265,7 +264,6 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
                     yield Statement(person, PROV_NS + "hadPrimarySource", event)
                 else:
                     yield Statement(event, RDF + "type", SDO_NS + "ArchiveComponent")
-                    yield Statement(event, SDO_NS + "identifier", Literal(event_value))
                     yield Statement(person, PROV_NS + "hadPrimarySource", event)
 
                     events[event] = dict()

@@ -166,7 +166,6 @@ def prepLine(line: str, delim: str):
 
 
 def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
-    events = set()
     header = None
     with open(path_in, "r") as f_in:
         header = prepLine(f_in.readline(), delim)
@@ -179,7 +178,6 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
             if person_value is not None:
                 person = base_ns + "person/p-" + person_value
                 yield Statement(person, RDF + "type", SDO_NS + "Person")
-                yield Statement(person, CIV_NS + "personID", Literal(person_value))
 
             if person is None:
                 continue
@@ -221,10 +219,6 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
             event_value = getValue(line_array, "eventID", mapping, header_to_idx)
             if event_value is not None:
                 event = base_ns + "event/e-" + event_value
-                if event not in events:
-                    yield Statement(event, CIV_NS + "registrationID", Literal(event_value))
-
-                events.add(event)
 
             if event is None:
                 continue
