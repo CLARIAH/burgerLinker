@@ -630,6 +630,7 @@ public class Controller {
             LOG.outputConsole("   - " + String.format("%-" + uriLenMax + "s", uri) + "   "
                                       + String.format("%" + countLenMax + "s", formatter.format(amount)));
         }
+        LOG.outputConsole(".: No. of statements: " + formatter.format(myRDF.size()));
 	}
 
 	public void within(Process process, Map<String, Rule> rules) throws java.io.IOException {
