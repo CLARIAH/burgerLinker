@@ -30,7 +30,7 @@ public class Index {
 	private MyDB db;
 	private BufferedOutputStream streamDictionaryFirstNames, streamDictionaryLastNames;
 	private MyTransducer myTransducerFirstNames, myTransducerLastNames;
-	private final String eventID_matchedNames_separator = ":";
+	private final String event_matchedNames_separator = ";";
 	private final int flush_limit = 50;
 	private int maxLev = 0, counterDictionaryFirstNames = 0, counterDictionaryLastNames = 0;
 	public TreeMap<Integer, Integer> nameLengthLevenshtein;
@@ -198,7 +198,7 @@ public class Index {
 		}
 	}
 
-	public Boolean addPersonToIndex(Person person, String eventID) {
+	public Boolean addPersonToIndex(Person person, String event) {
 		try {
 			String[] firstNames = person.decomposeFirstname();
 			String lastName = person.getLastName();
@@ -206,7 +206,7 @@ public class Index {
 
 			for(String firstName: firstNames) {
 				addToMyDictionaryFirstNames(firstName);
-				String value = eventID + eventID_matchedNames_separator + numberOfFirstNames;
+				String value = event + event_matchedNames_separator + numberOfFirstNames;
 				String fullName = firstName + person.names_separator + lastName;
 				addListValueToMyDB(fullName, value);
 				indexedFullNames.add(fullName);
@@ -215,13 +215,13 @@ public class Index {
 
 			return true;
 		} catch (Exception e) {
-			LOG.logError("addPersonToIndex", "Error adding person: " + person + " of eventID: " + eventID + " to index: " + indexID);
+			LOG.logError("addPersonToIndex", "Error adding person: " + person + " of event: " + event + " to index: " + indexID);
 		}
 
 		return false;
 	}
 
-	public Boolean addPersonToIndex(Person person, String eventID, String numberOfIndividuals) {
+	public Boolean addPersonToIndex(Person person, String event, String numberOfIndividuals) {
 		try {
 			String[] firstNames = person.decomposeFirstname();
 			String lastName = person.getLastName();
@@ -229,7 +229,7 @@ public class Index {
 
 			for(String firstName: firstNames) {
 				addToMyDictionaryFirstNames(firstName);
-				String value = eventID + eventID_matchedNames_separator + numberOfFirstNames + eventID_matchedNames_separator + numberOfIndividuals;
+				String value = event + event_matchedNames_separator + numberOfFirstNames + event_matchedNames_separator + numberOfIndividuals;
 				String fullName = firstName + person.names_separator + lastName;
 				addListValueToMyDB(fullName, value);
 				indexedFullNames.add(fullName);
@@ -238,7 +238,7 @@ public class Index {
 
 			return true;
 		} catch (Exception e) {
-			LOG.logError("addPersonToIndex", "Error adding person: " + person + " of eventID: " + eventID + " to index: " + indexID);
+			LOG.logError("addPersonToIndex", "Error adding person: " + person + " of event: " + event + " to index: " + indexID);
 		}
 
 		return false;
@@ -276,11 +276,12 @@ public class Index {
 		return result;
 	}
 
-	public CandidateList searchForCandidate(Person person, String sourceCertificateID, Boolean ignoreBlock) {
-		CandidateList candidateList = new CandidateList(person, sourceCertificateID);
+	public CandidateList searchForCandidate(Person person, String sourceCertificate, Boolean ignoreBlock) {
+		CandidateList candidateList = new CandidateList(person, sourceCertificate);
 		String[] firstNames = person.decomposeFirstname();
 		String lastName = person.getLastName();
-		ArrayList<Candidate> initialCandidates_LastNames = searchLastNameInTransducer(lastName, getAcceptedLevenshteinPerLength(lastName, "LN-"+sourceCertificateID));
+		ArrayList<Candidate> initialCandidates_LastNames = searchLastNameInTransducer(lastName,
+                getAcceptedLevenshteinPerLength(lastName, "LN-"+sourceCertificate));
 		ArrayList<Candidate> candidates_LastNames;
 
 		if(ignoreBlock) {
@@ -289,11 +290,12 @@ public class Index {
 			candidates_LastNames = blockFirstLetterLastName(initialCandidates_LastNames, lastName);
 		}
 
-		if (! candidates_LastNames.isEmpty()) {
+		if (!candidates_LastNames.isEmpty()) {
 			for(String firstName: firstNames) {
-				if(! firstName.equals("")) {
-					ArrayList<Candidate> initialCandidates_FirstNames = searchFirstNameInTransducer(firstName, getAcceptedLevenshteinPerLength(firstName, "FN-"+sourceCertificateID));
-					if (! initialCandidates_FirstNames.isEmpty()) {
+				if(!firstName.equals("")) {
+					ArrayList<Candidate> initialCandidates_FirstNames = searchFirstNameInTransducer(firstName,
+                            getAcceptedLevenshteinPerLength(firstName, "FN-"+sourceCertificate));
+					if (!initialCandidates_FirstNames.isEmpty()) {
 						for (Candidate firstNameCandidate: initialCandidates_FirstNames) {
 							for (Candidate lastNameCandidate: candidates_LastNames) {
 								String fullNameCandidate = firstNameCandidate.term() + person.names_separator + lastNameCandidate.term();
@@ -301,11 +303,13 @@ public class Index {
 									ArrayList<String> candidateCertificatesIDList = getListFromDB(fullNameCandidate);
 									if(candidateCertificatesIDList!= null) {
 										for(String candCertificateID: candidateCertificatesIDList) {
-											String[] certificate = candCertificateID.split(":");
+											String[] certificate = candCertificateID.split(event_matchedNames_separator);
 											if(certificate.length == 3) {
-												candidateList.addCandidate(certificate[0], certificate[1], certificate[2], firstName, firstNameCandidate, lastNameCandidate);
+												candidateList.addCandidate(certificate[0], certificate[1], certificate[2],
+                                                                           firstName, firstNameCandidate, lastNameCandidate);
 											} else {
-												candidateList.addCandidate(certificate[0], certificate[1], "", firstName, firstNameCandidate, lastNameCandidate);
+												candidateList.addCandidate(certificate[0], certificate[1], "",
+                                                                           firstName, firstNameCandidate, lastNameCandidate);
 											}
 										}
 									}
@@ -345,8 +349,8 @@ public class Index {
 			String matchedNamesRole1 = candidatesRole1Events.get(cand);
 			String matchedNamesRole2 = candidatesRole2Events.get(cand);
 
-			int distanceRole1 = candidatesRole1.get(cand + eventID_matchedNames_separator + matchedNamesRole1).distance();
-			int distanceRole2 = candidatesRole2.get(cand + eventID_matchedNames_separator + matchedNamesRole2).distance();
+			int distanceRole1 = candidatesRole1.get(cand + event_matchedNames_separator + matchedNamesRole1).distance();
+			int distanceRole2 = candidatesRole2.get(cand + event_matchedNames_separator + matchedNamesRole2).distance();
 
             String metaNames = matchedNamesRole1 + "-" + matchedNamesRole2;
 			String metaDistances = distanceRole1 + "-" + distanceRole2;
@@ -359,7 +363,7 @@ public class Index {
 	public HashMap<String,String> separateEventFromMeta(Set<String> events){
 		HashMap<String, String> result = new HashMap<String, String>();
 		for(String eventWithMeta: events) {
-			String[] event = eventWithMeta.split(eventID_matchedNames_separator);
+			String[] event = eventWithMeta.split(event_matchedNames_separator);
 			result.put(event[0], event[1]);
 		}
 

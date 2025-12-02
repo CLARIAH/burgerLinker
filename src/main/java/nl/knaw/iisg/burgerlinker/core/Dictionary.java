@@ -68,8 +68,7 @@ public class Dictionary {
 					countAll++;
 					if(!genderFilter || (genderFilter && personMain.hasGender(gender)) ) {
 						if(personMain.isValidWithFullName()){
-							String eventID = bindingSet.getValue("eventID").stringValue();
-							indexMain.addPersonToIndex(personMain, eventID, "");
+							indexMain.addPersonToIndex(personMain, event, "");
 
 							countInserts++;
 						}
@@ -154,14 +153,12 @@ public class Dictionary {
 
                     countAll++;
                     if (subject.isValidWithFullName()){
-                        String eventID = bindingSet.getValue("eventID").stringValue();
-
                         Person partner = new Person(event,
                                                 bindingSet.getValue("givenNamePartner"),
                                                 bindingSet.getValue("familyNamePartner"),
                                                 bindingSet.getValue("genderPartner"));
                         if (partner.isValidWithFullName()) {
-                            boolean insert = addToIndex(subject, partner, eventID);
+                            boolean insert = addToIndex(subject, partner, event);
 
                             if(insert) {
                                 countInserts++;
@@ -255,8 +252,6 @@ public class Dictionary {
                     countAll++;
                     if (!genderFilter || (genderFilter && personMain.hasGender(gender))) {
                         if (personMain.isValidWithFullName()){
-							String eventID = bindingSet.getValue("eventID").stringValue();
-
                             Person mother = new Person(event,
                                                    bindingSet.getValue("givenNameSubjectMother"),
                                                    bindingSet.getValue("familyNameSubjectMother"),
@@ -270,21 +265,21 @@ public class Dictionary {
                             boolean motherValid = mother.isValidWithFullName();
                             boolean fatherValid = father.isValidWithFullName();
                             if (motherValid && fatherValid) {
-                                indexMain.addPersonToIndex(personMain, eventID, "M-F");
-                                indexMother.addPersonToIndex(mother, eventID, "M-F");
-                                indexFather.addPersonToIndex(father, eventID, "M-F");
+                                indexMain.addPersonToIndex(personMain, event, "M-F");
+                                indexMother.addPersonToIndex(mother, event, "M-F");
+                                indexFather.addPersonToIndex(father, event, "M-F");
 
                                 count_Main_Mother_Father++;
                                 countInserts++;
                             } else if (motherValid) {
-                                indexMain.addPersonToIndex(personMain, eventID, "M");
-                                indexMother.addPersonToIndex(mother, eventID, "M");
+                                indexMain.addPersonToIndex(personMain, event, "M");
+                                indexMother.addPersonToIndex(mother, event, "M");
 
                                 count_Main_Mother++;
                                 countInserts++;
                             } else if (fatherValid) {
-                                indexMain.addPersonToIndex(personMain, eventID, "F");
-                                indexFather.addPersonToIndex(father, eventID, "F");
+                                indexMain.addPersonToIndex(personMain, event, "F");
+                                indexFather.addPersonToIndex(father, event, "F");
 
                                 count_Main_Father++;
                                 countInserts++;
@@ -343,15 +338,15 @@ public class Dictionary {
     }
 
     // if known gender, person1 is the female partner and person2 is the male partner
-    public boolean addToIndex(Person person1, Person person2, String eventID) {
+    public boolean addToIndex(Person person1, Person person2, String event) {
         if (person1.isFemale()) {  // && person2.isMale()) {
-            indexFemale.addPersonToIndex(person1, eventID);
-            indexMale.addPersonToIndex(person2, eventID);
+            indexFemale.addPersonToIndex(person1, event);
+            indexMale.addPersonToIndex(person2, event);
 
             return true;
         } else if (person2.isFemale()) {  // && person1.isMale()) {
-            indexFemale.addPersonToIndex(person2, eventID);
-            indexMale.addPersonToIndex(person1, eventID);
+            indexFemale.addPersonToIndex(person2, event);
+            indexMale.addPersonToIndex(person1, event);
 
             return true;
         }

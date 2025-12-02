@@ -2,8 +2,10 @@ package nl.knaw.iisg.burgerlinker.processes;
 
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,6 +81,8 @@ public class Between {
 			indexFemale.createTransducer();
 			try {
 				int cntAll = 0;
+                int cntLinks = 0;
+                int cntLinksTimeInconsistent = 0;
 
                 TupleQueryResult qResultA = null;
                 ActivityIndicator spinner = new ActivityIndicator(".: Linking " + processName);
@@ -90,7 +94,6 @@ public class Between {
 						cntAll++;
 
                         String event = bindingSetA.getValue("event").stringValue();
-						String eventID = bindingSetA.getValue("eventID").stringValue();
 
                         Set<Couple> couples = new HashSet<>();
                         if (process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
@@ -127,16 +130,16 @@ public class Between {
 
                             if (mother.isValidWithFullName() && father.isValidWithFullName()) {
                                 // start linking here
-                                CandidateList candidatesMale = indexMale.searchForCandidate(father, eventID, this.ignoreBlock);
+                                CandidateList candidatesMale = indexMale.searchForCandidate(father, event, this.ignoreBlock);
                                 if (!candidatesMale.candidates.isEmpty()) {
-                                    CandidateList candidatesFemale = indexFemale.searchForCandidate(mother, eventID, this.ignoreBlock);
+                                    CandidateList candidatesFemale = indexFemale.searchForCandidate(mother, event, this.ignoreBlock);
 
                                     if (!candidatesFemale.candidates.isEmpty()) {
                                         Set<String> finalCandidatesList = candidatesFemale.findIntersectionCandidates(candidatesMale);
 
                                         for (String finalCandidate: finalCandidatesList) {
                                             Map<String, Value> bindings = new HashMap<>();
-                                            bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
+                                            bindings.put("event", MyRDF.mkIRI(finalCandidate));
 
                                             TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                             for (BindingSet bindingSetB: qResultB) {
@@ -178,6 +181,10 @@ public class Between {
                                                     LINKS.saveLinks_Between(candidatesFemale, candidatesMale, finalCandidate,
                                                                             subjectBFemale, subjectBMale, familyCode,
                                                                             yearDifference);
+
+                                                    cntLinks++;
+                                                } else {
+                                                    cntLinksTimeInconsistent++;
                                                 }
                                             }
                                             qResultB.close();
@@ -194,6 +201,33 @@ public class Between {
                     qResultA.close();
                     spinner.terminate();
                     spinner.join();
+
+                    DecimalFormat formatter = new DecimalFormat("#,###");
+                    LinkedHashMap<String, String> summary = new LinkedHashMap<>();
+
+                    int cntLinksTotal = cntLinks + cntLinksTimeInconsistent;
+                    summary.put("Candidate Links Discovered", formatter.format(cntLinksTotal));
+                    if (!ignoreDate) {
+                        summary.put(" which passed validation", formatter.format(cntLinks));
+                    }
+
+                    int keyLenMax = 0, valLenMax = 0;
+                    for (String key: summary.keySet()) {
+                        String val = summary.get(key);
+                        if (val.length() > valLenMax) {
+                            valLenMax -= val.length();
+                        }
+                        if (key.length() > keyLenMax) {
+                            keyLenMax = key.length();
+                        }
+                    }
+
+                    LOG.outputConsole(".: Process Summary");
+                    for (String key: summary.keySet()) {
+                        String val = summary.get(key);
+                        LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
+                                          + "   " + String.format("%" + valLenMax + "s", val));
+                    }
 				}
 			} catch (Exception e) {
 				LOG.logError("link_between", "Linking Error in Process " + processName);

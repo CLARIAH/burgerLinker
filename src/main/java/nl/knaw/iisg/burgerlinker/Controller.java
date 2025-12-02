@@ -548,6 +548,9 @@ public class Controller {
             }
 
             LOG.outputConsole(".: Found existing RDF store. Trying to establish connection.");
+            if (paths.size() > 0) {
+                LOG.outputConsole(".: Provided input file are ignored.");
+            }
 
             ActivityIndicator spinner = new ActivityIndicator(".: Loading RDF Store");
             spinner.start();
@@ -575,10 +578,10 @@ public class Controller {
 
             dir.delete();
         }
-        Files.createDirectory(dir.toPath());
+        Files.createDirectories(dir.toPath());
 
         LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
-        LOG.outputConsole(".: NOTE: Parsing a new dataset for the first time might take a while.");
+        LOG.outputConsole(".: NOTE: Parsing a new dataset time might take a while.");
 
         // store file names
         Files.write(infoFile, paths, StandardCharsets.UTF_8);

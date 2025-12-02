@@ -382,6 +382,10 @@ public class MyRDF {
         return literal(value, iri(XSD.NAMESPACE, datatype));
     }
 
+    public static IRI mkIRI(String value) {
+        return iri(value);
+    }
+
     public static String generalizeQuery(String q) {
         return generalizeQuery(q, null);
     }

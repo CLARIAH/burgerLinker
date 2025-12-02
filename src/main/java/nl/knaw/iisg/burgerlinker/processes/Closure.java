@@ -518,9 +518,9 @@ public class Closure {
                     String familyLine = nextLine[2];  // 21: bride, 22: groom
 
                     // event A participants
-					String idEventA = nextLine[0];
+					String eventA = nextLine[0];
                     Map<String, Value> bindingsA = new HashMap<>();
-                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA));
+                    bindingsA.put("event", MyRDF.mkIRI(eventA));
                     BindingSet qResultA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
 					String idSubjectA = qResultA.getValue("idSubject").stringValue();
@@ -542,9 +542,9 @@ public class Closure {
                     }
 
                     // event B participants
-					String idEventB = nextLine[1];
+					String eventB = nextLine[1];
                     Map<String, Value> bindingsB = new HashMap<>();
-                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB));
+                    bindingsB.put("event", MyRDF.mkIRI(eventB));
                     BindingSet qResultB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
                     String idSubjectB, subjectB;
@@ -595,20 +595,20 @@ public class Closure {
 
                     // metadata
 					String meta_newborn = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
-                                          + idEventA + "," + idEventB + "," + nextLine[3] + "," + nextLine[4] + ","
+                                          + eventA + "," + eventB + "," + nextLine[3] + "," + nextLine[4] + ","
                                           + nextLine[9] + "," + nextLine[10] + "," + nextLine[11] + "," + nextLine[18];
 					LINKS.saveIndividualLink(idSubjectA, idSubjectB, meta_newborn);
 
 					if(fatherMatched) {
 						String meta_fathers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
-                                              + idEventA + "," + idEventB + "," + nextLine[7] + "," + nextLine[8] + ","
+                                              + eventA + "," + eventB + "," + nextLine[7] + "," + nextLine[8] + ","
                                               + nextLine[15] + "," + nextLine[16] + "," + nextLine[17] + "," + nextLine[18];
 						LINKS.saveIndividualLink(idSubjectAFather, idSubjectBFather, meta_fathers);
 					}
 
 					if(motherMatched) {
 						String meta_mothers = linktype + "," + linkProv + "," + familyLine + "," + matchedIndiv + ","
-                                              + idEventA + "," + idEventB + "," + nextLine[5] + "," + nextLine[6] + ","
+                                              + eventA + "," + eventB + "," + nextLine[5] + "," + nextLine[6] + ","
                                               + nextLine[12] + "," + nextLine[13] + "," + nextLine[14] + "," + nextLine[18];
 						LINKS.saveIndividualLink(idSubjectAMother, idSubjectBMother, meta_mothers);
 					}
@@ -653,9 +653,9 @@ public class Closure {
 					String familyLine = nextLine[2];
 
                     // event A participants
-					String idEventA = nextLine[0];
+					String eventA = nextLine[0];
                     Map<String, Value> bindingsA = new HashMap<>();
-                    bindingsA.put("eventID", MyRDF.mkLiteral(idEventA));
+                    bindingsA.put("event", MyRDF.mkIRI(eventA));
                     BindingSet bindingSetA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
                     String idFather, idMother, fatherIRI, motherIRI;
@@ -677,9 +677,9 @@ public class Closure {
                     personIRIToID.put(motherIRI, idMother);
 
                     // event B participants
-					String idEventB = nextLine[1];
+					String eventB = nextLine[1];
                     Map<String, Value> bindingsB = new HashMap<>();
-                    bindingsB.put("eventID", MyRDF.mkLiteral(idEventB));
+                    bindingsB.put("event", MyRDF.mkIRI(eventB));
                     BindingSet bindingSetB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
 					String idSubjectB = bindingSetB.getValue("idSubject").stringValue();
@@ -692,7 +692,7 @@ public class Closure {
 
                     // metadata
 					String meta = linktype + "," + linkProv + "," + familyLine + ","
-                                  + matchedIndiv + "," + idEventA + "," + idEventB;
+                                  + matchedIndiv + "," + eventA + "," + eventB;
 
                     String meta_father, meta_mother;
                     meta_father = meta + ","
@@ -706,7 +706,6 @@ public class Closure {
                     String idSubjectFemale = idSubjectB;
                     String idSubjectMale = idSubjectBPartner;
                     if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                        String eventB = bindingSetB.getValue("event").stringValue();
                         Person subjectB = new Person(eventB,
                                                  bindingSetB.getValue("givenNameSubject"),
                                                  bindingSetB.getValue("familyNameSubject"),

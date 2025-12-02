@@ -41,7 +41,6 @@ BIRTHS: >
       SELECT DISTINCT *
       WHERE {
         ?event sdo:additionalType picot:sourcetypes\/551 ;
-               sdo:identifier ?eventID ;
                sdo:dateCreated ?eventDate .
         ?newbornID prov:hadPrimarySource ?event ;
                    picom:hasRole picot:roles\/575 ;
@@ -86,7 +85,6 @@ DEATHS: >
       SELECT DISTINCT *
       WHERE {
       ?event sdo:additionalType picot:sourcetypes\/553 ;
-             sdo:identifier ?eventID ;
              sdo:dateCreated ?eventDate .
       ?deceasedID prov:hadPrimarySource ?event ;
                   picom:hasRole picot:roles\/479 ;
@@ -137,8 +135,7 @@ MARRIAGES: >
       SELECT DISTINCT *
       WHERE {
         ?event sdo:additionalType picot:sourcetypes\/552 ;
-               sdo:identifier ?eventID .
-        ?event sdo:dateCreated ?eventDate .
+               sdo:dateCreated ?eventDate .
        
         ?brideID prov:hadPrimarySource ?event ;
                  picom:hasRole picot:roles\/574 ;

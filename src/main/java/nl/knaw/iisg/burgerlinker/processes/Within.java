@@ -2,8 +2,10 @@ package nl.knaw.iisg.burgerlinker.processes;
 
 import java.io.File;
 import java.lang.Math;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +80,10 @@ public class Within {
 			indexFather = dict.indexFather;	indexFather.createTransducer();
 			try {
 				int cntAll = 0;
+                int cntLinkParents = 0;
+                int cntLinkFather = 0;
+                int cntLinkMother = 0;
+                int cntLinksFailed = 0;
 
                 TupleQueryResult qResultA = null;
                 ActivityIndicator spinner = new ActivityIndicator(".: Linking " + processName + " (" + gender + ")");
@@ -89,7 +95,6 @@ public class Within {
 						cntAll++;
 
                         String event = bindingSetA.getValue("event").stringValue();
-						String eventID = bindingSetA.getValue("eventID").stringValue();
 
 						Person newborn = new Person(event,
                                                 bindingSetA.getValue("givenNameSubject"),
@@ -111,7 +116,7 @@ public class Within {
 
                         CandidateList candidatesSubjectB=null, candidatesMother=null, candidatesFather=null;
                         if (mother.isValidWithFullName() || father.isValidWithFullName()) {
-                            candidatesSubjectB = indexSubjectB.searchForCandidate(newborn, eventID, ignoreBlock);
+                            candidatesSubjectB = indexSubjectB.searchForCandidate(newborn, event, ignoreBlock);
                             if (candidatesSubjectB.candidates.isEmpty()) {
                                 continue;
                             }
@@ -120,7 +125,7 @@ public class Within {
                             int subjectAFatherAge = myRDF.valueToInt(bindingSetA.getValue("ageSubjectFather"));
 
                             if (mother.isValidWithFullName()) {
-                                candidatesMother = indexMother.searchForCandidate(mother, eventID, ignoreBlock);
+                                candidatesMother = indexMother.searchForCandidate(mother, event, ignoreBlock);
                                 if (!candidatesMother.candidates.isEmpty()) {
                                     Set<String> finalCandidatesMother = candidatesSubjectB.findIntersectionCandidates(candidatesMother);
                                     for (String finalCandidate: finalCandidatesMother) {
@@ -130,7 +135,7 @@ public class Within {
                                         }
 
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
+                                        bindings.put("event", MyRDF.mkIRI(finalCandidate));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
@@ -160,11 +165,15 @@ public class Within {
                                                         checkTimeConsistencyWithAge(yearDifference, subjectMotherAgeDiff)) {
                                                         LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
                                                                                       subjectB, subjectBMother, familyCode, yearDifference);
+                                                        cntLinkMother++;
                                                         }
                                                 } else {
                                                     LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, finalCandidate,
                                                                                   subjectB, subjectBMother, familyCode, yearDifference);
+                                                    cntLinkMother++;
                                                 }
+                                            } else {
+                                                cntLinksFailed++;
                                             }
                                         }
                                         qResultB.close();
@@ -173,7 +182,7 @@ public class Within {
                             }
 
                             if (father.isValidWithFullName()) {
-                                candidatesFather = indexFather.searchForCandidate(father, eventID, ignoreBlock);
+                                candidatesFather = indexFather.searchForCandidate(father, event, ignoreBlock);
                                 if (!candidatesFather.candidates.isEmpty()) {
                                     Set<String> finalCandidatesFather = candidatesSubjectB.findIntersectionCandidates(candidatesFather);
                                     for (String finalCandidate: finalCandidatesFather) {
@@ -183,7 +192,7 @@ public class Within {
                                         }
 
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
+                                        bindings.put("event", MyRDF.mkIRI(finalCandidate));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
@@ -213,11 +222,15 @@ public class Within {
                                                         checkTimeConsistencyWithAge(yearDifference, subjectFatherAgeDiff)) {
                                                         LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
                                                                                       subjectB, subjectBFather, familyCode, yearDifference);
+                                                        cntLinkFather++;
                                                     }
                                                 } else {
                                                     LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, finalCandidate,
                                                                                   subjectB, subjectBFather, familyCode, yearDifference);
+                                                    cntLinkFather++;
                                                 }
+                                            } else {
+                                                cntLinksFailed++;
                                             }
                                         }
                                         qResultB.close();
@@ -231,7 +244,7 @@ public class Within {
                                                                                                                             candidatesFather);
                                     for (String finalCandidate: finalCandidatesMotherFather) {
                                         Map<String, Value> bindings = new HashMap<>();
-                                        bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
+                                        bindings.put("event", MyRDF.mkIRI(finalCandidate));
 
                                         TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                         for (BindingSet bindingSetB: qResultB) {
@@ -271,12 +284,16 @@ public class Within {
                                                             LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather,
                                                                                    finalCandidate, subjectB, subjectBMother, subjectBFather,
                                                                                    familyCode, yearDifference);
+                                                            cntLinkParents++;
                                                     }
                                                 } else {
                                                     LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather,
                                                                            finalCandidate, subjectB, subjectBMother, subjectBFather,
                                                                            familyCode, yearDifference);
+                                                    cntLinkParents++;
                                                 }
+                                            } else {
+                                                cntLinksFailed++;
                                             }
                                         }
                                         qResultB.close();
@@ -292,6 +309,36 @@ public class Within {
 					qResultA.close();
                     spinner.terminate();
                     spinner.join();
+
+                    DecimalFormat formatter = new DecimalFormat("#,###");
+                    LinkedHashMap<String, String> summary = new LinkedHashMap<>();
+
+                    int cntLinkTotal = cntLinkParents + cntLinkFather + cntLinkMother;
+                    summary.put("Candidate Links Discovered", formatter.format(cntLinkTotal+cntLinksFailed));
+                    if (!ignoreDate) {
+                        summary.put(" which passed validation", formatter.format(cntLinkTotal));
+                    }
+                    summary.put("  matching both parents", formatter.format(cntLinkParents));
+                    summary.put("  matching mothers only", formatter.format(cntLinkMother));
+                    summary.put("  matching fathers only", formatter.format(cntLinkFather));
+
+                    int keyLenMax = 0, valLenMax = 0;
+                    for (String key: summary.keySet()) {
+                        String val = summary.get(key);
+                        if (val.length() > valLenMax) {
+                            valLenMax -= val.length();
+                        }
+                        if (key.length() > keyLenMax) {
+                            keyLenMax = key.length();
+                        }
+                    }
+
+                    LOG.outputConsole(".: Process Summary");
+                    for (String key: summary.keySet()) {
+                        String val = summary.get(key);
+                        LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
+                                          + "   " + String.format("%" + valLenMax + "s", val));
+                    }
 				}
 			} catch (Exception e) {
 				LOG.logError("link_within", "Error in linking subjects in event A to subjects in event B in process " + this.processName);
@@ -329,7 +376,6 @@ public class Within {
 						cntAll++;
 
                         String event = bindingSetA.getValue("event").stringValue();
-						String eventID = bindingSetA.getValue("eventID").stringValue();
 
 						Person newborn = new Person(event,
                                                 bindingSetA.getValue("givenNameSubject"),
@@ -338,11 +384,11 @@ public class Within {
 						if (newborn.isValidWithFullName() && newborn.hasGender(gender)) {
                             CandidateList candidatesSubjectB=null;
 
-                            candidatesSubjectB = indexSubjectB.searchForCandidate(newborn, eventID, ignoreBlock);
+                            candidatesSubjectB = indexSubjectB.searchForCandidate(newborn, event, ignoreBlock);
                             if (!candidatesSubjectB.candidates.isEmpty()) {
                                 for (String finalCandidate: candidatesSubjectB.candidates.keySet()) {
                                     Map<String, Value> bindings = new HashMap<>();
-                                    bindings.put("eventID", MyRDF.mkLiteral(finalCandidate));
+                                    bindings.put("event", MyRDF.mkIRI(finalCandidate));
 
                                     TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                     for (BindingSet bindingSetB: qResultB) {

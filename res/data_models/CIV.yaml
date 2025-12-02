@@ -39,8 +39,7 @@ BIRTHS: >
     {
       SELECT DISTINCT *
       WHERE {
-              ?event civ:registrationID ?eventID ;
-                     civ:newborn ?newbornID ;
+              ?event civ:newborn ?newbornID ;
                      civ:eventDate ?eventDate .
               ?newbornID civ:personID ?idNewborn .
       }
@@ -77,8 +76,7 @@ DEATHS: >
     {
       SELECT DISTINCT *
       WHERE {
-              ?event civ:registrationID ?eventID ;
-                     civ:deceased ?deceasedID ;
+              ?event civ:deceased ?deceasedID ;
                      civ:eventDate ?eventDate .                    
              ?deceasedID civ:personID ?idDeceased .
       }
@@ -121,8 +119,7 @@ MARRIAGES: >
     {
       SELECT DISTINCT *
       WHERE {
-              ?event civ:registrationID ?eventID ;
-                     civ:eventDate ?eventDate ;
+              ?event civ:eventDate ?eventDate ;
                      civ:bride ?brideID ;
                      civ:groom ?groomID .
       }

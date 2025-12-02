@@ -22,15 +22,18 @@ public class CandidateList {
 		candidates = new HashMap<String, Certificate>();
 	}
 
-	public Boolean addCandidate(String candidateCertificateID, String candidateNumberNames, String candidateNumberIndividuals, String sourceFirstName, Candidate candidateFirstName,  Candidate candidateLastName) {
-		if(candidates.containsKey(candidateCertificateID)) {
+	public boolean addCandidate(String candidateCertificateID, String candidateNumberNames,
+                                String candidateNumberIndividuals, String sourceFirstName,
+                                Candidate candidateFirstName,  Candidate candidateLastName) {
+		if (candidates.containsKey(candidateCertificateID)) {
 			Certificate cand = candidates.get(candidateCertificateID);
 			cand.addMatchedFirstName(sourceFirstName, candidateFirstName);
 
 			return true;
 		} else {
-			candidates.put(candidateCertificateID, new Certificate(candidateCertificateID, candidateNumberNames, candidateNumberIndividuals,
-                                                                   sourceFirstName, candidateFirstName, candidateLastName,
+			candidates.put(candidateCertificateID, new Certificate(candidateCertificateID, candidateNumberNames,
+                                                                   candidateNumberIndividuals, sourceFirstName,
+                                                                   candidateFirstName, candidateLastName,
                                                                    sourcePerson.names_separator));
 
             return false;
