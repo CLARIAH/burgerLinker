@@ -52,8 +52,12 @@ public class App {
     String ruleset = rulesetDefault;
 
     @Parameter(names = "--reload", required=false,
-               description="[OPTIONAL] Reload RDF data from graph(s) instead of reusing an existing RDF store.")
+               description="[OPTIONAL] Reload RDF data (provided as input) instead of reusing an existing RDF store.")
     boolean reload = false;
+
+    @Parameter(names = "--append", required=false,
+               description="[OPTIONAL] Append RDF data (provided as input) to existing RDF store.")
+    boolean append = false;
 
 	@Parameter(names = "--max-lev", required=false,
                description="[OPTIONAL] Integer between 0 and 4 (default) indicating the maximum Levenshtein distance per first or last name allowed for accepting a link.")
@@ -124,7 +128,7 @@ public class App {
 			Controller cntrl = new Controller(function, maxLev, fixedLev, ignoreDate,
                                               ignoreBlock, singleInd, input, workdir,
                                               format, model, ruleset, namespace, query,
-                                              reload, debug);
+                                              reload, append, debug);
 			cntrl.runProgram();
 		}
 	}

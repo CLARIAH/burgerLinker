@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class Controller {
 	private int maxLev;
 	private boolean fixedLev = false, ignoreDate = false, ignoreBlock = false,
                     singleInd = false, outputFormatCSV = true, doubleInputs = false,
-                    reload = false, debug = false;
+                    reload = false, append = false, debug = false;
     private Map<String, String> dataModel;
     private File workdir;
     private MyRDF myRDF;
@@ -74,7 +75,7 @@ public class Controller {
                       boolean ignoreDate, boolean ignoreBlock, boolean singleInd,
                       String input, String workdir, String outputFormat,
                       String dataModelPath, String ruleset, String namespace,
-                      String query, boolean reload, boolean debug) {
+                      String query, boolean reload, boolean append, boolean debug) {
 		this.function = function;
 		this.maxLev = maxlev;
 		this.fixedLev = fixedLev;
@@ -83,6 +84,7 @@ public class Controller {
 		this.singleInd = singleInd;
 		this.input = input;
         this.reload = reload;
+        this.append = append;
         this.query = query;
         this.debug = debug;
 
@@ -578,13 +580,20 @@ public class Controller {
 
             dir.delete();
         }
-        Files.createDirectories(dir.toPath());
 
-        LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
-        LOG.outputConsole(".: NOTE: Parsing a new dataset time might take a while.");
+        if (!this.append) {
+            Files.createDirectories(dir.toPath());
 
-        // store file names
-        Files.write(infoFile, paths, StandardCharsets.UTF_8);
+            LOG.outputConsole(".: Creating new RDF store: " + "'" + dir.getCanonicalPath() + "'");
+
+            // store file names
+            Files.write(infoFile, paths, StandardCharsets.UTF_8);
+        } else {
+            LOG.outputConsole(".: Appending new statements to RDF store");
+
+            Files.write(infoFile, paths, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+        }
+        LOG.outputConsole(".: NOTE: Parsing a new dataset might take a while.");
 
         myRDF = new MyRDF(dir);
         myRDF.setDebug(debug);
