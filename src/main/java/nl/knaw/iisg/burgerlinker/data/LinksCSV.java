@@ -280,7 +280,7 @@ public class LinksCSV {
 	}
 
 	public void saveIndividualLink(String idPerson1, String idPerson2, String linksMeta) {
-		if(Integer.parseInt(idPerson1) < Integer.parseInt(idPerson2)) {
+		if (idPerson1.compareTo(idPerson2) < 0) {
 			addToStream(idPerson1 + "," + idPerson2 + "," + linksMeta);
 		} else {
 			addToStream(idPerson2 + "," + idPerson1 + "," + linksMeta);

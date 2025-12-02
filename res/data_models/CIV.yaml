@@ -41,7 +41,6 @@ BIRTHS: >
       WHERE {
               ?event civ:newborn ?newbornID ;
                      civ:eventDate ?eventDate .
-              ?newbornID civ:personID ?idNewborn .
       }
     }
   OPTIONAL { ?newbornID sdo:givenName ?givenNameNewborn }
@@ -49,15 +48,13 @@ BIRTHS: >
   OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
   OPTIONAL { ?newbornID civ:age ?ageNewborn }
   OPTIONAL { ?event civ:father ?fatherNewbornID .
-             ?fatherNewbornID civ:personID ?idNewbornFather ;
-                              sdo:givenName ?givenNameNewbornFather ;
+             ?fatherNewbornID sdo:givenName ?givenNameNewbornFather ;
                               sdo:familyName ?familyNameNewbornFather .
              OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID sdo:gender ?genderNewbornFather }
              OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID civ:age ?ageNewbornFather }
            }
   OPTIONAL { ?event civ:mother ?motherNewbornID .
-             ?motherNewbornID civ:personID ?idNewbornMother ;
-                              sdo:givenName ?givenNameNewbornMother ;
+             ?motherNewbornID sdo:givenName ?givenNameNewbornMother ;
                               sdo:familyName ?familyNameNewbornMother .
              OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID sdo:gender ?genderNewbornMother }
              OPTIONAL { FILTER(BOUND(?motherNewbornID)) ?motherNewbornID civ:age ?ageNewbornMother }
@@ -78,7 +75,6 @@ DEATHS: >
       WHERE {
               ?event civ:deceased ?deceasedID ;
                      civ:eventDate ?eventDate .                    
-             ?deceasedID civ:personID ?idDeceased .
       }
     }
   OPTIONAL { ?deceasedID sdo:givenName ?givenNameDeceased }
@@ -86,21 +82,18 @@ DEATHS: >
   OPTIONAL { ?deceasedID sdo:gender ?genderDeceased }
   OPTIONAL { ?deceasedID civ:age ?ageDeceased }
   OPTIONAL { ?event civ:partner ?partnerID .
-             ?partnerID civ:personID ?idPartner ;
-                        sdo:givenName ?givenNamePartner ;
+             ?partnerID sdo:givenName ?givenNamePartner ;
                         sdo:familyName ?familyNamePartner .
              OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:gender ?genderPartner }
            }
   OPTIONAL { ?event civ:father ?fatherDeceasedID .
-             ?fatherDeceasedID civ:personID ?idDeceasedFather ;
-                               sdo:givenName ?givenNameDeceasedFather ;
+             ?fatherDeceasedID sdo:givenName ?givenNameDeceasedFather ;
                                sdo:familyName ?familyNameDeceasedFather .
              OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID sdo:gender ?genderDeceasedFather }
              OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID civ:age ?ageDeceasedFather }
            }
   OPTIONAL { ?event civ:mother ?motherDeceasedID .
-             ?motherDeceasedID civ:personID ?idDeceasedMother ;
-                               sdo:givenName ?givenNameDeceasedMother ;
+             ?motherDeceasedID sdo:givenName ?givenNameDeceasedMother ;
                                sdo:familyName ?familyNameDeceasedMother .
              OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID sdo:gender ?genderDeceasedMother }
              OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID civ:age ?ageDeceasedMother }
@@ -124,42 +117,36 @@ MARRIAGES: >
                      civ:groom ?groomID .
       }
     }
-  OPTIONAL { ?brideID civ:personID ?idBride ;
-                      sdo:givenName ?givenNameBride ;
+  OPTIONAL { ?brideID sdo:givenName ?givenNameBride ;
                       sdo:familyName ?familyNameBride .
              OPTIONAL { FILTER(BOUND(?brideID)) ?brideID sdo:gender ?genderBride }
              OPTIONAL { FILTER(BOUND(?brideID)) ?brideID civ:age ?ageBride }
            }
-  OPTIONAL { ?groomID civ:personID ?idGroom ;
-                      sdo:givenName ?givenNameGroom ;
+  OPTIONAL { ?groomID sdo:givenName ?givenNameGroom ;
                       sdo:familyName ?familyNameGroom .
              OPTIONAL { FILTER(BOUND(?groomID)) ?groomID sdo:gender ?genderGroom }
              OPTIONAL { FILTER(BOUND(?groomID)) ?groomID civ:age ?ageGroom }
            }
   OPTIONAL { ?event civ:fatherBride ?fatherBrideID .
-             ?fatherBrideID civ:personID ?idBrideFather ;
-                            sdo:givenName ?givenNameBrideFather ;
+             ?fatherBrideID sdo:givenName ?givenNameBrideFather ;
                             sdo:familyName ?familyNameBrideFather .
              OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID sdo:gender ?genderBrideFather }
              OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID civ:age ?ageBrideFather }
            }
   OPTIONAL { ?event civ:motherBride ?motherBrideID .
-             ?motherBrideID civ:personID ?idBrideMother ;
-                            sdo:givenName ?givenNameBrideMother ;
+             ?motherBrideID sdo:givenName ?givenNameBrideMother ;
                             sdo:familyName ?familyNameBrideMother .
              OPTIONAL { FILTER(BOUND(?motherBrideID)) ?motherBrideID sdo:gender ?genderBrideMother }
              OPTIONAL { FILTER(BOUND(?motherBrideID)) ?motherBrideID civ:age ?ageBrideMother }
            }
   OPTIONAL { ?event civ:fatherGroom ?fatherGroomID .
-             ?fatherGroomID civ:personID ?idGroomFather ;
-                            sdo:givenName ?givenNameGroomFather ;
+             ?fatherGroomID sdo:givenName ?givenNameGroomFather ;
                             sdo:familyName ?familyNameGroomFather .
              OPTIONAL { FILTER(BOUND(?fatherGroomID)) ?fatherGroomID sdo:gender ?genderGroomFather }
              OPTIONAL { FILTER(BOUND(?fatherGroomID)) ?fatherGroomID civ:age ?ageGroomFather }
            }
   OPTIONAL { ?event civ:motherGroom ?motherGroomID .
-             ?motherGroomID civ:personID ?idGroomMother ;
-                            sdo:givenName ?givenNameGroomMother ;
+             ?motherGroomID sdo:givenName ?givenNameGroomMother ;
                             sdo:familyName ?familyNameGroomMother .
              OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID sdo:gender ?genderGroomMother }
              OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID civ:age ?ageGroomMother }

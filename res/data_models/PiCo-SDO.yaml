@@ -43,8 +43,7 @@ BIRTHS: >
         ?event sdo:additionalType picot:sourcetypes\/551 ;
                sdo:dateCreated ?eventDate .
         ?newbornID prov:hadPrimarySource ?event ;
-                   picom:hasRole picot:roles\/575 ;
-                   sdo:identifier ?idNewborn .
+                   picom:hasRole picot:roles\/575 .
         }
     }
     OPTIONAL { ?newbornID sdo:gender ?genderNewborn }
@@ -52,16 +51,14 @@ BIRTHS: >
     OPTIONAL { ?newbornID sdo:givenName ?givenNameNewborn ;
                           sdo:familyName ?familyNameNewborn . }
     OPTIONAL { ?newbornID sdo:parent ?fatherNewbornID .
-               ?fatherNewbornID sdo:identifier ?idNewbornFather ;
-                                sdo:gender ?genderNewbornFather ;
+               ?fatherNewbornID sdo:gender ?genderNewbornFather ;
                                 sdo:givenName ?givenNameNewbornFather ;
                                 sdo:familyName ?familyNameNewbornFather .
                FILTER(?genderNewbornFather = sdo:Male)
                OPTIONAL { FILTER(BOUND(?fatherNewbornID)) ?fatherNewbornID picom:hasAge ?ageNewbornFather }
     }
     OPTIONAL { ?newbornID sdo:parent ?motherNewbornID .
-               ?motherNewbornID sdo:identifier ?idNewbornMother ;
-                                sdo:gender ?genderNewbornMother ;
+               ?motherNewbornID sdo:gender ?genderNewbornMother ;
                                 sdo:givenName ?givenNameNewbornMother ;
                                 sdo:familyName ?familyNameNewbornMother .
                FILTER(?genderNewbornMother = sdo:Female)
@@ -87,8 +84,7 @@ DEATHS: >
       ?event sdo:additionalType picot:sourcetypes\/553 ;
              sdo:dateCreated ?eventDate .
       ?deceasedID prov:hadPrimarySource ?event ;
-                  picom:hasRole picot:roles\/479 ;
-                  sdo:identifier ?idDeceased .
+                  picom:hasRole picot:roles\/479 .
       }
     }
     OPTIONAL { ?deceasedID sdo:givenName ?givenNameDeceased ;
@@ -96,23 +92,20 @@ DEATHS: >
     OPTIONAL { ?deceasedID sdo:gender ?genderDeceased }
     OPTIONAL { ?deceasedID picom:hasAge ?ageDeceased }
     OPTIONAL { ?deceasedID sdo:parent ?fatherDeceasedID .
-               ?fatherDeceasedID sdo:identifier ?idDeceasedFather ;
-                                 sdo:gender ?genderDeceasedFather ;                                 
+               ?fatherDeceasedID sdo:gender ?genderDeceasedFather ;                                 
                                  sdo:givenName ?givenNameDeceasedFather ;
                                  sdo:familyName ?familyNameDeceasedFather .
                FILTER(?genderDeceasedFather = sdo:Male)
                OPTIONAL { FILTER(BOUND(?fatherDeceasedID)) ?fatherDeceasedID picom:hasAge ?ageDeceasedFather }
     }
     OPTIONAL { ?deceasedID sdo:parent ?motherDeceasedID .
-               ?motherDeceasedID sdo:identifier ?idDeceasedMother ;
-                                 sdo:gender ?genderDeceasedMother ;
+               ?motherDeceasedID sdo:gender ?genderDeceasedMother ;
                                  sdo:givenName ?givenNameDeceasedMother ;
                                  sdo:familyName ?familyNameDeceasedMother .
                FILTER(?genderDeceasedMother = sdo:Female)
                OPTIONAL { FILTER(BOUND(?motherDeceasedID)) ?motherDeceasedID picom:hasAge ?ageDeceasedMother }
     }
     OPTIONAL { ?deceasedID sdo:spouse ?partnerID .
-               ?partnerID sdo:identifier ?idPartner .
                OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:gender ?genderPartner }
                OPTIONAL { FILTER(BOUND(?partnerID)) ?partnerID sdo:givenName ?givenNamePartner ;
                                                                sdo:familyName ?familyNamePartner }
@@ -141,8 +134,7 @@ MARRIAGES: >
                  picom:hasRole picot:roles\/574 ;
                  sdo:gender ?genderBride .
         FILTER(?genderBride = sdo:Female)
-        ?brideID sdo:identifier ?idBride ;
-                 sdo:givenName ?givenNameBride ;
+        ?brideID sdo:givenName ?givenNameBride ;
                  sdo:familyName ?familyNameBride .
 
         ?brideID sdo:spouse ?groomID .
@@ -150,8 +142,7 @@ MARRIAGES: >
                  picom:hasRole picot:roles\/574 ;
                  sdo:gender ?genderGroom .
         FILTER(?genderGroom = sdo:Male)
-        ?groomID sdo:identifier ?idGroom ;
-                 sdo:givenName ?givenNameGroom ;
+        ?groomID sdo:givenName ?givenNameGroom ;
                  sdo:familyName ?familyNameGroom .
         }
       }
@@ -160,32 +151,28 @@ MARRIAGES: >
     OPTIONAL { ?brideID sdo:parent ?fatherBrideID .
                ?fatherBrideID sdo:gender ?genderBrideFather .
                FILTER(?genderBrideFather = sdo:Male)
-               ?fatherBrideID sdo:identifier ?idBrideFather ; 
-                              sdo:givenName ?givenNameBrideFather ;
+               ?fatherBrideID sdo:givenName ?givenNameBrideFather ;
                               sdo:familyName ?familyNameBrideFather .
                OPTIONAL { FILTER(BOUND(?fatherBrideID)) ?fatherBrideID picom:hasAge ?ageBrideFather }
     }
     OPTIONAL { ?brideID sdo:parent ?motherBrideID .
                ?motherBrideID sdo:gender ?genderBrideMother .
                FILTER(?genderBrideMother = sdo:Female)
-               ?motherBrideID sdo:identifier ?idBrideMother ;
-                              sdo:givenName ?givenNameBrideMother ;
+               ?motherBrideID sdo:givenName ?givenNameBrideMother ;
                               sdo:familyName ?familyNameBrideMother .
                OPTIONAL { FILTER(BOUND(?motherBrideID)) ?motherBrideID picom:hasAge ?ageBrideMother }
     }
     OPTIONAL { ?groomID sdo:parent ?fatherGroomID .
                ?fatherGroomID sdo:gender ?genderGroomFather ;
                FILTER(?genderGroomFather = sdo:Male)
-               ?fatherGroomID sdo:identifier ?idGroomFather ;
-                              sdo:givenName ?givenNameGroomFather ;
+               ?fatherGroomID sdo:givenName ?givenNameGroomFather ;
                               sdo:familyName ?familyNameGroomFather .
                OPTIONAL { FILTER(BOUND(?fatherGroomID)) ?fatherGroomID picom:hasAge ?ageGroomFather }
     }
     OPTIONAL { ?groomID sdo:parent ?motherGroomID .
                ?motherGroomID sdo:gender ?genderGroomMother .
                FILTER(?genderGroomMother = sdo:Female)
-               ?motherGroomID sdo:identifier ?idGroomMother ;
-                              sdo:givenName ?givenNameGroomMother ;
+               ?motherGroomID sdo:givenName ?givenNameGroomMother ;
                               sdo:familyName ?familyNameGroomMother .
                OPTIONAL { FILTER(BOUND(?motherGroomID)) ?motherGroomID picom:hasAge ?ageGroomMother }
     }

@@ -131,6 +131,7 @@ public class Controller {
 	}
 
 	public void runProgram() {
+        long startTime = System.nanoTime();
 		try {
             if (checkInputFunction() && checkAllUserInputs()) {
                 // read data model specification from file
@@ -194,6 +195,9 @@ public class Controller {
         if (myRDF != null) {
     		myRDF.shutdown();
         }
+
+        long totalTime = System.nanoTime() - startTime;
+        LOG.outputConsole(".: Duration [HH:MM:SS]: " + durationFormatter(totalTime));
 	}
 
     public void execQuery(String query) throws InterruptedException {
@@ -630,6 +634,7 @@ public class Controller {
             }
         }
 
+        LOG.outputConsole(".: No. of statements: " + formatter.format(myRDF.size()));
         LOG.outputConsole(".: Dataset Summary");
         LOG.outputConsole("     class" + " ".repeat(uriLenMax + countLenMax - 7) + "count");
         for (BindingSet bindingSet: qResults) {
@@ -639,8 +644,19 @@ public class Controller {
             LOG.outputConsole("   - " + String.format("%-" + uriLenMax + "s", uri) + "   "
                                       + String.format("%" + countLenMax + "s", formatter.format(amount)));
         }
-        LOG.outputConsole(".: No. of statements: " + formatter.format(myRDF.size()));
 	}
+
+    public String durationFormatter(long timeInNS) {
+        long timeInSec = timeInNS / 1000;
+
+        long timeInHours = timeInSec / 3600;
+        long timeInHoursRest = timeInSec % 3600;
+
+        long timeInMins = timeInHoursRest / 60;
+        long timeRestInSec = timeInHoursRest % 60;
+
+        return String.format("%02d", timeInHours) + ":" + String.format("%02d", timeInMins) + ":" + String.format("%02d", timeRestInSec);
+    }
 
 	public void within(Process process, Map<String, Rule> rules) throws java.io.IOException {
 		String options = LOG.getUserOptions(maxLev, fixedLev, singleInd, ignoreDate, ignoreBlock);
