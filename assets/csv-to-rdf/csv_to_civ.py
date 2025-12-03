@@ -196,6 +196,13 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
                 fullname = family_name if surname_prefix is None else surname_prefix + " " + family_name
                 yield Statement(person, SDO_NS + "familyName", Literal(fullname, datatype=XSD+"string"))
 
+            if first_name is not None and family_name is not None:
+                if surname_prefix is not None:
+                    name = " ".join([first_name, surname_prefix, family_name])
+                else:
+                    name = first_name + " " + family_name
+                yield Statement(person, SDO_NS + "name", Literal(name, datatype=XSD+"string"))
+
             # person gender
             gender_value = getValue(line_array, "subjectGender", mapping, header_to_idx)
             if gender_value is not None:
