@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +49,12 @@ public class Closure {
     private File inputDirectoryPath, outputDirectoryPath;
 	Index indexBride, indexGroom;
 
+    private static final String RDF_TYPE = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>";
+    private static final String PICOM_NS = "https://personsincontext.org/model#";
+    private static final String PROV_NS = "http://www.w3.org/ns/prov#";
+    private static final String SDO_NS = "https://schema.org/";
+    private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
+
 	public static final Logger lg = LogManager.getLogger(Closure.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
 	FileUtilities FILE_UTILS = new FileUtilities();
@@ -58,7 +64,6 @@ public class Closure {
 
     HashMap<String, HashSet<String>> dbClassToIndivs;
 	HashMap<String, String> dbIndivToClass;
-    HashMap<String, String> personIRIToID;
 
 	public Closure(MyRDF myRDF, Process process, String namespace,
                    File directoryPath, boolean formatCSV) throws java.io.IOException {
@@ -118,67 +123,62 @@ public class Closure {
 
 	public void reconstructDataset(String namespace) {
 		try {
+
 			int cntAll = 0;
 
 			LinksCSV reconstruction = new LinksCSV("dataset_reconstructed", outputDirectoryPath, true);
 
-            RepositoryResult<Statement> rResult = null;
             ActivityIndicator spinner = new ActivityIndicator(".: Reconstructing Individuals");
 			try {
                 spinner.start();
-                rResult = myRDF.getStatements();
-                for (Statement statement: rResult) {
-					cntAll++;
 
-                    // unpack nodes
-                    Resource subject = statement.getSubject();
-                    IRI predicate = statement.getPredicate();
-                    Value object = statement.getObject();
+                String activityDateBegin = LocalDateTime.now().toString();
+                String activityIRI;
+                if (namespace.equals("_:")) {
+                    activityIRI = namespace + UUID.nameUUIDFromBytes((activityDateBegin.getBytes()));
+                } else {
+                    activityIRI = "<" + namespace + UUID.nameUUIDFromBytes((activityDateBegin.getBytes())) + ">";
+                }
+                reconstruction.addToStream(activityIRI + " " + RDF_TYPE + " <" + PROV_NS + "Activity> .");
 
-                    String sbjNew = null;
-                    String sbjStr = subject.stringValue();
-                    if (subject.isIRI()) {
-                        sbjNew = getEqClassOfPerson(sbjStr, namespace);
-                        if (sbjNew == null) {
-                            // URI of unlinked individual
-                            sbjNew = "<" + sbjStr + ">";
-                        }
-                    } else { // BNode
-                        sbjNew = "_:" + sbjStr;
+                String username = System.getProperty("user.name");
+                if (username != null && username.length() > 0) {
+                    String usernameNode = "_:" + UUID.nameUUIDFromBytes((username.getBytes()));
+
+                    reconstruction.addToStream(activityIRI + " <" + PROV_NS + "wasAssociatedWith> " + usernameNode + " .");
+                    reconstruction.addToStream(usernameNode + " " + RDF_TYPE + " <" + PROV_NS + "Agent> .");
+                    reconstruction.addToStream(usernameNode + " <" + SDO_NS + "name> \"" + username + "\" .");
+                }
+
+                String activityDateBeginLit = "\"" + activityDateBegin + "\"^^<" + XSD_NS + "dateTime>";
+                reconstruction.addToStream(activityIRI + " <" + PROV_NS + "startedAtTime> " + activityDateBeginLit + " .");
+
+                for (String eqClass: dbClassToIndivs.keySet()) {
+                    String reconstructedIRI;
+                    if (namespace.equals("_:")) {
+                        reconstructedIRI = namespace + eqClass;
+                    } else {
+                        reconstructedIRI = "<" + namespace + eqClass + ">";
                     }
 
-                    String objNew = null;
-                    String objStr = object.stringValue();
-                    if (object.isIRI()) {
-                        objNew = getEqClassOfPerson(objStr, namespace);
-                        if (objNew == null) {
-                            // URI of unlinked individual
-                            objNew = "<" + objStr + ">";
-                        }
-                    } else if (object.isLiteral()) {
-                        // literal
-                        objNew = '"' + objStr + '"';
-
-                        Literal objLit = (Literal) object;
-                        Optional<String> objLang = objLit.getLanguage();
-                        if (objLang.isPresent()) {
-                            objNew += "@" + objLang;
-                        } else {
-                            objNew += "^^<" + objLit.getDatatype().stringValue() + ">";
-                        }
-                    } else { // BNode
-                        objNew = "_:" + objStr;
+                    reconstruction.addToStream(reconstructedIRI + " " + RDF_TYPE + " <" + PICOM_NS + "PersonReconstruction> .");
+                    reconstruction.addToStream(reconstructedIRI + " <" + PROV_NS + "wasGeneratedBy> " + activityIRI + " .");
+                    for (String personIRI: dbClassToIndivs.get(eqClass)) {
+                        reconstruction.addToStream(reconstructedIRI + " <" + PROV_NS + "wasDerivedFrom> <" + personIRI + "> .");
                     }
 
-                    String pStr = "<" + predicate.stringValue() + ">";
-                    reconstruction.addToStream(sbjNew + " " + pStr + " " + objNew + " .");
-
+                    cntAll++;
                     if (cntAll % 5000 == 0) {
                         spinner.update(cntAll);
                     }
-				}
+
+                }
+
+                String activityDateEnd = LocalDateTime.now().toString();
+                String activityDateEndLit = "\"" + activityDateEnd + "\"^^<" + XSD_NS + "dateTime>";
+                reconstruction.addToStream(activityIRI + " <" + PROV_NS + "endedAtTime> " + activityDateEndLit + " .");
+
             } finally {
-                rResult.close();
 				reconstruction.closeStream();
                 spinner.terminate();
                 spinner.join();

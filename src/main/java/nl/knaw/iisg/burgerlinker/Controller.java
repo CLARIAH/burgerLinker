@@ -131,7 +131,7 @@ public class Controller {
 	}
 
 	public void runProgram() {
-        long startTime = System.nanoTime();
+        long startTime = System.currentTimeMillis();
 		try {
             if (checkInputFunction() && checkAllUserInputs()) {
                 // read data model specification from file
@@ -196,8 +196,8 @@ public class Controller {
     		myRDF.shutdown();
         }
 
-        long totalTime = System.nanoTime() - startTime;
-        LOG.outputConsole(".: Duration [HH:MM:SS]: " + durationFormatter(totalTime));
+        long totalTime = System.currentTimeMillis() - startTime;
+        LOG.outputConsole(".: Duration: " + durationFormatter(totalTime));
 	}
 
     public void execQuery(String query) throws InterruptedException {
@@ -225,7 +225,6 @@ public class Controller {
 			case "within_b_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Within Births-Marriages (newborn -> bride/groom)");
 
                     process = new Process(Process.ProcessType.BIRTH_MARRIAGE,
@@ -238,7 +237,6 @@ public class Controller {
 			case "within_b_d":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Within Births-Deaths (newborn -> deceased)");
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
@@ -251,7 +249,6 @@ public class Controller {
 			case "between_b_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Births-Marriages (newborn parents -> bride + groom)");
 
                     process = new Process(Process.ProcessType.BIRTH_MARRIAGE,
@@ -264,7 +261,6 @@ public class Controller {
 			case "between_b_d":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Births-Deaths (parents of newborn -> deceased + partner)");
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
@@ -277,7 +273,6 @@ public class Controller {
 			case "between_d_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Deaths-Marriages (parents of deceased -> bride + groom)");
 
                     process = new Process(Process.ProcessType.DECEASED_MARRIAGE,
@@ -290,7 +285,6 @@ public class Controller {
 			case "between_m_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Between Marriages-Marriages (parents of bride/groom -> bride + groom)");
 
                     process = new Process(Process.ProcessType.MARRIAGE_MARRIAGE,
@@ -302,8 +296,8 @@ public class Controller {
 				break;
 			case "closure":
 				if (checkInputDirectoryContents()) {
-					long startTime = System.currentTimeMillis();
 					LOG.outputConsole(".: Starting Process - Computing Transitive Closure");
+                    LOG.outputConsole(".: Base namespace for reconstructed entities set to '" + namespace + "'");
 
                     process = new Process(this.dataModel);
 					closure(process, this.namespace);
@@ -612,12 +606,6 @@ public class Controller {
 
         // run query
         List<BindingSet> qResults = myRDF.getQueryResultsAsList(MyRDF.QUERY_SUMMARY);
-        spinner.terminate();
-            try {
-                spinner.join();
-            } catch (Exception e) {
-                LOG.logError("initGraphStore", "Error waiting for ActivityIndicator to stop: " + e);
-            }
 
         int uriLenMax = 0;
         int countLenMax = 0;
@@ -633,8 +621,16 @@ public class Controller {
                 countLenMax = amountStr.length();
             }
         }
+        String nrOfStatements = formatter.format(myRDF.size());
 
-        LOG.outputConsole(".: No. of statements: " + formatter.format(myRDF.size()));
+        spinner.terminate();
+        try {
+            spinner.join();
+        } catch (Exception e) {
+            LOG.logError("initGraphStore", "Error waiting for ActivityIndicator to stop: " + e);
+        }
+
+        LOG.outputConsole(".: No. of statements: " + nrOfStatements);
         LOG.outputConsole(".: Dataset Summary");
         LOG.outputConsole("     class" + " ".repeat(uriLenMax + countLenMax - 7) + "count");
         for (BindingSet bindingSet: qResults) {
@@ -646,8 +642,8 @@ public class Controller {
         }
 	}
 
-    public String durationFormatter(long timeInNS) {
-        long timeInSec = timeInNS / 1000;
+    public String durationFormatter(long timeInMS) {
+        long timeInSec = timeInMS / 1000;
 
         long timeInHours = timeInSec / 3600;
         long timeInHoursRest = timeInSec % 3600;
