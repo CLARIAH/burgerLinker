@@ -391,13 +391,11 @@ public class MyRDF {
     }
 
     public static String generalizeQuery(String q, Person.Gender gender) {
-        if (q.contains("Newborn")) {
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)newborn", "$1subject");
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)Newborn", "$1Subject");
-        } else if (q.contains("Deceased")) {
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)deceased", "$1subject");
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)Deceased", "$1Subject");
-        } else if (q.contains("Bride")) {
+        if (q.contains("?newborn")) {
+            q = q.replaceAll("(\\?)newborn", "$1subject");
+        } else if (q.contains("?deceased")) {
+            q = q.replaceAll("(\\?)deceased", "$1subject");
+        } else if (q.contains("?bride")) {
             String subject, partner;
             if (gender == Person.Gender.MALE) {
                 subject = "groom";
@@ -407,10 +405,8 @@ public class MyRDF {
                 partner = "groom";
             }
 
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + subject, "$1subject");
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + subject.substring(0, 1).toUpperCase() + subject.substring(1), "$1Subject");
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + partner, "$1partner");
-            q = q.replaceAll("(\\?[A-Za-z0-9]*)" + partner.substring(0, 1).toUpperCase() + partner.substring(1), "$1Partner");
+            q = q.replaceAll("(\\?)" + subject, "$1subject");
+            q = q.replaceAll("(\\?)" + partner, "$1partner");
         }
 
         return q;

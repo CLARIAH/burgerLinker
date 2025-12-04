@@ -97,22 +97,22 @@ public class Within {
                         String event = bindingSetA.getValue("event").stringValue();
 
 						Person newborn = new Person(event,
-                                                bindingSetA.getValue("givenNameSubject"),
-                                                bindingSetA.getValue("familyNameSubject"),
-                                                bindingSetA.getValue("genderSubject"));
+                                                bindingSetA.getValue("subjectGivenName"),
+                                                bindingSetA.getValue("subjectFamilyName"),
+                                                bindingSetA.getValue("subjectGender"));
 						if (!newborn.isValidWithFullName() || !newborn.hasGender(gender)) {
                             // incomplete or wrong gender
                             continue;
                         }
 
                         Person mother = new Person(event,
-                                               bindingSetA.getValue("givenNameSubjectMother"),
-                                               bindingSetA.getValue("familyNameSubjectMother"),
-                                               bindingSetA.getValue("genderSubjectMother"));
+                                               bindingSetA.getValue("subjectMotherGivenName"),
+                                               bindingSetA.getValue("subjectMotherFamilyName"),
+                                               bindingSetA.getValue("subjectMotherGender"));
                         Person father = new Person(event,
-                                               bindingSetA.getValue("givenNameSubjectFather"),
-                                               bindingSetA.getValue("familyNameSubjectFather"),
-                                               bindingSetA.getValue("genderSubjectFather"));
+                                               bindingSetA.getValue("subjectFatherGivenName"),
+                                               bindingSetA.getValue("subjectFatherFamilyName"),
+                                               bindingSetA.getValue("subjectFatherGender"));
 
                         CandidateList candidatesSubjectB=null, candidatesMother=null, candidatesFather=null;
                         if (mother.isValidWithFullName() || father.isValidWithFullName()) {
@@ -121,8 +121,8 @@ public class Within {
                                 continue;
                             }
 
-                            int subjectAMotherAge = myRDF.valueToInt(bindingSetA.getValue("ageSubjectMother"));
-                            int subjectAFatherAge = myRDF.valueToInt(bindingSetA.getValue("ageSubjectFather"));
+                            int subjectAMotherAge = myRDF.valueToInt(bindingSetA.getValue("subjectMotherAge"));
+                            int subjectAFatherAge = myRDF.valueToInt(bindingSetA.getValue("subjectFatherage"));
 
                             if (mother.isValidWithFullName()) {
                                 candidatesMother = indexMother.searchForCandidate(mother, event, ignoreBlock);
@@ -149,17 +149,17 @@ public class Within {
                                             }
                                             if (yearDifference < 999) { // if it fits the time line
                                                 Person subjectB = new Person(subjectBEventURI,
-                                                                         bindingSetB.getValue("givenNameSubject"),
-                                                                         bindingSetB.getValue("familyNameSubject"),
-                                                                         bindingSetB.getValue("genderSubject"));
+                                                                         bindingSetB.getValue("subjectGivenName"),
+                                                                         bindingSetB.getValue("subjectFamilyName"),
+                                                                         bindingSetB.getValue("subjectGender"));
                                                 Person subjectBMother = new Person(subjectBEventURI,
-                                                                               bindingSetB.getValue("givenNameSubjectMother"),
-                                                                               bindingSetB.getValue("familyNameSubjectMother"),
-                                                                               bindingSetB.getValue("genderSubjectMother"));
+                                                                               bindingSetB.getValue("subjectMotherGivenName"),
+                                                                               bindingSetB.getValue("subjectMotherFamilyName"),
+                                                                               bindingSetB.getValue("subjectMotherGender"));
 
                                                 if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
-                                                    int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectMother"));
+                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("subjectAge"));
+                                                    int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("subjectMotherAge"));
                                                     int subjectMotherAgeDiff = ageDifference(subjectAMotherAge, subjectBMotherAge);
                                                     if (checkTimeConsistencyWithAge(yearDifference, subjectBAge) &&
                                                         checkTimeConsistencyWithAge(yearDifference, subjectMotherAgeDiff)) {
@@ -206,17 +206,17 @@ public class Within {
                                             }
                                             if (yearDifference < 999) { // if it fits the time line
                                                 Person subjectB = new Person(subjectBEventURI,
-                                                                         bindingSetB.getValue("givenNameSubject"),
-                                                                         bindingSetB.getValue("familyNameSubject"),
-                                                                         bindingSetB.getValue("genderSubject"));
+                                                                         bindingSetB.getValue("subjectGivenName"),
+                                                                         bindingSetB.getValue("subjectFamilyName"),
+                                                                         bindingSetB.getValue("subjectGender"));
                                                 Person subjectBFather = new Person(subjectBEventURI,
-                                                                               bindingSetB.getValue("givenNameSubjectFather"),
-                                                                               bindingSetB.getValue("familyNameSubjectFather"),
-                                                                               bindingSetB.getValue("genderSubjectFather"));
+                                                                               bindingSetB.getValue("subjectFatherGivenName"),
+                                                                               bindingSetB.getValue("subjectFatherFamilyName"),
+                                                                               bindingSetB.getValue("subjectFatherGender"));
 
                                                 if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
-                                                    int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectFather"));
+                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("subjectAge"));
+                                                    int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("subjectFatherAge"));
                                                     int subjectFatherAgeDiff = ageDifference(subjectAFatherAge, subjectBFatherAge);
                                                     if (checkTimeConsistencyWithAge(yearDifference, subjectBAge) &&
                                                         checkTimeConsistencyWithAge(yearDifference, subjectFatherAgeDiff)) {
@@ -258,23 +258,23 @@ public class Within {
                                             }
                                             if (yearDifference < 999) { // if it fits the time line
                                                 Person subjectB = new Person(subjectBEventURI,
-                                                                         bindingSetB.getValue("givenNameSubject"),
-                                                                         bindingSetB.getValue("familyNameSubject"),
-                                                                         bindingSetB.getValue("genderSubject"));
+                                                                         bindingSetB.getValue("subjectGivenName"),
+                                                                         bindingSetB.getValue("subjectFamilyName"),
+                                                                         bindingSetB.getValue("subjectGender"));
                                                 Person subjectBMother = new Person(subjectBEventURI,
-                                                                               bindingSetB.getValue("givenNameSubjectMother"),
-                                                                               bindingSetB.getValue("familyNameSubjectMother"),
-                                                                               bindingSetB.getValue("genderSubjectMother"));
+                                                                               bindingSetB.getValue("subjectMotherGivenName"),
+                                                                               bindingSetB.getValue("subjectMotherFamilyName"),
+                                                                               bindingSetB.getValue("subjectMotherGender"));
                                                 Person subjectBFather = new Person(subjectBEventURI,
-                                                                               bindingSetB.getValue("givenNameSubjectFather"),
-                                                                               bindingSetB.getValue("familyNameSubjectFather"),
-                                                                               bindingSetB.getValue("genderSubjectFather"));
+                                                                               bindingSetB.getValue("subjectFatherGivenName"),
+                                                                               bindingSetB.getValue("subjectFatherFamilyName"),
+                                                                               bindingSetB.getValue("subjectFatherGender"));
 
                                                 if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
+                                                    int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("subjectAge"));
 
-                                                    int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectMother"));
-                                                    int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("ageSubjectFather"));
+                                                    int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("subjectMotherAge"));
+                                                    int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("subjectFatherAge"));
 
                                                     int subjectMotherAgeDiff = ageDifference(subjectAMotherAge, subjectBMotherAge);
                                                     int subjectFatherAgeDiff = ageDifference(subjectAFatherAge, subjectBFatherAge);
@@ -378,9 +378,9 @@ public class Within {
                         String event = bindingSetA.getValue("event").stringValue();
 
 						Person newborn = new Person(event,
-                                                bindingSetA.getValue("givenNameSubject"),
-                                                bindingSetA.getValue("familyNameSubject"),
-                                                bindingSetA.getValue("genderSubject"));
+                                                bindingSetA.getValue("subjectGivenName"),
+                                                bindingSetA.getValue("subjectFamilyName"),
+                                                bindingSetA.getValue("subjectGender"));
 						if (newborn.isValidWithFullName() && newborn.hasGender(gender)) {
                             CandidateList candidatesSubjectB=null;
 
@@ -402,12 +402,12 @@ public class Within {
                                         }
                                         if (yearDifference < 999) { // if it fits the time line
                                             Person subjectB = new Person(subjectBEventURI,
-                                                                     bindingSetB.getValue("givenNameSubject"),
-                                                                     bindingSetB.getValue("familyNameSubject"),
-                                                                     bindingSetB.getValue("genderSubject"));
+                                                                     bindingSetB.getValue("subjectGivenName"),
+                                                                     bindingSetB.getValue("subjectFamilyName"),
+                                                                     bindingSetB.getValue("subjectGender"));
 
                                             if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
-                                                int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("ageSubject"));
+                                                int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("subjectAge"));
                                                 if (checkTimeConsistencyWithAge(yearDifference, subjectBAge)) {
                                                     LINKS.saveLinks_Within_single(candidatesSubjectB, finalCandidate, subjectB,
                                                                                   familyCode, yearDifference);
@@ -446,6 +446,10 @@ public class Within {
 	 * Check whether the time span between related events is plausable
 	 */
    	public int checkTimeConsistency(LocalDate eventADate, LocalDate eventBDate) {
+        if (eventADate == null || eventBDate == null) {
+            return 999;
+        }
+
         int diff = (int) ChronoUnit.YEARS.between(eventADate, eventBDate);
 
         Facts facts = new Facts();

@@ -61,9 +61,9 @@ public class Dictionary {
 					String event = bindingSet.getValue("event").stringValue();
 
                     Person personMain = new Person(event,
-                                               bindingSet.getValue("givenNameSubject"),
-                                               bindingSet.getValue("familyNameSubject"),
-                                               bindingSet.getValue("genderSubject"));
+                                               bindingSet.getValue("subjectGivenName"),
+                                               bindingSet.getValue("subjectFamilyName"),
+                                               bindingSet.getValue("subjectGender"));
 
 					countAll++;
 					if(!genderFilter || (genderFilter && personMain.hasGender(gender)) ) {
@@ -147,16 +147,16 @@ public class Dictionary {
                 for (BindingSet bindingSet: qResult) {
 					String event = bindingSet.getValue("event").stringValue();
                     Person subject = new Person(event,
-                                            bindingSet.getValue("givenNameSubject"),
-                                            bindingSet.getValue("familyNameSubject"),
-                                            bindingSet.getValue("genderSubject"));
+                                            bindingSet.getValue("subjectGivenName"),
+                                            bindingSet.getValue("subjectFamilyName"),
+                                            bindingSet.getValue("subjectGender"));
 
                     countAll++;
                     if (subject.isValidWithFullName()){
                         Person partner = new Person(event,
-                                                bindingSet.getValue("givenNamePartner"),
-                                                bindingSet.getValue("familyNamePartner"),
-                                                bindingSet.getValue("genderPartner"));
+                                                bindingSet.getValue("partnerGivenName"),
+                                                bindingSet.getValue("partnerFamilyName"),
+                                                bindingSet.getValue("partnerGender"));
                         if (partner.isValidWithFullName()) {
                             boolean insert = addToIndex(subject, partner, event);
 
@@ -245,22 +245,22 @@ public class Dictionary {
 					String event = bindingSet.getValue("event").stringValue();
 
                     Person personMain = new Person(event,
-                                               bindingSet.getValue("givenNameSubject"),
-                                               bindingSet.getValue("familyNameSubject"),
-                                               bindingSet.getValue("genderSubject"));
+                                               bindingSet.getValue("subjectGivenName"),
+                                               bindingSet.getValue("subjectFamilyName"),
+                                               bindingSet.getValue("subjectGender"));
 
                     countAll++;
                     if (!genderFilter || (genderFilter && personMain.hasGender(gender))) {
                         if (personMain.isValidWithFullName()){
                             Person mother = new Person(event,
-                                                   bindingSet.getValue("givenNameSubjectMother"),
-                                                   bindingSet.getValue("familyNameSubjectMother"),
-                                                   bindingSet.getValue("genderSubjectMother"));
+                                                   bindingSet.getValue("subjectMotherGivenName"),
+                                                   bindingSet.getValue("subjectMotherFamilyName"),
+                                                   bindingSet.getValue("subjectMotherGender"));
 
                             Person father = new Person(event,
-                                                   bindingSet.getValue("givenNameSubjectFather"),
-                                                   bindingSet.getValue("familyNameSubjectFather"),
-                                                   bindingSet.getValue("genderSubjectFather"));
+                                                   bindingSet.getValue("subjectFatherGivenName"),
+                                                   bindingSet.getValue("subjectFatherFamilyName"),
+                                                   bindingSet.getValue("subjectFatherGender"));
 
                             boolean motherValid = mother.isValidWithFullName();
                             boolean fatherValid = father.isValidWithFullName();

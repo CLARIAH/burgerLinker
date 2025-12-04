@@ -498,13 +498,13 @@ public class Closure {
                     bindingsA.put("event", MyRDF.mkIRI(eventA));
                     BindingSet qResultA = myRDF.getQueryResultsAsList(qEventA, bindingsA).get(0);
 
-                    String subjectA = qResultA.getValue("subjectID").stringValue();
+                    String subjectA = qResultA.getValue("subject").stringValue();
                     String subjectAFather = null, subjectAMother = null;
 					if (!nextLine[7].equals("N.A.")) { // if there is a match for the fathers
-                        subjectAFather = qResultA.getValue("fatherSubjectID").stringValue();
+                        subjectAFather = qResultA.getValue("subjectFather").stringValue();
                     }
                     if (!nextLine[5].equals("N.A.")) { // if there is a match for the mothers
-                        subjectAMother = qResultA.getValue("motherSubjectID").stringValue();
+                        subjectAMother = qResultA.getValue("subjectMother").stringValue();
                     }
 
                     // event B participants
@@ -515,17 +515,17 @@ public class Closure {
 
                     String subjectB;
                     if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
-                        subjectB = qResultB.getValue("subjectID").stringValue();
+                        subjectB = qResultB.getValue("subject").stringValue();
                     } else {  // familyLine.equals("22")
-                        subjectB = qResultB.getValue("partnerID").stringValue();
+                        subjectB = qResultB.getValue("partner").stringValue();
                     }
 
 					String subjectBFather = null;
 					if(subjectAFather != null) { // if there is a match for the fathers
                         if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
-                            subjectBFather = qResultB.getValue("fatherSubjectID").stringValue();
+                            subjectBFather = qResultB.getValue("subjectFather").stringValue();
                         } else {
-                            subjectBFather = qResultB.getValue("fatherPartnerID").stringValue();
+                            subjectBFather = qResultB.getValue("partnerFather").stringValue();
                         }
 
                         if (subjectBFather != null) {
@@ -538,9 +538,9 @@ public class Closure {
 					String subjectBMother = null;
                     if(subjectAMother != null) { // if there is a match for the mothers
                         if (this.process.type == Process.ProcessType.BIRTH_DECEASED || familyLine.equals("21")) {
-                            subjectBMother = qResultB.getValue("motherSubjectID").stringValue();
+                            subjectBMother = qResultB.getValue("subjectMother").stringValue();
                         } else {
-                            subjectBMother = qResultB.getValue("motherPartnerID").stringValue();
+                            subjectBMother = qResultB.getValue("partnerMother").stringValue();
                         }
 
                         if (subjectBMother != null) {
@@ -618,11 +618,11 @@ public class Closure {
                     String fatherIRI, motherIRI;
                     if (this.process.type != Process.ProcessType.MARRIAGE_MARRIAGE
                         || familyLine.equals("21")) {
-                        fatherIRI = bindingSetA.getValue("fatherSubjectID").stringValue();
-                        motherIRI = bindingSetA.getValue("motherSubjectID").stringValue();
+                        fatherIRI = bindingSetA.getValue("subjectFather").stringValue();
+                        motherIRI = bindingSetA.getValue("subjectMother").stringValue();
                     } else {  // familyLine == 22 // groom
-                        fatherIRI = bindingSetA.getValue("fatherPartnerID").stringValue();
-                        motherIRI = bindingSetA.getValue("motherPartnerID").stringValue();
+                        fatherIRI = bindingSetA.getValue("partnerFather").stringValue();
+                        motherIRI = bindingSetA.getValue("partnerMother").stringValue();
                     }
 
                     // event B participants
@@ -631,8 +631,8 @@ public class Closure {
                     bindingsB.put("event", MyRDF.mkIRI(eventB));
                     BindingSet bindingSetB = myRDF.getQueryResultsAsList(qEventB, bindingsB).get(0);
 
-					String subjectBIRI = bindingSetB.getValue("subjectID").stringValue();
-					String subjectBPartnerIRI = bindingSetB.getValue("partnerID").stringValue();
+					String subjectBIRI = bindingSetB.getValue("subject").stringValue();
+					String subjectBPartnerIRI = bindingSetB.getValue("partner").stringValue();
 
                     // metadata
 					String meta = linktype + "," + linkProv + "," + familyLine + ","
@@ -651,9 +651,9 @@ public class Closure {
                     String subjectMale = subjectBPartnerIRI;
                     if (this.process.type == Process.ProcessType.BIRTH_DECEASED) {
                         Person subjectB = new Person(eventB,
-                                                 bindingSetB.getValue("givenNameSubject"),
-                                                 bindingSetB.getValue("familyNameSubject"),
-                                                 bindingSetB.getValue("genderSubject"));
+                                                 bindingSetB.getValue("subjectGivenName"),
+                                                 bindingSetB.getValue("subjectFamilyName"),
+                                                 bindingSetB.getValue("subjectGender"));
 
                         if (subjectB.isMale()) {
                             subjectMale = subjectBIRI;
