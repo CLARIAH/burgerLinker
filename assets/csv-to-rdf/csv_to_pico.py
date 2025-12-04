@@ -295,7 +295,9 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
 
                     date = getValue(line_array, "eventDate", mapping, header_to_idx)
                     if date is not None:
-                        yield Statement(event, SDO_NS + "dateCreated", Literal(date, datatype=XSD+"date"))
+                        date_parts = date.split("-")
+                        if date_parts[0] != "0000" and date_parts[1] != "00" and date_parts[2] != "00":
+                            yield Statement(event, SDO_NS + "dateCreated", Literal(date, datatype=XSD+"date"))
 
     for triple in link_events(events):
         yield triple

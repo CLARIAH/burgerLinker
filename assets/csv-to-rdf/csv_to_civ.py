@@ -244,6 +244,10 @@ def convert(path_in: Path, mapping: dict, base_ns: str, delim: str):
 
                     date = getValue(line_array, "eventDate", mapping, header_to_idx)
                     if date is not None:
+                        date_parts = date.split("-")
+                        if date_parts[0] == "0000" or date_parts[1] == "00" or date_parts[2] == "00":
+                            continue
+
                         yield Statement(event, CIV_NS + "eventDate", Literal(date, datatype=XSD+"date"))
 
 
