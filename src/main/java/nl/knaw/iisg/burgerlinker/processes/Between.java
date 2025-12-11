@@ -129,22 +129,22 @@ public class Between {
                             father = c.father;
 
                             if (mother.isValidWithFullName() && father.isValidWithFullName()) {
-                                // start linking here
+                                // collate events of who the male partcipant match the father's name
                                 CandidateList candidatesMale = indexMale.searchForCandidate(father, event, this.ignoreBlock);
                                 if (!candidatesMale.candidates.isEmpty()) {
+                                    // collate events of who the male partcipant match the mother's name
                                     CandidateList candidatesFemale = indexFemale.searchForCandidate(mother, event, this.ignoreBlock);
 
                                     if (!candidatesFemale.candidates.isEmpty()) {
+                                        // events of who both the male and female names match the subject parents' names
                                         Set<String> finalCandidatesList = candidatesFemale.findIntersectionCandidates(candidatesMale);
 
-                                        for (String finalCandidate: finalCandidatesList) {
+                                        for (String subjectBEventURI: finalCandidatesList) {  // candidate events
                                             Map<String, Value> bindings = new HashMap<>();
-                                            bindings.put("event", MyRDF.mkIRI(finalCandidate));
+                                            bindings.put("event", MyRDF.mkIRI(subjectBEventURI));
 
                                             TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
                                             for (BindingSet bindingSetB: qResultB) {
-                                                String subjectBEventURI = bindingSetB.getValue("event").stringValue();
-
                                                 int yearDifference = 0;
                                                 if (!ignoreDate) {
                                                     LocalDate eventADate = myRDF.valueToDate(bindingSetA.getValue("eventDate"));
@@ -178,7 +178,7 @@ public class Between {
                                                         familyCode = c.familyCode;
                                                     }
 
-                                                    LINKS.saveLinks_Between(candidatesFemale, candidatesMale, finalCandidate,
+                                                    LINKS.saveLinks_Between(candidatesFemale, candidatesMale, subjectBEventURI,
                                                                             subjectBFemale, subjectBMale, familyCode,
                                                                             yearDifference);
 

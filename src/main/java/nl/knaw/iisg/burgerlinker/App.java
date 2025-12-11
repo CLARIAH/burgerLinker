@@ -75,7 +75,7 @@ public class App {
                description="[OPTIONAL] Disable filtering on first letter of family name prior to lexical comparison.")
 	boolean ignoreBlock = false;
 
-	@Parameter(names = "--ignore-relations", required=false,
+	@Parameter(names = "--ignore-relatives", required=false,
                description="[OPTIONAL] Disable lexical comparison of related individuals (eg, parents of subject).")
 	boolean singleInd = false;
 

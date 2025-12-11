@@ -1,59 +1,5 @@
 # **burgerLinker -** Civil Registries Linking Tool
 
-**This branch is undergoing active development. The instructions in this README might therefore not apply to the latest commits to this branch.**
-
-**To compile and run the code in this branch:**
-
-**1. Clone the upgrade branch**
-
-    git clone -b upgrade-query --single-branch https://github.com/CLARIAH/burgerLinker
-
-**2. Go to the source directory**
-
-    cd burgerLinker/
-
-**3. Compile the code and create a `jar` file**
-
-    mvn package
-
-**4. Run BurgerLinker (the jar file is stored in the `target` directory)**
-
-    java -jar target/burgerlinker-0.8.0-uber.jar --help
-
-**To make your data suitable for use by this version of BurgerLinker:**
-
-**1. Obtain a LINKS dataset with person data (eg person_c.csv)**
-
-**2. Install pyRDF (optionally in a python virtual environment)**
-
-    pip install pyRDF
-
-**3. Convert the LINKS dataset and pipe the output to a file**
-
-To use CIV
-
-    python assets/csv-to-rdf/csv_to_civ.py person_c.csv > person_c-civ.nt
-
-or, to use PiCo
-
-    python assets/csv-to-rdf/csv_to_pico.py person_c.csv > person_c-pico.nt
-
-**To run BurgerLinker (all processes):**
-
-When using CIV
-
-    java -jar target/burgerlinker-0.8.0-uber.jar --model CIV --input person_c-civ.nt --workdir civ/  --max-lev 1 --fixed-lev
-
-or, when using PiCo base
-
-    java -jar target/burgerlinker-0.8.0-uber.jar --model PiCo-SDO --input person_c-pico.nt --workdir pico/  --max-lev 1 --fixed-lev
-
-or, when using PiCo PNV
-
-    java -jar target/burgerlinker-0.8.0-uber.jar --model PiCo-PNV --input person_c-pico.nt --workdir pico/  --max-lev 1 --fixed-lev
-
----
-
 BurgerLinker is a tool for linking civil registry data by matching individuals
 across life events. Matches are made by lexical comparison of person names
 (using dynamic Levenshtein distance) while also taking into account that of a
@@ -67,6 +13,7 @@ of three elements: *subject*, *predicate*, and *object*. These three elements
 are given as International Resource Identifiers (IRI) or, in the case of the
 *object*, as a raw value called a literal with an optional datatype or language
 tag. Datasets of this form are also called Linked Data.
+
 
 ## Use Case
 
@@ -100,9 +47,12 @@ improvement are:
   closure over all detected links);
 - open software.
 
-To download the latest version of the tool click
-[releases](https://github.com/CLARIAH/burgerLinker/releases) on the right of
-the screen.
+
+The latest version of BurgerLinker is a rework of the original BurgerLinker,
+now referred to as the *legacy* version. This version was specifically
+designed for and limited to the CIV data model and is currently deprecated.
+For archival purposes, the legacy code remains available as [Legacy
+branch](https://github.com/CLARIAH/burgerLinker/tree/legacy). 
 
 ### Previous work
 
@@ -133,7 +83,7 @@ What we did do is make our own rule set for linking modular, to allow in the
 future for country and time specific rule sets to be incorporated in
 *burgerLinker*.
 
-**Update** At the ESSHC 2023 we learned of
+At the ESSHC 2023 we learned of
 [population-linkage](https://github.com/stacs-srg/population-linkage) and
 [hope](https://github.com/stacs-srg/population-linkage/issues/4) to set up
 talks to discuss the similarities and differences in our approaches. Also at
@@ -166,6 +116,26 @@ be run by opening a terminal in the same directory as the JAR file, and by
 running the following command:
 
     java -jar burgerlinker.jar --help
+
+### Building from Source
+
+BurgerLinker can be compiled from the source code to obtain a version with the
+latest (and sometimes still experimental) changes. This is done by compiling
+the code using the JAVA building tool [Maven](https://maven.apache.org/). Instructions are given below.
+
+1. Clone this repository
+
+    git clone https://github.com/CLARIAH/burgerLinker
+
+2. Enter the cloned source directory
+
+    cd burgerLinker/
+
+3. Compile the code and create a `jar` file (the results is stored in the `target` directory)
+
+    mvn package
+
+**NOTE: Using an unofficial build for production usage is discouraged**
 
 ## Usage
 
@@ -201,7 +171,7 @@ optional.
           [OPTIONAL] Disable automatic adjustment of maximum Levenshtein distance to string length.
         -ns, --namespace
           [OPTIONAL] Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.
-        --ignore-relations
+        --ignore-relatives
           [OPTIONAL] Disable lexical comparison of related individuals (eg, parents of subject).
         --ignore-date
           [OPTIONAL] Disable temporal validation checks between candidate links.
@@ -213,7 +183,9 @@ optional.
         --query
           [OPTIONAL] Execute a custom SPARQL query on the RDF store and print the results.
         --reload
-          [OPTIONAL] Reload RDF data from graph(s) instead of reusing an existing RDF store.
+          [OPTIONAL] Reload RDF data (provided as input) instead of reusing an existing RDF store.
+        --append
+          [OPTIONAL] Append RDF data (provided as input) to existing RDF store.
         -h, --help
           [OPTIONAL] Print this help and exit.
         --debug
@@ -254,7 +226,7 @@ These arguments indicate that the user wants to:
 
 - Example 3. Parse a new dataset (modelled with CIV) and Link *parents of newborns* to *brides & grooms*:
 
-`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries1.nq,dataDirectory/myCivilRegistries2.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 3 --ruleset myRules`
+`java -jar burgerLinker.jar --input dataDirectory/myCivilRegistries1.nq,dataDirectory/myCivilRegistries2.nq --model CIV --workdir myProject/ --function between_b_m  --max-lev 4 --ruleset myRules`
 
 These arguments indicate that the user wants to:
 

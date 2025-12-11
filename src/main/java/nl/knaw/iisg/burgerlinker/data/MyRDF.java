@@ -4,6 +4,7 @@ package nl.knaw.iisg.burgerlinker.data;
 import java.io.File;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,22 @@ public class MyRDF {
         "WHERE {",
         "    ?s a ?type .",
         "} GROUP BY ?type");
+    public static List<String> QUERY_VARS = Arrays.asList(
+            "event", "eventDate",
+            "newborn", "newbornGivenName", "newbornFamilyName", "newbornGender", "newbornAge",
+            "newbornFather", "newbornFatherGivenName", "newbornFatherFamilyName", "newbornFatherGender", "newbornFatherAge",
+            "newbornMother", "newbornMotherGivenName", "newbornMotherFamilyName", "newbornMotherGender", "newbornMotherAge",
+            "deceased", "deceasedGivenName", "deceasedFamilyName", "deceasedGender", "deceasedAge",
+            "deceasedFather", "deceasedFatherGivenName", "deceasedFatherFamilyName", "deceasedFatherGender", "deceasedFatherAge",
+            "deceasedMother", "deceasedMotherGivenName", "deceasedMotherFamilyName", "deceasedMotherGender", "deceasedMotherAge",
+            "bride", "brideGivenName", "brideFamilyName", "brideGender", "brideAge",
+            "brideFather", "brideFatherGivenName", "brideFatherFamilyName", "brideFatherGender", "brideFatherAge",
+            "brideMother", "brideMotherGivenName", "brideMotherFamilyName", "brideMotherGender", "brideMotherAge",
+            "groom", "groomGivenName", "groomFamilyName", "groomGender", "groomAge",
+            "groomFather", "groomFatherGivenName", "groomFatherFamilyName", "groomFatherGender", "groomFatherAge",
+            "groomMother", "groomMotherGivenName", "groomMotherFamilyName", "groomMotherGender", "groomMotherAge",
+            "partner", "partnerGivenName", "partnerFamilyName", "partnerGender"
+            );
 
     // temporary on-disk triple store
     private Repository store;
@@ -415,4 +432,45 @@ public class MyRDF {
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
+
+    // public void validate() {
+    //     if (store == null) {
+    //         return;
+    //     }
+
+    //     ShaclSail shaclSail = new ShaclSail();
+    //     shaclSail.setBaseSail(((SailRepository) store).getSail());
+
+    //     SailRepository sailRepository = new SailRepository(shaclSail);
+    //     sailRepository.init();
+
+    //     try (SailRepositoryConnection conn = sailRepository.getConnection()) {
+    //         conn.begin();
+    //         conn.clear(RDF4J.SHACL_SHAPE_GRAPH);
+    //         conn.add(shaclRules, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+    //         try {
+    //             conn.commit();
+    //         } catch (RepositoryException e) {
+    //             Throwable cause = e.getCause();
+    //             if (cause instanceof ValidationException) {
+    //                 // use the validationReportModel to understand validation violations
+    //                 Model validationReportModel = ((ValidationException) cause).validationReportAsModel();
+
+    //                 // Pretty print the validation report
+    //                 WriterConfig writerConfig = new WriterConfig()
+    //                         .set(BasicWriterSettings.PRETTY_PRINT, true)
+    //                         .set(BasicWriterSettings.INLINE_BLANK_NODES, true);
+
+    //                 Rio.write(validationReportModel, System.out, RDFFormat.TURTLE, writerConfig);
+    //                 System.out.println();
+    //             }
+    //         }
+    //     } catch (RDFParseException | IOException e) {
+    //         e.printStackTrace(psOut);
+    //   } finally {
+    //     conn.close();
+    //     sailRepository.shutDown();
+    //     shaclSail.shutDown();
+    //   }
+    // }
 }

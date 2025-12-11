@@ -246,10 +246,23 @@ public class Controller {
 				}
 
 				break;
+            case "within_m_m":
+                rules = ruleMap.get(function);
+				if (checkAllUserInputs()) {
+					LOG.outputConsole(".: Starting Process - Within Marriages-Divorces (bride/groom -> divorc\u00E9e/divorc\u00E9)");
+
+                    process = new Process(Process.ProcessType.MARRIAGE_MARRIAGE,
+                                          Process.RelationType.WITHIN,
+                                          this.dataModel);
+					within(process, rules);
+				}
+
+				break;
+
 			case "between_b_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					LOG.outputConsole(".: Starting Process - Between Births-Marriages (newborn parents -> bride + groom)");
+					LOG.outputConsole(".: Starting Process - Between Births-Marriages (newborn parents -> bride/groom)");
 
                     process = new Process(Process.ProcessType.BIRTH_MARRIAGE,
                                           Process.RelationType.BETWEEN,
@@ -261,7 +274,7 @@ public class Controller {
 			case "between_b_d":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					LOG.outputConsole(".: Starting Process - Between Births-Deaths (parents of newborn -> deceased + partner)");
+					LOG.outputConsole(".: Starting Process - Between Births-Deaths (parents of newborn -> deceased/partner)");
 
                     process = new Process(Process.ProcessType.BIRTH_DECEASED,
                                           Process.RelationType.BETWEEN,
@@ -273,7 +286,7 @@ public class Controller {
 			case "between_d_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					LOG.outputConsole(".: Starting Process - Between Deaths-Marriages (parents of deceased -> bride + groom)");
+					LOG.outputConsole(".: Starting Process - Between Deaths-Marriages (parents of deceased -> bride/groom)");
 
                     process = new Process(Process.ProcessType.DECEASED_MARRIAGE,
                                           Process.RelationType.BETWEEN,
@@ -346,6 +359,12 @@ public class Controller {
                 break;
             }
         }
+        for (String k: MyRDF.QUERY_VARS) {
+            if (!dataModel.containsKey(k)) {
+                LOG.outputConsole(".: WARNING: Missing data model variable: " + k);
+            }
+        }
+
 
         return valid;
     }
@@ -549,7 +568,7 @@ public class Controller {
 
             LOG.outputConsole(".: Found existing RDF store. Trying to establish connection.");
             if (paths.size() > 0) {
-                LOG.outputConsole(".: Provided input file are ignored.");
+                LOG.outputConsole(".: Provided input files are ignored.");
             }
 
             ActivityIndicator spinner = new ActivityIndicator(".: Loading RDF Store");
