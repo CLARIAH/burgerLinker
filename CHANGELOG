@@ -3,7 +3,7 @@
     * Bumped dependencies to latest version and updated code to match.
     * Refactored project structure to make source file hierarchy more sensible.
     * Cleaned up (parts of) code for readability purposes.
-    * Improved variable naming to reflect actual purpose.
+    * Improved source variable naming to reflect actual purpose.
     * Reduced repetition: the different Within, Between, and Closure classes
       and functions have been generalized to fit all modi.
     * Changed unsecure Schema.org namespace to secure variant.
@@ -19,9 +19,10 @@
     * Change generation of reconstructed person identifiers to be based on
       person IDs, ensuring consistency between runs. URIs starting with 'I-'
       pertain between runs; those starting with 'U-' can change.
-    * Split reconstruction output in linked and unlinked individuals.
     * Added header to links-individuals file.
-    
+    * Added feature to allow appending new data to existing data store.
+    * Change input parameter names to better convey their purpose.
+    * Added feature to provide basic query functionality.
     * Added feature to execute all functions after one another if none is
       specified.
     * Changed progress bar to activity indicator.
@@ -32,3 +33,11 @@
     * Added support for (remote) SPARQL endpoint as input.
     * Fixed bug in timeline consistency check of parents that checked age
       instead of age difference.
+    * Changes output format of closure funtion to conform to PiCo
+      PersonReconstructed objects.
+    * Added CSV-to-RDF conversion scripts for CIV and PiCo data models.
+    * Removed the need for (event and person) identifiers in favour of IRIs.
+    * Removed duplicated entries from output of closure function that were
+      caused by aggregating all attributes of linked individuals.
+    * Updated and extended README.
+    * Many minor changes.

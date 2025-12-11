@@ -48,21 +48,26 @@ public class MyRDF {
         "WHERE {",
         "    ?s a ?type .",
         "} GROUP BY ?type");
-    public static List<String> QUERY_VARS = Arrays.asList(
-            "event", "eventDate",
+    public static List<String> QUERY_VARS_EVENT = Arrays.asList(
+            "event", "eventDate");
+    public static List<String> QUERY_VARS_BIRTHS = Arrays.asList(
             "newborn", "newbornGivenName", "newbornFamilyName", "newbornGender", "newbornAge",
             "newbornFather", "newbornFatherGivenName", "newbornFatherFamilyName", "newbornFatherGender", "newbornFatherAge",
-            "newbornMother", "newbornMotherGivenName", "newbornMotherFamilyName", "newbornMotherGender", "newbornMotherAge",
+            "newbornMother", "newbornMotherGivenName", "newbornMotherFamilyName", "newbornMotherGender", "newbornMotherAge"
+            );
+    public static List<String> QUERY_VARS_DEATHS = Arrays.asList(
             "deceased", "deceasedGivenName", "deceasedFamilyName", "deceasedGender", "deceasedAge",
             "deceasedFather", "deceasedFatherGivenName", "deceasedFatherFamilyName", "deceasedFatherGender", "deceasedFatherAge",
             "deceasedMother", "deceasedMotherGivenName", "deceasedMotherFamilyName", "deceasedMotherGender", "deceasedMotherAge",
+            "partner", "partnerGivenName", "partnerFamilyName", "partnerGender"
+            );
+    public static List<String> QUERY_VARS_MARRIAGES = Arrays.asList(
             "bride", "brideGivenName", "brideFamilyName", "brideGender", "brideAge",
             "brideFather", "brideFatherGivenName", "brideFatherFamilyName", "brideFatherGender", "brideFatherAge",
             "brideMother", "brideMotherGivenName", "brideMotherFamilyName", "brideMotherGender", "brideMotherAge",
             "groom", "groomGivenName", "groomFamilyName", "groomGender", "groomAge",
             "groomFather", "groomFatherGivenName", "groomFatherFamilyName", "groomFatherGender", "groomFatherAge",
-            "groomMother", "groomMotherGivenName", "groomMotherFamilyName", "groomMotherGender", "groomMotherAge",
-            "partner", "partnerGivenName", "partnerFamilyName", "partnerGender"
+            "groomMother", "groomMotherGivenName", "groomMotherFamilyName", "groomMotherGender", "groomMotherAge"
             );
 
     // temporary on-disk triple store

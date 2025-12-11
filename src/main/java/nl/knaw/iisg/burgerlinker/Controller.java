@@ -141,12 +141,12 @@ public class Controller {
                     return;
                 }
 
+                LOG.outputConsole(".: Reading Data Model from '" + new File(this.dataModelPath).getName() + "'");
                 // build and validate data model
                 if (!validateDataModel(dataModel)) {
                     return;
                 }
                 this.dataModel = dataModel;
-                LOG.outputConsole(".: Reading Data Model from '" + new File(this.dataModelPath).getName() + "'");
 
                 // read rule definitions and remap
                 Rules rulesRaw = loadRulesFromFile(this.rulesetPath);
@@ -358,13 +358,30 @@ public class Controller {
 
                 break;
             }
-        }
-        for (String k: MyRDF.QUERY_VARS) {
-            if (!dataModel.containsKey(k)) {
-                LOG.outputConsole(".: WARNING: Missing data model variable: " + k);
+
+            List<String> queryVars;
+            if (k.equals("BIRTHS")) {
+                queryVars = MyRDF.QUERY_VARS_BIRTHS;
+            } else if (k.equals("DEATHS")) {
+                queryVars = MyRDF.QUERY_VARS_DEATHS;
+            } else if (k.equals("MARRIAGES")) {
+                queryVars = MyRDF.QUERY_VARS_MARRIAGES;
+            } else {
+                continue;
+            }
+
+            String query = dataModel.get(k);
+            for (String v: MyRDF.QUERY_VARS_EVENT) {
+                if (!query.contains(v)) {
+                    LOG.outputConsole(".: WARNING: Missing data model variable '?" + v + "' in entry '" + k + "'");
+                }
+            }
+            for (String v: queryVars) {
+                if (!query.contains(v)) {
+                    LOG.outputConsole(".: WARNING: Missing data model variable '?" + v + "' in entry '" + k + "'");
+                }
             }
         }
-
 
         return valid;
     }

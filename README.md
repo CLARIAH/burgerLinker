@@ -163,7 +163,7 @@ optional.
         -m, --model
           [OPTIONAL] Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.
         -rs, --ruleset
-          [OPTIONAL] Path to a rule set definition (YAML) or its filename (shorthand). Defaults to default.
+          [OPTIONAL] Path to a rule set definition (YAML) or its filename (shorthand). Defaults to LINKS.
 
         --max-lev
           [OPTIONAL] Integer between 0 and 4 (default) indicating the maximum Levenshtein distance per first or last name allowed for accepting a link.
@@ -357,7 +357,7 @@ works by comparing event dates. For example, whether one's registered age at
 death (roughly) matches the difference between the date on the person's birth
 and death certificate.
 
-The default rules are as following:
+The default rules (LINKS) are as following:
 
 - Persons will not become older than 110 years of age
 - Persons can marry at age 13
@@ -374,7 +374,7 @@ The default rule set is located in the `res/rule_sets/` directory.
 ### Custom rule set
 
 A custom rule set can be used to tailor the filtering step. To use custom rules
-for filtering, copy the default rule set (`default.yaml`) under a different
+for filtering, copy the default rule set (`LINKS.yaml`) under a different
 name (e.g. `myRules.yaml`) and open the file in your preferred text editor.
 
 Each rule contains three lines: a *name*, a *description*, and a *condition*.
