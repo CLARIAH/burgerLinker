@@ -1,4 +1,4 @@
-# **burgerLinker -** Civil Registries Linking Tool
+# **BurgerLinker -** Civil Registries Linking Tool
 
 BurgerLinker is a tool for linking civil registry data by matching individuals
 across life events. Matches are made by lexical comparison of person names
