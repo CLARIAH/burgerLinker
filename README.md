@@ -131,7 +131,7 @@ the code using the JAVA building tool [Maven](https://maven.apache.org/). Instru
 
     cd burgerLinker/
 
-3. Compile the code and create a `jar` file (the results is stored in the `target` directory)
+3. Compile the code and create a `jar` file (the result is stored in the `target` directory)
 
     mvn package
 
@@ -192,6 +192,16 @@ optional.
           [OPTIONAL] Enable debug messages.
 ```
 ---
+
+### Workflow
+
+When running BurgerLinker for the first time on a new dataset (or a new work directory) it will start
+by creating a new RDF store and by populating it with the provided data. This process might take a while,
+depending on the size of the data, yet has only to be done once. Every subsequent run of BurgerLinker
+on this work directory will load the just-created RDF store and operate on the indexed data. After the
+first run, it is therefore no longer required to provide the dataset as input. The RDF store can be
+recreated by providing the `--reload` flag and data can be appended with the `--append` flag. If needed,
+the RDF store can be manually removed by deleted the `<workdir>/store/` directory.
 
 ### Examples
 
@@ -352,7 +362,7 @@ found matches. The output is a new N-Triple file located in
 ## Post-processing rules
 
 Links created by the execution of a *between* and *within* function can be
-filtered to exclude unlikely matched. Filtering is done post processing and
+filtered to exclude unlikely matches. Filtering is done post processing and
 works by comparing event dates. For example, whether one's registered age at
 death (roughly) matches the difference between the date on the person's birth
 and death certificate.
