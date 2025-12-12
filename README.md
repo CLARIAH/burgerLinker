@@ -1,6 +1,10 @@
 ## **burgerLinker -** Civil Registries Linking Tool
 
+**BurgerLinker Legacy**
+
 **This is the legacy version of BurgerLinker which was specifically designed for and limited to the CIV data model. This version has since been deprecated and no support will be provided**
+
+---
 
 Further details regarding the data standardisation and the data model are available in the [burgerLinker Wiki](https://github.com/CLARIAH/burgerLinker/wiki) or via the [burgerLinker lecture](https://vimeo.com/573950112). Also see the paper on the [application of burgerLinker](https://hlcs.nl/article/view/14685/16325) in academia (LINKS).
 
