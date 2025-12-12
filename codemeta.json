@@ -23,6 +23,13 @@
         },
         {
             "@type": "Person",
+            "email": "w.x.wilcke@vu.nl",
+            "familyName": "Wilcke",
+            "givenName": "Xander"
+        },
+
+        {
+            "@type": "Person",
             "email": "rick.mourits@iisg.nl",
             "familyName": "Mourits",
             "givenName": "Rick"
@@ -35,7 +42,7 @@
         }
     ],
     "dateCreated": "2021-02-16T13:19:31Z+0100",
-    "dateModified": "2022-09-21T11:03:01Z+0200",
+    "dateModified": "2025-12-21T11:03:01Z+0200",
     "description": "Command line tool for linking civil registries",
     "developmentStatus": "https://www.repostatus.org/#inactive",
     "identifier": "burgerLinker",
@@ -63,77 +70,9 @@
     "programmingLanguage": "Java",
     "readme": "https://github.com/CLARIAH/burgerLinker/blob//README.md",
     "runtimePlatform": "Java",
-    "softwareRequirements": [
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "org.rdfhdt.hdt-java-core",
-            "name": "hdt-java-core",
-            "version": "3.0.2"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "org.rdfhdt.hdt-jena",
-            "name": "hdt-jena",
-            "version": "3.0.2"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "com.beust.jcommander",
-            "name": "jcommander",
-            "version": "1.78"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "junit.junit",
-            "name": "junit",
-            "version": "3.8.1"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "com.github.universal-automata.liblevenshtein",
-            "name": "liblevenshtein",
-            "version": "3.0.0"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "org.apache.logging.log4j.log4j-core",
-            "name": "log4j-core",
-            "version": "2.17.2"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "com.opencsv.opencsv",
-            "name": "opencsv",
-            "version": "5.2"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "me.tongfei.progressbar",
-            "name": "progressbar",
-            "version": "0.8.1"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "org.rocksdb.rocksdbjni",
-            "name": "rocksdbjni",
-            "version": "6.12.7"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "org.slf4j.slf4j-api",
-            "name": "slf4j-api",
-            "version": "1.7.5"
-        },
-        {
-            "@type": "SoftwareApplication",
-            "identifier": "org.slf4j.slf4j-log4j12",
-            "name": "slf4j-log4j12",
-            "version": "1.7.5"
-        }
-    ],
     "targetProduct": {
         "@type": "CommandLineApplication",
         "name": "burgerLinker"
     },
-    "version": "0.0.1-SNAPSHOT"
+    "version": "0.8.0"
 }
