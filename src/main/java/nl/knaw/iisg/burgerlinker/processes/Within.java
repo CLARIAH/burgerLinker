@@ -5,6 +5,8 @@ import java.lang.Math;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.HashMap;
@@ -37,7 +39,7 @@ public class Within {
     private Map<String, Rule> rules;
 	private int maxLev;
 	private boolean fixedLev, ignoreDate, ignoreBlock, singleInd;
-	Index indexSubjectB, indexMother, indexFather;
+	Index indexSubjectB, indexMother, indexFather, indexPartner, indexPartnerMother, indexPartnerFather;
 
     public static final Logger lg = LogManager.getLogger(Within.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -134,7 +136,8 @@ public class Within {
                                     for (String subjectBEventURI: finalCandidatesMother) {
                                         if (father.isValidWithFullName()
                                             && candidatesSubjectB.candidates.get(subjectBEventURI).individualsInCertificate.contains("F")) {
-                                            continue; // if both have fathers, but their names did not match
+                                            // this event has a known father so skip single parent check
+                                            continue;
                                         }
 
                                         Map<String, Value> bindings = new HashMap<>();
@@ -191,7 +194,8 @@ public class Within {
                                     for (String subjectBEventURI: finalCandidatesFather) {
                                         if (mother.isValidWithFullName()
                                             && candidatesSubjectB.candidates.get(subjectBEventURI).individualsInCertificate.contains("M")) {
-                                            continue; // if both have mothers, but their names did not match
+                                            // this event has a known mother so skip single parent check
+                                            continue;
                                         }
 
                                         Map<String, Value> bindings = new HashMap<>();
@@ -298,6 +302,412 @@ public class Within {
                                         }
                                         qResultB.close();
                                     }
+                                }
+                            }
+						}
+                        if (cntAll % 5000 == 0) {
+							spinner.update(cntAll);
+						}
+					}
+				} finally {
+					qResultA.close();
+                    spinner.terminate();
+                    spinner.join();
+
+                    DecimalFormat formatter = new DecimalFormat("#,###");
+                    LinkedHashMap<String, String> summary = new LinkedHashMap<>();
+
+                    int cntLinkTotal = cntLinkParents + cntLinkFather + cntLinkMother;
+                    summary.put("Candidate Links Discovered", formatter.format(cntLinkTotal+cntLinksFailed));
+                    if (!ignoreDate) {
+                        summary.put(" which passed validation", formatter.format(cntLinkTotal));
+                    }
+                    summary.put("  matching both parents", formatter.format(cntLinkParents));
+                    summary.put("  matching mothers only", formatter.format(cntLinkMother));
+                    summary.put("  matching fathers only", formatter.format(cntLinkFather));
+
+                    int keyLenMax = 0, valLenMax = 0;
+                    for (String key: summary.keySet()) {
+                        String val = summary.get(key);
+                        if (val.length() > valLenMax) {
+                            valLenMax -= val.length();
+                        }
+                        if (key.length() > keyLenMax) {
+                            keyLenMax = key.length();
+                        }
+                    }
+
+                    LOG.outputConsole(".: Process Summary");
+                    for (String key: summary.keySet()) {
+                        String val = summary.get(key);
+                        LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
+                                          + "   " + String.format("%" + valLenMax + "s", val));
+                    }
+				}
+			} catch (Exception e) {
+				LOG.logError("link_within", "Error in linking subjects in event A to subjects in event B in process " + this.processName);
+				e.printStackTrace();
+			} finally {
+				if(closeStream == true) {
+					LINKS.closeStream();
+				}
+			}
+		}
+	}
+
+	public void link_within_couple(Person.Gender gender, boolean closeStream) {
+        String familyCode = (gender == Person.Gender.MALE) ? "22" : "21";
+
+        String queryEventA = MyRDF.generalizeQuery(process.queryEventA, gender);
+        String queryEventB = MyRDF.generalizeQuery(process.queryEventB, gender);
+
+		Dictionary dict = new Dictionary(this.processName, this.mainDirectoryPath,
+                                         this.maxLev, this.fixedLev);
+		if (dict.generateDictionarySixWay(myRDF, queryEventB, gender)) {
+			indexSubjectB = dict.indexMain; indexSubjectB.createTransducer();
+			indexMother = dict.indexMother; indexMother.createTransducer();
+			indexFather = dict.indexFather;	indexFather.createTransducer();
+			indexPartner = dict.indexPartner; indexPartner.createTransducer();
+			indexPartnerMother = dict.indexPartnerMother; indexPartnerMother.createTransducer();
+			indexPartnerFather = dict.indexPartnerFather; indexPartnerFather.createTransducer();
+			try {
+				int cntAll = 0;
+                int cntLinkParents = 0;
+                int cntLinkFather = 0;
+                int cntLinkMother = 0;
+                int cntLinksFailed = 0;
+
+                TupleQueryResult qResultA = null;
+                ActivityIndicator spinner = new ActivityIndicator(".: Linking " + processName + " (" + gender + ")");
+				try {
+                    spinner.start();
+
+                    qResultA = myRDF.getQueryResults(queryEventA);
+                    for (BindingSet bindingSetA: qResultA) {
+						cntAll++;
+
+                        String event = bindingSetA.getValue("event").stringValue();
+
+						Person subjectA = new Person(event,
+                                                bindingSetA.getValue("subjectGivenName"),
+                                                bindingSetA.getValue("subjectFamilyName"),
+                                                bindingSetA.getValue("subjectGender"));
+						if (!subjectA.isValidWithFullName() || !subjectA.hasGender(gender)) {
+                            // incomplete or wrong gender
+                            continue;
+                        }
+
+                        Person subjectAMother = new Person(event,
+                                               bindingSetA.getValue("subjectMotherGivenName"),
+                                               bindingSetA.getValue("subjectMotherFamilyName"),
+                                               bindingSetA.getValue("subjectMotherGender"));
+                        Person subjectAFather = new Person(event,
+                                               bindingSetA.getValue("subjectFatherGivenName"),
+                                               bindingSetA.getValue("subjectFatherFamilyName"),
+                                               bindingSetA.getValue("subjectFatherGender"));
+                        Person subjectAPartner = new Person(event,
+                                               bindingSetA.getValue("partnerGivenName"),
+                                               bindingSetA.getValue("partnerFamilyName"),
+                                               bindingSetA.getValue("partnerGender"));
+                        Person subjectAPartnerMother = new Person(event,
+                                               bindingSetA.getValue("partnerMotherGivenName"),
+                                               bindingSetA.getValue("partnerMotherFamilyName"),
+                                               bindingSetA.getValue("partnerMotherGender"));
+                        Person subjectAPartnerFather = new Person(event,
+                                               bindingSetA.getValue("partnerFatherGivenName"),
+                                               bindingSetA.getValue("partnerFatherFamilyName"),
+                                               bindingSetA.getValue("partnerFatherGender"));
+
+                        if (subjectAMother.isValidWithFullName() || subjectAFather.isValidWithFullName() || subjectAPartner.isValidWithFullName()) {
+                            // collate events of who the main partcipant match the subject's name
+                            CandidateList candidatesSubjectB = indexSubjectB.searchForCandidate(subjectA, event, ignoreBlock);
+                            if (candidatesSubjectB.candidates.isEmpty()) {
+                                continue;
+                            }
+
+                            LocalDate eventADate = myRDF.valueToDate(bindingSetA.getValue("eventDate"));
+
+                            int subjectAAge = myRDF.valueToInt(bindingSetA.getValue("subjectAge"));
+                            int subjectAMotherAge = -1, subjectAFatherAge = -1;
+
+                            if (subjectAPartner.isValidWithFullName()) {  // divorce
+                                int subjectAPartnerAge = myRDF.valueToInt(bindingSetA.getValue("partnerAge"));
+                                int subjectAPartnerMotherAge = -1, subjectAPartnerFatherAge = -1;
+
+                                // collate events of who the partner match on name
+                                CandidateList candidatesPartner = indexPartner.searchForCandidate(subjectAPartner, event, ignoreBlock);
+                                if (!candidatesPartner.candidates.isEmpty()) {
+                                    // collate events of who the relatives match on name
+                                    CandidateList candidatesMother = null;
+                                    if (subjectAMother.isValidWithFullName()) {
+                                        candidatesMother = indexMother.searchForCandidate(subjectAMother, event, ignoreBlock);
+                                        subjectAMotherAge = myRDF.valueToInt(bindingSetA.getValue("subjectMotherAge"));
+                                    }
+                                    CandidateList candidatesFather = null;
+                                    if (subjectAFather.isValidWithFullName()) {
+                                        candidatesFather = indexFather.searchForCandidate(subjectAFather, event, ignoreBlock);
+                                        subjectAFatherAge = myRDF.valueToInt(bindingSetA.getValue("subjectFatherage"));
+                                    }
+                                    CandidateList candidatesPartnerMother = null;
+                                    if (subjectAPartnerMother.isValidWithFullName()) {
+                                        candidatesPartnerMother = indexPartnerMother.searchForCandidate(subjectAPartnerMother, event, ignoreBlock);
+                                        subjectAPartnerMotherAge = myRDF.valueToInt(bindingSetA.getValue("partnerMotherAge"));
+                                    }
+                                    CandidateList candidatesPartnerFather = null;
+                                    if (subjectAPartnerFather.isValidWithFullName()) {
+                                        candidatesPartnerFather = indexPartnerFather.searchForCandidate(subjectAPartnerFather, event, ignoreBlock);
+                                        subjectAPartnerFatherAge = myRDF.valueToInt(bindingSetA.getValue("partnerFatherage"));
+                                    }
+
+                                    // find events that are shared by all participants
+                                    List<CandidateList> candidateLists = new ArrayList<>();
+                                    for (CandidateList candidateList: Arrays.asList(candidatesMother,
+                                                                                    candidatesFather,
+                                                                                    candidatesPartner,
+                                                                                    candidatesPartnerMother,
+                                                                                    candidatesPartnerFather)) {
+                                        if (!(candidateList == null || candidateList.candidates.isEmpty())) {
+                                            candidateLists.add(candidateList);
+                                        }
+                                    }
+                                    Set<String> candidateEvents = candidatesSubjectB.findIntersectionCandidates(candidateLists);
+
+                                    // for all events that include at least the marriage couple
+                                    for (String subjectBEventURI: candidateEvents) {
+                                        Map<String, Value> bindings = new HashMap<>();
+                                        bindings.put("event", MyRDF.mkIRI(subjectBEventURI));
+
+                                        TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
+                                        for (BindingSet bindingSetB: qResultB) {
+                                            Person subjectB = null, subjectBPartner = null,
+                                                   subjectBMother = null, subjectBFather = null,
+                                                   subjectBPartnerMother = null, subjectBPartnerFather= null;
+
+                                            int yearDifference = 0;
+                                            if (!ignoreDate) {
+                                                // check if events fit the time line
+                                                LocalDate eventBDate = myRDF.valueToDate(bindingSetB.getValue("eventDate"));
+                                                yearDifference = checkTimeConsistency(eventADate, eventBDate);
+                                            }
+                                            if (yearDifference < 999) {
+                                                // check time range of subject between events
+                                                int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("subjectAge"));
+                                                int subjectAgeDiff = ageDifference(subjectAAge, subjectBAge);
+                                                if (checkTimeConsistencyWithAge(yearDifference, subjectAgeDiff)) {
+                                                    // valid match
+                                                    subjectB = new Person(subjectBEventURI,
+                                                                        bindingSetB.getValue("subjectGivenName"),
+                                                                        bindingSetB.getValue("subjectFamilyName"),
+                                                                        bindingSetB.getValue("subjectGender"));
+                                                }
+                                                if (subjectB == null) {
+                                                    continue;
+                                                }
+
+                                                // check time range of partner between events
+                                                int subjectBPartnerAge = myRDF.valueToInt(bindingSetB.getValue("partnerAge"));
+                                                int subjectPartnerAgeDiff = ageDifference(subjectAPartnerAge, subjectBPartnerAge);
+                                                if (checkTimeConsistencyWithAge(yearDifference, subjectPartnerAgeDiff)) {
+                                                    // valid match
+                                                    subjectBPartner = new Person(event,
+                                                                        bindingSetB.getValue("partnerGivenName"),
+                                                                        bindingSetB.getValue("partnerFamilyName"),
+                                                                        bindingSetB.getValue("partnerGender"));
+                                                }
+                                                if (subjectBPartner == null) {
+                                                    continue;
+                                                }
+
+                                                // check time range of relatives between events
+                                                if (!(candidatesMother == null || candidatesMother.candidates.isEmpty())) {
+                                                    int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("subjectMotherAge"));
+                                                    int subjectMotherAgeDiff = ageDifference(subjectAMotherAge, subjectBMotherAge);
+                                                    if (checkTimeConsistencyWithAge(yearDifference, subjectMotherAgeDiff)) {
+                                                        // valid match
+                                                        subjectBMother = new Person(subjectBEventURI,
+                                                                            bindingSetB.getValue("subjectMotherGivenName"),
+                                                                            bindingSetB.getValue("subjectMotherFamilyName"),
+                                                                            bindingSetB.getValue("subjectMotherGender"));
+                                                    }
+                                                }
+                                                if (!(candidatesFather == null || candidatesFather.candidates.isEmpty())) {
+                                                    int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("subjectFatherAge"));
+                                                    int subjectFatherAgeDiff = ageDifference(subjectAFatherAge, subjectBFatherAge);
+                                                    if (checkTimeConsistencyWithAge(yearDifference, subjectFatherAgeDiff)) {
+                                                        // valid match
+                                                        subjectBFather = new Person(subjectBEventURI,
+                                                                            bindingSetB.getValue("subjectFatherGivenName"),
+                                                                            bindingSetB.getValue("subjectFatherFamilyName"),
+                                                                            bindingSetB.getValue("subjectFatherGender"));
+                                                    }
+                                                }
+                                                if (!(candidatesPartnerMother == null || candidatesPartnerMother.candidates.isEmpty())) {
+                                                    int subjectBPartnerMotherAge = myRDF.valueToInt(bindingSetB.getValue("partnerMotherAge"));
+                                                    int subjectPartnerMotherAgeDiff = ageDifference(subjectAPartnerMotherAge, subjectBPartnerMotherAge);
+                                                    if (checkTimeConsistencyWithAge(yearDifference, subjectPartnerMotherAgeDiff)) {
+                                                        // valid match
+                                                        subjectBPartnerMother = new Person(event,
+                                                                            bindingSetB.getValue("partnerMotherGivenName"),
+                                                                            bindingSetB.getValue("partnerMotherFamilyName"),
+                                                                            bindingSetB.getValue("partnerMotherGender"));
+                                                    }
+                                                }
+                                                if (!(candidatesPartnerFather == null || candidatesPartnerFather.candidates.isEmpty())) {
+                                                    int subjectBPartnerFatherAge = myRDF.valueToInt(bindingSetB.getValue("partnerFatherAge"));
+                                                    int subjectPartnerFatherAgeDiff = ageDifference(subjectAPartnerFatherAge, subjectBPartnerFatherAge);
+                                                    if (checkTimeConsistencyWithAge(yearDifference, subjectPartnerFatherAgeDiff)) {
+                                                        // valid match
+                                                        subjectBPartnerFather = new Person(event,
+                                                                            bindingSetB.getValue("partnerFatherGivenName"),
+                                                                            bindingSetB.getValue("partnerFatherFamilyName"),
+                                                                            bindingSetB.getValue("partnerFatherGender"));
+                                                    }
+                                                }
+
+                                                // save matches to file
+                                                if (subjectBMother != null &&
+                                                    subjectBFather != null &&
+                                                    subjectBPartnerMother != null &&
+                                                    subjectBPartnerFather != null) {
+                                                    // full relatives match
+                                                    LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather, subjectBEventURI,
+                                                                           subjectB, subjectBMother, subjectBFather, familyCode, yearDifference);
+                                                    LINKS.saveLinks_Within(candidatesPartner, candidatesPartnerMother, candidatesPartnerFather,
+                                                                           subjectBEventURI, subjectBPartner, subjectBPartnerMother, subjectBPartnerFather,
+                                                                           familyCode, yearDifference);
+                                                } else if (subjectBMother != null) {
+                                                    // at least one matching relative per person
+                                                    if (subjectBPartnerMother != null) {
+                                                        LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, subjectBEventURI,
+                                                                                      subjectB, subjectBMother, familyCode, yearDifference);
+                                                        LINKS.saveLinks_Within_mother(candidatesPartner, candidatesPartnerMother, subjectBEventURI,
+                                                                                      subjectBPartner, subjectBPartnerMother, familyCode,
+                                                                                      yearDifference);
+                                                    }
+                                                    if (subjectBPartnerFather != null) {
+                                                        LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, subjectBEventURI,
+                                                                                      subjectB, subjectBMother, familyCode, yearDifference);
+                                                        LINKS.saveLinks_Within_father(candidatesPartner, candidatesPartnerFather, subjectBEventURI,
+                                                                                      subjectBPartner, subjectBPartnerFather, familyCode,
+                                                                                      yearDifference);
+                                                    }
+                                                } else if (subjectBFather != null) {
+                                                    // at least one matching relative per person
+                                                    if (subjectBPartnerMother != null) {
+                                                        LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, subjectBEventURI,
+                                                                                      subjectB, subjectBFather, familyCode, yearDifference);
+                                                        LINKS.saveLinks_Within_mother(candidatesPartner, candidatesPartnerMother, subjectBEventURI,
+                                                                                      subjectBPartner, subjectBPartnerMother, familyCode,
+                                                                                      yearDifference);
+                                                    }
+                                                    if (subjectBPartnerFather != null) {
+                                                        LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, subjectBEventURI,
+                                                                                      subjectB, subjectBFather, familyCode, yearDifference);
+                                                        LINKS.saveLinks_Within_father(candidatesPartner, candidatesPartnerFather, subjectBEventURI,
+                                                                                      subjectBPartner, subjectBPartnerFather, familyCode,
+                                                                                      yearDifference);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        qResultB.close();
+                                    }
+                                }
+                            } else {  // re-marriage
+                                // collate events of who the relatives match on name
+                                CandidateList candidatesMother = null;
+                                if (subjectAMother.isValidWithFullName()) {
+                                    candidatesMother = indexMother.searchForCandidate(subjectAMother, event, ignoreBlock);
+                                    subjectAMotherAge = myRDF.valueToInt(bindingSetA.getValue("subjectMotherAge"));
+                                }
+                                CandidateList candidatesFather = null;
+                                if (subjectAFather.isValidWithFullName()) {
+                                    candidatesFather = indexFather.searchForCandidate(subjectAFather, event, ignoreBlock);
+                                    subjectAFatherAge = myRDF.valueToInt(bindingSetA.getValue("subjectFatherage"));
+                                }
+
+                                // find events that are shared by all participants
+                                List<CandidateList> candidateLists = new ArrayList<>();
+                                for (CandidateList candidateList: Arrays.asList(candidatesMother,
+                                                                                candidatesFather)) {
+                                    if (!(candidateList == null || candidateList.candidates.isEmpty())) {
+                                        candidateLists.add(candidateList);
+                                    }
+                                }
+                                Set<String> candidateEvents = candidatesSubjectB.findIntersectionCandidates(candidateLists);
+
+                                // for all events that include at least one spouse from the original marriage couple
+                                for (String subjectBEventURI: candidateEvents) {
+                                    Map<String, Value> bindings = new HashMap<>();
+                                    bindings.put("event", MyRDF.mkIRI(subjectBEventURI));
+
+                                    TupleQueryResult qResultB = myRDF.getQueryResults(queryEventB, bindings);
+                                    for (BindingSet bindingSetB: qResultB) {
+                                        Person subjectB = null, subjectBMother = null, subjectBFather = null;
+
+                                        int yearDifference = 0;
+                                        if (!ignoreDate) {
+                                            // check if events fit the time line
+                                            LocalDate eventBDate = myRDF.valueToDate(bindingSetB.getValue("eventDate"));
+                                            yearDifference = checkTimeConsistency(eventADate, eventBDate);
+                                        }
+                                        if (yearDifference < 999) {
+                                            // check time range of subject between events
+                                            int subjectBAge = myRDF.valueToInt(bindingSetB.getValue("subjectAge"));
+                                            int subjectAgeDiff = ageDifference(subjectAAge, subjectBAge);
+                                            if (checkTimeConsistencyWithAge(yearDifference, subjectAgeDiff)) {
+                                                // valid match
+                                                subjectB = new Person(subjectBEventURI,
+                                                                    bindingSetB.getValue("subjectGivenName"),
+                                                                    bindingSetB.getValue("subjectFamilyName"),
+                                                                    bindingSetB.getValue("subjectGender"));
+                                            }
+                                            if (subjectB == null) {
+                                                continue;
+                                            }
+
+                                            // check time range of relatives between events
+                                            if (!(candidatesMother == null || candidatesMother.candidates.isEmpty())) {
+                                                int subjectBMotherAge = myRDF.valueToInt(bindingSetB.getValue("subjectMotherAge"));
+                                                int subjectMotherAgeDiff = ageDifference(subjectAMotherAge, subjectBMotherAge);
+                                                if (checkTimeConsistencyWithAge(yearDifference, subjectMotherAgeDiff)) {
+                                                    // valid match
+                                                    subjectBMother = new Person(subjectBEventURI,
+                                                                        bindingSetB.getValue("subjectMotherGivenName"),
+                                                                        bindingSetB.getValue("subjectMotherFamilyName"),
+                                                                        bindingSetB.getValue("subjectMotherGender"));
+                                                }
+                                            }
+                                            if (!(candidatesFather == null || candidatesFather.candidates.isEmpty())) {
+                                                int subjectBFatherAge = myRDF.valueToInt(bindingSetB.getValue("subjectFatherAge"));
+                                                int subjectFatherAgeDiff = ageDifference(subjectAFatherAge, subjectBFatherAge);
+                                                if (checkTimeConsistencyWithAge(yearDifference, subjectFatherAgeDiff)) {
+                                                    // valid match
+                                                    subjectBFather = new Person(subjectBEventURI,
+                                                                        bindingSetB.getValue("subjectFatherGivenName"),
+                                                                        bindingSetB.getValue("subjectFatherFamilyName"),
+                                                                        bindingSetB.getValue("subjectFatherGender"));
+                                                }
+                                            }
+
+                                            // save matches to file
+                                            if (subjectBMother != null && subjectBFather != null) {
+                                                // full relatives match
+                                                LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather,
+                                                                       subjectBEventURI, subjectB, subjectBMother, subjectBFather,
+                                                                       familyCode, yearDifference);
+                                            } else if (subjectBMother != null) {
+                                                // at least one matching relative
+                                                LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, subjectBEventURI,
+                                                                              subjectB, subjectBMother, familyCode, yearDifference);
+                                            } else if (subjectBFather != null) {
+                                                // at least one matching relative
+                                                LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, subjectBEventURI,
+                                                                              subjectB, subjectBFather, familyCode, yearDifference);
+                                            }
+                                        }
+                                    }
+                                    qResultB.close();
                                 }
                             }
 						}

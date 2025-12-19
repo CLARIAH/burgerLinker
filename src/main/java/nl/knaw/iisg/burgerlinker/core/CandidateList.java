@@ -2,6 +2,7 @@ package nl.knaw.iisg.burgerlinker.core;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import com.github.liblevenshtein.transducer.Candidate;
@@ -58,5 +59,14 @@ public class CandidateList {
 		thisCandidateCertificatesIDs.retainAll(list2CandidateCertificatesIDs);
 
 		return thisCandidateCertificatesIDs;
+	}
+
+    public Set<String> findIntersectionCandidates(List<CandidateList> candidateLists) {
+		Set<String> candidateCertificatesIDs = this.candidates.keySet();
+        for (CandidateList otherList: candidateLists) {
+            candidateCertificatesIDs.retainAll(otherList.candidates.keySet());
+        }
+
+		return candidateCertificatesIDs;
 	}
 }

@@ -249,7 +249,7 @@ public class Controller {
             case "within_m_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					LOG.outputConsole(".: Starting Process - Within Marriages-Divorces (bride/groom -> divorc\u00E9e/divorc\u00E9)");
+					LOG.outputConsole(".: Starting Process - Within Marriages-Marriages (bride/groom -> bride/groom)");
 
                     process = new Process(Process.ProcessType.MARRIAGE_MARRIAGE,
                                           Process.RelationType.WITHIN,
@@ -262,7 +262,7 @@ public class Controller {
 			case "between_b_m":
                 rules = ruleMap.get(function);
 				if (checkAllUserInputs()) {
-					LOG.outputConsole(".: Starting Process - Between Births-Marriages (newborn parents -> bride/groom)");
+					LOG.outputConsole(".: Starting Process - Between Births-Marriages (parents of newborn -> bride/groom)");
 
                     process = new Process(Process.ProcessType.BIRTH_MARRIAGE,
                                           Process.RelationType.BETWEEN,
@@ -708,12 +708,15 @@ public class Controller {
                 if (singleInd) {
                     within.link_within_single(Person.Gender.FEMALE, false);
                     within.link_within_single(Person.Gender.MALE, true);
+                } else if (process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
+                    within.link_within_couple(Person.Gender.FEMALE, false);
+                    within.link_within_couple(Person.Gender.MALE, true);
                 } else {
                     within.link_within(Person.Gender.FEMALE, false); // false = do not close stream
                     within.link_within(Person.Gender.MALE, true); // true = close stream
                 }
             } else {
-				LOG.logError(process.toString(), "Error in creating the three sub workdir directories");
+				LOG.logError(process.toString(), "Error in creating the three sub work directories");
 			}
 		} else {
 			LOG.logError(process.toString(), "Error in creating the main work directory");

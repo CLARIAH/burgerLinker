@@ -24,7 +24,8 @@ public class Dictionary {
 	public File mainDirectoryPath;
 	public int maxLev;
 	public Boolean fixedLev;
-	public Index indexMain, indexMale, indexFemale, indexMother, indexFather;
+	public Index indexMain, indexMale, indexFemale, indexMother, indexFather,
+                 indexPartner, indexPartnerMother, indexPartnerFather;
 
 	public static final Logger lg = LogManager.getLogger(Dictionary.class);
 	LoggingUtilities LOG = new LoggingUtilities(lg);
@@ -304,6 +305,197 @@ public class Dictionary {
             indexMain.closeStream();
             indexMother.closeStream();
             indexFather.closeStream();
+
+            int countNonIndexed = countAll - countInserts;
+
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            LinkedHashMap<String, String> summary = new LinkedHashMap<>();
+            summary.put("Certificates Total", formatter.format(countAll));
+            summary.put("Certificates Indexed", formatter.format(countInserts));
+            summary.put(" with both parents", formatter.format(count_Main_Mother_Father));
+            summary.put(" with mother only", formatter.format(count_Main_Mother));
+            summary.put(" with father only", formatter.format(count_Main_Father));
+
+            int keyLenMax = 0, valLenMax = 0;
+            for (String key: summary.keySet()) {
+                String val = summary.get(key);
+                if (val.length() > valLenMax) {
+                    valLenMax -= val.length();
+                }
+                if (key.length() > keyLenMax) {
+                    keyLenMax = key.length();
+                }
+            }
+
+            LOG.outputConsole(".: Index Summary");
+            for (String key: summary.keySet()) {
+                String val = summary.get(key);
+                LOG.outputConsole("   - " + String.format("%-" + keyLenMax + "s", key)
+                                  + "   " + String.format("%" + valLenMax + "s", val));
+            }
+        }
+
+        return true;
+    }
+
+    public boolean generateDictionarySixWay(MyRDF myRDF, String query, Person.Gender gender) {
+        indexMain = new Index("subject-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexMother = new Index("subjectMother-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexFather = new Index("subjectFather-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexPartner = new Index("partner-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexPartnerMother = new Index("partnerMother-"+gender, mainDirectoryPath, maxLev, fixedLev);
+        indexPartnerFather = new Index("partnerFather-"+gender, mainDirectoryPath, maxLev, fixedLev);
+
+        long startTime = System.currentTimeMillis();
+
+        int countInserts = 0;
+        int countAll = 0;
+        int count_Main_Mother_Father = 0;
+        int count_Main_Mother = 0;
+        int count_Main_Father = 0;
+
+        LOG.outputConsole(".: Generating Dictionary for process: " + processName + " (" + gender + ")");
+        try {
+            String taskName = ".: Indexing " + processName + " (" + gender + ")";
+
+            // Keep separate indexes for subject and partner relatives since
+            // they will always be on the same side of the certificate (due to
+            // their gender), eg brides won't suddenly become grooms
+            indexMain.openIndex();
+            indexMother.openIndex();
+            indexFather.openIndex();
+            indexPartner.openIndex();
+            indexPartnerMother.openIndex();
+            indexPartnerFather.openIndex();
+
+            TupleQueryResult qResult = null;
+            ActivityIndicator spinner = new ActivityIndicator(taskName);
+			try {
+                spinner.start();
+
+                qResult = myRDF.getQueryResults(query);
+                for (BindingSet bindingSet: qResult) {
+					String event = bindingSet.getValue("event").stringValue();
+
+                    Person personMain = new Person(event,
+                                               bindingSet.getValue("subjectGivenName"),
+                                               bindingSet.getValue("subjectFamilyName"),
+                                               bindingSet.getValue("subjectGender"));
+
+                    countAll++;
+                    if (personMain.isValidWithFullName()){
+                        Person mainMother = new Person(event,
+                                               bindingSet.getValue("subjectMotherGivenName"),
+                                               bindingSet.getValue("subjectMotherFamilyName"),
+                                               bindingSet.getValue("subjectMotherGender"));
+
+                        Person mainFather = new Person(event,
+                                               bindingSet.getValue("subjectFatherGivenName"),
+                                               bindingSet.getValue("subjectFatherFamilyName"),
+                                               bindingSet.getValue("subjectFatherGender"));
+
+                        Person partner = new Person(event,
+                                               bindingSet.getValue("partnerGivenName"),
+                                               bindingSet.getValue("partnerFamilyName"),
+                                               bindingSet.getValue("partnerGender"));
+
+                        Person partnerMother = new Person(event,
+                                               bindingSet.getValue("partnerMotherGivenName"),
+                                               bindingSet.getValue("partnerMotherFamilyName"),
+                                               bindingSet.getValue("partnerMotherGender"));
+
+                        Person partnerFather = new Person(event,
+                                               bindingSet.getValue("partnerFatherGivenName"),
+                                               bindingSet.getValue("partnerFatherFamilyName"),
+                                               bindingSet.getValue("partnerFatherGender"));
+
+                        boolean mainMotherValid = mainMother.isValidWithFullName();
+                        boolean mainFatherValid = mainFather.isValidWithFullName();
+                        boolean partnerValid = partner.isValidWithFullName();
+                        boolean partnerMotherValid = partnerMother.isValidWithFullName();
+                        boolean partnerFatherValid = partnerFather.isValidWithFullName();
+
+                        String tag = "";
+                        if (partnerValid) {
+                            tag += "[PARTNER]";
+                        }
+                        if (mainMotherValid) {
+                            tag += "[SUBJECTMOTHER]";
+                        }
+                        if (mainFatherValid) {
+                            tag += "[SUBJECTFATHER]";
+                        }
+                        if (partnerMotherValid) {
+                            tag += "[PARTNERMOTHER]";
+                        }
+                        if (partnerFatherValid) {
+                            tag += "[PARTNERFATHER]";
+                        }
+
+                        if (tag.length() > 0) {
+                            indexMain.addPersonToIndex(personMain, event, tag);
+
+                            if (partnerValid) {
+                                indexPartner.addPersonToIndex(partner, event, tag);
+                            }
+                            if (mainMotherValid) {
+                                indexMother.addPersonToIndex(mainMother, event, tag);
+                            }
+                            if (mainFatherValid) {
+                                indexFather.addPersonToIndex(mainFather, event, tag);
+                            }
+                            if (partnerMotherValid) {
+                                indexPartnerMother.addPersonToIndex(partnerMother, event, tag);
+                            }
+                            if (partnerFatherValid) {
+                                indexPartnerFather.addPersonToIndex(partnerFather, event, tag);
+                            }
+
+                            countInserts++;
+                        }
+
+                        // if (mainMotherValid && mainFatherValid) {
+                        //     indexMain.addPersonToIndex(personMain, event, "MOTHERFATHER");
+                        //     indexMother.addPersonToIndex(mainMother, event, "MOTHERFATHER");
+                        //     indexFather.addPersonToIndex(mainFather, event, "MOTHERFATHER");
+
+                        //     count_Main_Mother_Father++;
+                        //     countInserts++;
+                        // } else if (mainMotherValid) {
+                        //     indexMain.addPersonToIndex(personMain, event, "MOTHER");
+                        //     indexMother.addPersonToIndex(mainMother, event, "MOTHER");
+
+                        //     count_Main_Mother++;
+                        //     countInserts++;
+                        // } else if (mainFatherValid) {
+                        //     indexMain.addPersonToIndex(personMain, event, "FATHER");
+                        //     indexFather.addPersonToIndex(mainFather, event, "FATHER");
+
+                        //     count_Main_Father++;
+                        //     countInserts++;
+                        // }
+                    }
+                    if(countAll % 5000 == 0) {
+                        spinner.update(countAll);
+                    }
+                }
+            } finally {
+                qResult.close();
+                spinner.terminate();
+                spinner.join();
+            }
+        } catch (Exception e) {
+            LOG.logError("generateDictionary", "Error in iterating over RDF file in process "+ processName);
+            LOG.logError("", e.toString());
+
+            return false;
+        } finally {
+            indexMain.closeStream();
+            indexMother.closeStream();
+            indexFather.closeStream();
+            indexPartner.closeStream();
+            indexPartnerMother.closeStream();
+            indexPartnerFather.closeStream();
 
             int countNonIndexed = countAll - countInserts;
 
