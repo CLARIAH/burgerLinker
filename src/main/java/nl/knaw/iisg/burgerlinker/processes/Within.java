@@ -565,6 +565,10 @@ public class Within {
                                                 }
 
                                                 // save matches to file
+                                                // NOTE: this procedure is executes twice, once per spouse, yet can be completed in a
+                                                //       single run by uncommenting the saveLinks calls below and by iterating over
+                                                //       both spouses in the remarriage section. This requires a lot of tweaking of the
+                                                //       variable names so that is a task for a future upgrade.
                                                 if (subjectBMother != null &&
                                                     subjectBFather != null &&
                                                     subjectBPartnerMother != null &&
@@ -572,40 +576,40 @@ public class Within {
                                                     // full relatives match
                                                     LINKS.saveLinks_Within(candidatesSubjectB, candidatesMother, candidatesFather, subjectBEventURI,
                                                                            subjectB, subjectBMother, subjectBFather, familyCode, yearDifference);
-                                                    LINKS.saveLinks_Within(candidatesPartner, candidatesPartnerMother, candidatesPartnerFather,
-                                                                           subjectBEventURI, subjectBPartner, subjectBPartnerMother, subjectBPartnerFather,
-                                                                           familyCode, yearDifference);
+                                                    // LINKS.saveLinks_Within(candidatesPartner, candidatesPartnerMother, candidatesPartnerFather,
+                                                    //                        subjectBEventURI, subjectBPartner, subjectBPartnerMother, subjectBPartnerFather,
+                                                    //                        familyCode, yearDifference);
                                                 } else if (subjectBMother != null) {
                                                     // at least one matching relative per person
                                                     if (subjectBPartnerMother != null) {
                                                         LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, subjectBEventURI,
                                                                                       subjectB, subjectBMother, familyCode, yearDifference);
-                                                        LINKS.saveLinks_Within_mother(candidatesPartner, candidatesPartnerMother, subjectBEventURI,
-                                                                                      subjectBPartner, subjectBPartnerMother, familyCode,
-                                                                                      yearDifference);
+                                                        // LINKS.saveLinks_Within_mother(candidatesPartner, candidatesPartnerMother, subjectBEventURI,
+                                                        //                               subjectBPartner, subjectBPartnerMother, familyCode,
+                                                        //                               yearDifference);
                                                     }
                                                     if (subjectBPartnerFather != null) {
                                                         LINKS.saveLinks_Within_mother(candidatesSubjectB, candidatesMother, subjectBEventURI,
                                                                                       subjectB, subjectBMother, familyCode, yearDifference);
-                                                        LINKS.saveLinks_Within_father(candidatesPartner, candidatesPartnerFather, subjectBEventURI,
-                                                                                      subjectBPartner, subjectBPartnerFather, familyCode,
-                                                                                      yearDifference);
+                                                        // LINKS.saveLinks_Within_father(candidatesPartner, candidatesPartnerFather, subjectBEventURI,
+                                                        //                               subjectBPartner, subjectBPartnerFather, familyCode,
+                                                        //                               yearDifference);
                                                     }
                                                 } else if (subjectBFather != null) {
                                                     // at least one matching relative per person
                                                     if (subjectBPartnerMother != null) {
                                                         LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, subjectBEventURI,
                                                                                       subjectB, subjectBFather, familyCode, yearDifference);
-                                                        LINKS.saveLinks_Within_mother(candidatesPartner, candidatesPartnerMother, subjectBEventURI,
-                                                                                      subjectBPartner, subjectBPartnerMother, familyCode,
-                                                                                      yearDifference);
+                                                        // LINKS.saveLinks_Within_mother(candidatesPartner, candidatesPartnerMother, subjectBEventURI,
+                                                        //                               subjectBPartner, subjectBPartnerMother, familyCode,
+                                                        //                               yearDifference);
                                                     }
                                                     if (subjectBPartnerFather != null) {
                                                         LINKS.saveLinks_Within_father(candidatesSubjectB, candidatesFather, subjectBEventURI,
                                                                                       subjectB, subjectBFather, familyCode, yearDifference);
-                                                        LINKS.saveLinks_Within_father(candidatesPartner, candidatesPartnerFather, subjectBEventURI,
-                                                                                      subjectBPartner, subjectBPartnerFather, familyCode,
-                                                                                      yearDifference);
+                                                        // LINKS.saveLinks_Within_father(candidatesPartner, candidatesPartnerFather, subjectBEventURI,
+                                                        //                               subjectBPartner, subjectBPartnerFather, familyCode,
+                                                        //                               yearDifference);
                                                     }
                                                 }
                                             }
