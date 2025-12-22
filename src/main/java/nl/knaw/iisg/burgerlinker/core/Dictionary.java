@@ -420,6 +420,21 @@ public class Dictionary {
                         boolean partnerFatherValid = partnerFather.isValidWithFullName();
 
                         String tag = "";
+                        if (partnerValid) {
+                            tag += "[PARTNER]";
+                        }
+                        if (mainMotherValid) {
+                            tag += "[SUBJECTMOTHER]";
+                        }
+                        if (mainFatherValid) {
+                            tag += "[SUBJECTFATHER]";
+                        }
+                        if (partnerMotherValid) {
+                            tag += "[PARTNERMOTHER]";
+                        }
+                        if (partnerFatherValid) {
+                            tag += "[PARTNERFATHER]";
+                        }
                         if (tag.length() > 0) {
                             indexMain.addPersonToIndex(personMain, event, tag);
 
