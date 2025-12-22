@@ -155,6 +155,7 @@ optional.
           FUNCTIONS:
           - Within_B_M:  Link newborns in Birth Certificates to brides/grooms in Marriage Certificates
           - Within_B_D:  Link newborns in Birth Certificates to deceased individuals in Death Certificates
+          - Within_M_M:  Link brides/grooms in Marriage Certificates to brides/grooms in Marriage Certificates
           - Between_B_M: Link parents of newborns in Birth Certificates to brides and grooms in Marriage Certificates
           - Between_B_D: Link parents of newborns in Birth Certificates to deceased and their partner in Death Certificates
           - Between_M_M: Link parents of brides/grooms in Marriage Certificates to brides and grooms in Marriage Certificates

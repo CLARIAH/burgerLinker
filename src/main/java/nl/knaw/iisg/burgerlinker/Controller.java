@@ -48,9 +48,9 @@ import nl.knaw.iisg.burgerlinker.utilities.*;
 
 public class Controller {
 	@SuppressWarnings("unused")
-	final private List<String> FUNCTIONS = Arrays.asList("within_b_m", "within_b_d", "between_b_d",
-                                                         "between_m_m", "between_d_m", "between_b_m",
-                                                         "closure");
+	final private List<String> FUNCTIONS = Arrays.asList("within_b_m", "within_b_d", "within_m_m",
+                                                         "between_b_d", "between_m_m", "between_d_m",
+                                                         "between_b_m", "closure");
     final private Set<String> DATA_MODEL_KEYS = Set.of("BIRTHS", "DEATHS", "MARRIAGES");
 
     private String dataModelDir = "./res/data_models/";

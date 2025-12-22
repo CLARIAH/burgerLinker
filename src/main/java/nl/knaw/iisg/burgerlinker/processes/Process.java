@@ -50,13 +50,19 @@ public class Process {
         this.rtype = rtype;
 
         if (this.rtype == RelationType.WITHIN) {
-            this.queryEventA = this.dataModel.get("BIRTHS");
             switch (this.type) {
                 case BIRTH_DECEASED:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
                     this.queryEventB = this.dataModel.get("DEATHS");
 
                     break;
                 case BIRTH_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
+
+                    break;
+                case MARRIAGE_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("MARRIAGES");
                     this.queryEventB = this.dataModel.get("MARRIAGES");
 
                     break;
@@ -100,13 +106,19 @@ public class Process {
         setRelationType(rtype);
 
         if (this.rtype == RelationType.WITHIN) {
-            this.queryEventA = this.dataModel.get("BIRTHS");
             switch (this.type) {
                 case BIRTH_DECEASED:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
                     this.queryEventB = this.dataModel.get("DEATHS");
 
                     break;
                 case BIRTH_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("BIRTHS");
+                    this.queryEventB = this.dataModel.get("MARRIAGES");
+
+                    break;
+                case MARRIAGE_MARRIAGE:
+                    this.queryEventA = this.dataModel.get("MARRIAGES");
                     this.queryEventB = this.dataModel.get("MARRIAGES");
 
                     break;

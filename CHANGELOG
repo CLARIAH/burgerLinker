@@ -1,4 +1,4 @@
-2025-MM-DD Xander Wilcke
+2025-12-21 Xander Wilcke
 
     * Bumped dependencies to latest version and updated code to match.
     * Refactored project structure to make source file hierarchy more sensible.
@@ -39,5 +39,7 @@
     * Removed the need for (event and person) identifiers in favour of IRIs.
     * Removed duplicated entries from output of closure function that were
       caused by aggregating all attributes of linked individuals.
+    * Added feature 'within-M-M' that links between brides/grooms between
+      remarriages and divorces.
     * Updated and extended README.
     * Many minor changes.

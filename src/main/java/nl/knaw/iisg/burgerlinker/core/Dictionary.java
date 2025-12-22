@@ -350,9 +350,13 @@ public class Dictionary {
 
         int countInserts = 0;
         int countAll = 0;
-        int count_Main_Mother_Father = 0;
-        int count_Main_Mother = 0;
-        int count_Main_Father = 0;
+        int count_with_father_only = 0;
+        int count_with_mother_only = 0;
+        int count_with_both_parents = 0;
+        int count_with_partner = 0;
+        int count_with_partner_mother_only = 0;
+        int count_with_partner_father_only = 0;
+        int count_with_partner_both_parents = 0;
 
         LOG.outputConsole(".: Generating Dictionary for process: " + processName + " (" + gender + ")");
         try {
@@ -416,27 +420,19 @@ public class Dictionary {
                         boolean partnerFatherValid = partnerFather.isValidWithFullName();
 
                         String tag = "";
-                        if (partnerValid) {
-                            tag += "[PARTNER]";
-                        }
-                        if (mainMotherValid) {
-                            tag += "[SUBJECTMOTHER]";
-                        }
-                        if (mainFatherValid) {
-                            tag += "[SUBJECTFATHER]";
-                        }
-                        if (partnerMotherValid) {
-                            tag += "[PARTNERMOTHER]";
-                        }
-                        if (partnerFatherValid) {
-                            tag += "[PARTNERFATHER]";
-                        }
-
                         if (tag.length() > 0) {
                             indexMain.addPersonToIndex(personMain, event, tag);
 
                             if (partnerValid) {
                                 indexPartner.addPersonToIndex(partner, event, tag);
+                                count_with_partner += 1;
+
+                                if (partnerMotherValid) {
+                                    indexPartnerMother.addPersonToIndex(partnerMother, event, tag);
+                                }
+                                if (partnerFatherValid) {
+                                    indexPartnerFather.addPersonToIndex(partnerFather, event, tag);
+                                }
                             }
                             if (mainMotherValid) {
                                 indexMother.addPersonToIndex(mainMother, event, tag);
@@ -444,36 +440,25 @@ public class Dictionary {
                             if (mainFatherValid) {
                                 indexFather.addPersonToIndex(mainFather, event, tag);
                             }
-                            if (partnerMotherValid) {
-                                indexPartnerMother.addPersonToIndex(partnerMother, event, tag);
+
+                            if (mainMotherValid && !mainFatherValid) {
+                                count_with_mother_only += 1;
+                            } else if (!mainMotherValid && mainFatherValid) {
+                                count_with_father_only += 1;
+                            } else if (mainMotherValid && mainFatherValid) {
+                                count_with_both_parents += 1;
                             }
-                            if (partnerFatherValid) {
-                                indexPartnerFather.addPersonToIndex(partnerFather, event, tag);
+
+                            if (partnerMotherValid && !partnerFatherValid) {
+                                count_with_partner_mother_only += 1;
+                            } else if (!partnerMotherValid && partnerFatherValid) {
+                                count_with_partner_father_only += 1;
+                            } else if (partnerMotherValid && partnerFatherValid) {
+                                count_with_partner_both_parents += 1;
                             }
 
                             countInserts++;
                         }
-
-                        // if (mainMotherValid && mainFatherValid) {
-                        //     indexMain.addPersonToIndex(personMain, event, "MOTHERFATHER");
-                        //     indexMother.addPersonToIndex(mainMother, event, "MOTHERFATHER");
-                        //     indexFather.addPersonToIndex(mainFather, event, "MOTHERFATHER");
-
-                        //     count_Main_Mother_Father++;
-                        //     countInserts++;
-                        // } else if (mainMotherValid) {
-                        //     indexMain.addPersonToIndex(personMain, event, "MOTHER");
-                        //     indexMother.addPersonToIndex(mainMother, event, "MOTHER");
-
-                        //     count_Main_Mother++;
-                        //     countInserts++;
-                        // } else if (mainFatherValid) {
-                        //     indexMain.addPersonToIndex(personMain, event, "FATHER");
-                        //     indexFather.addPersonToIndex(mainFather, event, "FATHER");
-
-                        //     count_Main_Father++;
-                        //     countInserts++;
-                        // }
                     }
                     if(countAll % 5000 == 0) {
                         spinner.update(countAll);
@@ -503,9 +488,13 @@ public class Dictionary {
             LinkedHashMap<String, String> summary = new LinkedHashMap<>();
             summary.put("Certificates Total", formatter.format(countAll));
             summary.put("Certificates Indexed", formatter.format(countInserts));
-            summary.put(" with both parents", formatter.format(count_Main_Mother_Father));
-            summary.put(" with mother only", formatter.format(count_Main_Mother));
-            summary.put(" with father only", formatter.format(count_Main_Father));
+            summary.put(" with mother only", formatter.format(count_with_mother_only));
+            summary.put(" with father only", formatter.format(count_with_father_only));
+            summary.put(" with both parents", formatter.format(count_with_both_parents));
+            summary.put(" with partner", formatter.format(count_with_partner));
+            summary.put("  with mother only", formatter.format(count_with_partner_mother_only));
+            summary.put("  with father only", formatter.format(count_with_partner_father_only));
+            summary.put("  with both parents", formatter.format(count_with_partner_both_parents));
 
             int keyLenMax = 0, valLenMax = 0;
             for (String key: summary.keySet()) {
