@@ -338,13 +338,13 @@ public class Dictionary {
         return true;
     }
 
-    public boolean generateDictionarySixWay(MyRDF myRDF, String query, Person.Gender gender) {
-        indexMain = new Index("subject-"+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexMother = new Index("subjectMother-"+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexFather = new Index("subjectFather-"+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexPartner = new Index("partner-"+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexPartnerMother = new Index("partnerMother-"+gender, mainDirectoryPath, maxLev, fixedLev);
-        indexPartnerFather = new Index("partnerFather-"+gender, mainDirectoryPath, maxLev, fixedLev);
+    public boolean generateDictionarySixWay(MyRDF myRDF, String query) {
+        indexMain = new Index("subject-", mainDirectoryPath, maxLev, fixedLev);
+        indexMother = new Index("subjectMother-", mainDirectoryPath, maxLev, fixedLev);
+        indexFather = new Index("subjectFather-", mainDirectoryPath, maxLev, fixedLev);
+        indexPartner = new Index("partner-", mainDirectoryPath, maxLev, fixedLev);
+        indexPartnerMother = new Index("partnerMother-", mainDirectoryPath, maxLev, fixedLev);
+        indexPartnerFather = new Index("partnerFather-", mainDirectoryPath, maxLev, fixedLev);
 
         long startTime = System.currentTimeMillis();
 
@@ -358,9 +358,9 @@ public class Dictionary {
         int count_with_partner_father_only = 0;
         int count_with_partner_both_parents = 0;
 
-        LOG.outputConsole(".: Generating Dictionary for process: " + processName + " (" + gender + ")");
+        LOG.outputConsole(".: Generating Dictionary for process: " + processName);
         try {
-            String taskName = ".: Indexing " + processName + " (" + gender + ")";
+            String taskName = ".: Indexing " + processName;
 
             // Keep separate indexes for subject and partner relatives since
             // they will always be on the same side of the certificate (due to
@@ -420,22 +420,7 @@ public class Dictionary {
                         boolean partnerFatherValid = partnerFather.isValidWithFullName();
 
                         String tag = "";
-                        if (partnerValid) {
-                            tag += "[PARTNER]";
-                        }
-                        if (mainMotherValid) {
-                            tag += "[SUBJECTMOTHER]";
-                        }
-                        if (mainFatherValid) {
-                            tag += "[SUBJECTFATHER]";
-                        }
-                        if (partnerMotherValid) {
-                            tag += "[PARTNERMOTHER]";
-                        }
-                        if (partnerFatherValid) {
-                            tag += "[PARTNERFATHER]";
-                        }
-                        if (tag.length() > 0) {
+                        if (partnerValid || mainMotherValid || mainFatherValid) {
                             indexMain.addPersonToIndex(personMain, event, tag);
 
                             if (partnerValid) {

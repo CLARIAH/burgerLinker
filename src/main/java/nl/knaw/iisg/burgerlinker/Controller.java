@@ -709,8 +709,7 @@ public class Controller {
                     within.link_within_single(Person.Gender.FEMALE, false);
                     within.link_within_single(Person.Gender.MALE, true);
                 } else if (process.type == Process.ProcessType.MARRIAGE_MARRIAGE) {
-                    within.link_within_couple(Person.Gender.FEMALE, false);
-                    within.link_within_couple(Person.Gender.MALE, true);
+                    within.link_within_couple(false);
                 } else {
                     within.link_within(Person.Gender.FEMALE, false); // false = do not close stream
                     within.link_within(Person.Gender.MALE, true); // true = close stream
