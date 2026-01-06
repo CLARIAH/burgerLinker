@@ -321,10 +321,6 @@ def link_events(events):
                 yield Statement(subject, SDO_NS + "parent", father)
                 yield Statement(father, SDO_NS + "children", subject)
 
-            if mother is not None and father is not None:
-                yield Statement(mother, SDO_NS + "spouse", father)
-                yield Statement(father, SDO_NS + "spouse", mother)
-
             if "partner" in event.keys():
                 partner = event["partner"]
 
@@ -346,10 +342,6 @@ def link_events(events):
 
                 yield Statement(bride, SDO_NS + "parent", fatherBride)
 
-            if motherBride is not None and fatherBride is not None:
-                yield Statement(motherBride, SDO_NS + "spouse", fatherBride)
-                yield Statement(fatherBride, SDO_NS + "spouse", motherBride)
-
         if groom is not None:
             motherGroom, fatherGroom = None, None
             if "motherGroom" in event.keys():
@@ -360,10 +352,6 @@ def link_events(events):
                 fatherGroom = event["fatherGroom"]
 
                 yield Statement(groom, SDO_NS + "parent", fatherGroom)
-
-            if motherGroom is not None and fatherGroom is not None:
-                yield Statement(motherGroom, SDO_NS + "spouse", fatherGroom)
-                yield Statement(fatherGroom, SDO_NS + "spouse", motherGroom)
 
         if bride is not None and groom is not None:
             yield Statement(bride, SDO_NS + "spouse", groom)
