@@ -109,9 +109,9 @@ BurgerLinker is written in the JAVA programming language which can run on
 ensure that the (free) [JAVA Runtime Environment (JRE)](https://www.oracle.com/java/technologies/javase-jre8-downloads.html)
 is installed on your system or download and install the JRE from [here](https://www.oracle.com/java/technologies/javase-jre8-downloads.html).
 
-Next, obtain the latest [BurgerLinker JAR file](https://github.com/CLARIAH/burgerLinker/releases)
-(JAVA executable) from the [GitHub repository](https://github.com/CLARIAH/burgerLinker)
-and place it in an appropriate directory on your device. BurgerLinker can now
+Next, obtain the latest [BurgerLinker ZIP file](https://github.com/CLARIAH/burgerLinker/releases)
+from the [GitHub repository](https://github.com/CLARIAH/burgerLinker)
+and place it in an appropriate directory on your device. Unzip this file to extract the JAR (JAVA executable) and configuration templates. BurgerLinker can now
 be run by opening a terminal in the same directory as the JAR file, and by
 running the following command:
 
