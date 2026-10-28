@@ -293,6 +293,7 @@ engine. User-provided queries tell the query engine how the data is modelled.
 BurgerLinker ships with several pre-made data model specifications:
 
 - **PiCo-SDO** [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) data model with names modelled using *schema.org* (SDO)
+- **PiCo-SDO-REL** [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) data model with names and relations modelled using *schema.org* (SDO)
 - **PiCo-PNV** [Person-in-Context](https://github.com/CBG-Centrum-voor-familiegeschiedenis/PiCo) data model with names modelled using *Person Name Vocabulary* (PNV)
 - **CIV** [Civil Registries schema](assets/CIV.ttl) data model created by the IISG (deprecated)
 
