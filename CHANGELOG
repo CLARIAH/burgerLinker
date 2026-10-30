@@ -1,3 +1,9 @@
+2026-10-30 rlzijdeman
+
+    * Added PiCo-SDO-REL data model, which identifies the main persons of
+      each certificate by their family relations instead of their PiCo role.
+    * Fixed documented defaults for --model and --namespace (#29).
+
 2025-12-21 Xander Wilcke
 
     * Bumped dependencies to latest version and updated code to match.
