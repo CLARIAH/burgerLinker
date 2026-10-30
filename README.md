@@ -162,7 +162,7 @@ optional.
           - Between_D_M: Link parents of deceased in Death Certificates to brides and grooms in Marriage Certificates
           - Closure:     Compute the transitive closure between the found links. The output is a set of reconstructed individuals
         -m, --model
-          [OPTIONAL] Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to CIV.
+          [OPTIONAL] Path to an appropriate data model specification (YAML) or its filename (shorthand). Defaults to PiCo-SDO.
         -rs, --ruleset
           [OPTIONAL] Path to a rule set definition (YAML) or its filename (shorthand). Defaults to LINKS.
 
@@ -171,7 +171,7 @@ optional.
         --fixed-lev
           [OPTIONAL] Disable automatic adjustment of maximum Levenshtein distance to string length.
         -ns, --namespace
-          [OPTIONAL] Namespace to use for reconstructed individuals. Defaults to blank nodes: '_:'.
+          [OPTIONAL] Namespace to use for reconstructed individuals. Defaults to 'https://www.example.org/'.
         --ignore-relatives
           [OPTIONAL] Disable lexical comparison of related individuals (eg, parents of subject).
         --ignore-date
