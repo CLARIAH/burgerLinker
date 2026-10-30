@@ -45,7 +45,7 @@ public class App {
     String model = modelDefault;
 
     @Parameter(names = {"-ns", "--namespace"}, required=false,
-               description="[OPTIONAL] Namespace to use for reconstructed individuals. Defaults to blank nodes: '" + namespaceDefault +"'.")
+               description="[OPTIONAL] Namespace to use for reconstructed individuals. Defaults to '" + namespaceDefault +"'.")
     String namespace = namespaceDefault;
 
     @Parameter(names = {"-rs", "--ruleset"}, required=false,
